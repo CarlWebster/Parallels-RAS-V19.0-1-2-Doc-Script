@@ -591,10 +591,14 @@ Set-StrictMode -Version Latest
 
 #force  on
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
+$SaveEAPreference         = $ErrorActionPreference
+$ErrorActionPreference    = 'SilentlyContinue'
+$Error.Clear()
+
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00'
+$script:MyVersion         = '3.00.001'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "11/15/2022"
+$tmpdate                  = [datetime] "11/24/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -4092,7 +4096,7 @@ Function OutputFarmSite
 	}
 	Else
 	{
-		$Results = Get-RASPA -SiteId $Site.Id -EA 0 4> $Null | Select -First 1 #changed in 2.52 to only get the first PA
+		$Results = Get-RASBroker -SiteId $Site.Id -EA 0 4> $Null | Select-Object -First 1 #changed in 2.52 to only get the first PA
 		
 		If($? -and $Null -ne $Results)
 		{
@@ -4412,37 +4416,37 @@ Function OutputSite
 			{
 				Write-Warning "
 				`n
-				Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)`
+				Unable to retrieve RDS Status for RDS Host $($RDSHost.Server)`
 				"
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)"
+					WriteWordLine 0 0 "Unable to retrieve RDS Status for RDS Host $($RDSHost.Server)"
 				}
 				If($Text)
 				{
-					Line 0 "Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)"
+					Line 0 "Unable to retrieve RDS Status for RDS Host $($RDSHost.Server)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)"
+					WriteHTMLLine 0 0 "Unable to retrieve RDS Status for RDS Host $($RDSHost.Server)"
 				}
 			}
 			ElseIf($? -and $Null -eq $RDSStatus)
 			{
 				Write-Host "
-				No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)`
+				No RDS Status retrieved for RDS Host $($RDSHost.Server)`
 				" -ForegroundColor White
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)"
+					WriteWordLine 0 0 "No RDS Status retrieved for RDS Host $($RDSHost.Server)"
 				}
 				If($Text)
 				{
-					Line 0 "No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)"
+					Line 0 "No RDS Status retrieved for RDS Host $($RDSHost.Server)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)"
+					WriteHTMLLine 0 0 "No RDS Status retrieved for RDS Host $($RDSHost.Server)"
 				}
 			}
 			Else
@@ -4460,7 +4464,7 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($RDSStatus.DiskRead)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($RDSStatus.DiskWrite)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Sessions"; Value = $Sessions; }) > $Null
-					$ScriptInformation.Add(@{Data = "Preferred PA"; Value = $RDSStatus.PreferredPA; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preferred Broker"; Value = $RDSStatus.PreferredBroker; }) > $Null
 					$ScriptInformation.Add(@{Data = "Operating system"; Value = $RDSStatus.ServerOS; }) > $Null
 					$ScriptInformation.Add(@{Data = "Agent version"; Value = $RDSStatus.AgentVer; }) > $Null
 
@@ -4491,7 +4495,7 @@ Function OutputSite
 					Line 2 "Disk read time`t: " "$($RDSStatus.DiskRead)%"
 					Line 2 "Disk write time`t: " "$($RDSStatus.DiskWrite)%"
 					Line 2 "Sessions`t: " $Sessions
-					Line 2 "Preferred PA`t: " $RDSStatus.PreferredPA
+					Line 2 "Preferred Broker`t: " $RDSStatus.PreferredBroker
 					Line 2 "Operating system: " $RDSStatus.ServerOS
 					Line 2 "Agent version`t: " $RDSStatus.AgentVer
 					Line 0 ""
@@ -4506,7 +4510,7 @@ Function OutputSite
 					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($RDSStatus.DiskRead)%",$htmlwhite))
 					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($RDSStatus.DiskWrite)%",$htmlwhite))
 					$rowdata += @(,("Sessions",($Script:htmlsb),$Sessions,$htmlwhite))
-					$rowdata += @(,("Preferred PA",($Script:htmlsb),$RDSStatus.PreferredPA,$htmlwhite))
+					$rowdata += @(,("Preferred Broker",($Script:htmlsb),$RDSStatus.PreferredBroker,$htmlwhite))
 					$rowdata += @(,("Operating system",($Script:htmlsb),$RDSStatus.ServerOS,$htmlwhite))
 					$rowdata += @(,("Agent version",($Script:htmlsb),$RDSStatus.AgentVer,$htmlwhite))
 
@@ -4628,7 +4632,7 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($VDIHostStatus.MemLoad)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($VDIHostStatus.DiskRead)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($VDIHostStatus.DiskWrite)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Preferred PA"; Value = $VDIHostStatus.PreferredPA; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preferred Broker"; Value = $VDIHostStatus.PreferredBroker; }) > $Null
 					$ScriptInformation.Add(@{Data = "Operating system"; Value = $VDIHostStatus.ServerOS; }) > $Null
 					$ScriptInformation.Add(@{Data = "Agent version"; Value = $VDIHostStatus.AgentVer; }) > $Null
 
@@ -4658,7 +4662,7 @@ Function OutputSite
 					Line 2 "RAM`t`t: " "$($VDIHostStatus.MemLoad)%"
 					Line 2 "Disk read time`t: " "$($VDIHostStatus.DiskRead)%"
 					Line 2 "Disk write time`t: " "$($VDIHostStatus.DiskWrite)%"
-					Line 2 "Preferred PA`t: " $VDIHostStatus.PreferredPA
+					Line 2 "Preferred Broker`t: " $VDIHostStatus.PreferredBroker
 					Line 2 "Operating system: " $VDIHostStatus.ServerOS
 					Line 2 "Agent version`t: " $VDIHostStatus.AgentVer
 					Line 0 ""
@@ -4672,7 +4676,7 @@ Function OutputSite
 					$rowdata += @(,("RAM",($Script:htmlsb),"$($VDIHostStatus.MemLoad)%",$htmlwhite))
 					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($VDIHostStatus.DiskRead)%",$htmlwhite))
 					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($VDIHostStatus.DiskWrite)%",$htmlwhite))
-					$rowdata += @(,("Preferred PA",($Script:htmlsb),$VDIHostStatus.PreferredPA,$htmlwhite))
+					$rowdata += @(,("Preferred Broker",($Script:htmlsb),$VDIHostStatus.PreferredBroker,$htmlwhite))
 					$rowdata += @(,("Operating system",($Script:htmlsb),$VDIHostStatus.ServerOS,$htmlwhite))
 					$rowdata += @(,("Agent version",($Script:htmlsb),$VDIHostStatus.AgentVer,$htmlwhite))
 
@@ -4685,7 +4689,7 @@ Function OutputSite
 		}
 	}
 	
-	$GWs = Get-RASGW -Siteid $Site.Id -EA 0 4> $Null
+	$Gateways = Get-RASGateway -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
 	{
@@ -4706,7 +4710,7 @@ Function OutputSite
 			WriteHTMLLine 0 0 "Unable to retrieve Gateways for Site $($Site.Name)"
 		}
 	}
-	ElseIf($? -and $Null -eq $GWs)
+	ElseIf($? -and $Null -eq $Gateways)
 	{
 		Write-Host "
 		No Gateways retrieved for Site $($Site.Name).`
@@ -4740,65 +4744,65 @@ Function OutputSite
 		}
 
 		Write-Verbose "$(Get-Date -Format G): `t`tOutput Site Gateways"
-		ForEach($GW in $GWs)
+		ForEach($Gateway in $Gateways)
 		{
-			$GWStatus = Get-RASGWStatus -Id $GW.Id -EA 0 4>$Null
+			$GatewayStatus = Get-RASGatewayStatus -Id $Gateway.Id -EA 0 4>$Null
 			
 			If(!$?)
 			{
 				Write-Warning "
 				`n
-				Unable to retrieve Gateway Status for Gateway $($GW.Id)`
+				Unable to retrieve Gateway Status for Gateway $($Gateway.Id)`
 				"
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "Unable to retrieve Gateway Status for Gateway $($GW.Id)"
+					WriteWordLine 0 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "Unable to retrieve Gateway Status for Gateway $($GW.Id)"
+					Line 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "Unable to retrieve Gateway Status for Gateway $($GW.Id)"
+					WriteHTMLLine 0 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
 				}
 			}
-			ElseIf($? -and $Null -eq $GWStatus)
+			ElseIf($? -and $Null -eq $GatewayStatus)
 			{
 				Write-Host "
-				No Gateway Status retrieved for Gateway $($GW.Id)`
+				No Gateway Status retrieved for Gateway $($Gateway.Id)`
 				" -ForegroundColor White
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "No Gateway Status retrieved for Gateway $($GW.Id)"
+					WriteWordLine 0 0 "No Gateway Status retrieved for Gateway $($Gateway.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "No Gateway Status retrieved for Gateway $($GW.Id)"
+					Line 0 "No Gateway Status retrieved for Gateway $($Gateway.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "No Gateway Status retrieved for Gateway $($GW.Id)"
+					WriteHTMLLine 0 0 "No Gateway Status retrieved for Gateway $($Gateway.Id)"
 				}
 			}
 			Else
 			{
-				$Sessions = ($GWStatus.ActiveRDPSessions + $GWStatus.ActiveRDPSSLSessions)
-				$GWStatusAgentState = GetRASStatus $GWStatus.AgentState
+				$Sessions = ($GatewayStatus.ActiveRDPSessions + $GatewayStatus.ActiveRDPSSLSessions)
+				$GatewayStatusAgentState = GetRASStatus $GatewayStatus.AgentState
 				
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $GW.Server; }) > $Null
-					$ScriptInformation.Add(@{Data = "Status"; Value = $GWStatusAgentState; }) > $Null
-					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($GWStatus.CPULoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($GWStatus.MemLoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($GWStatus.DiskRead)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($GWStatus.DiskWrite)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Address"; Value = $Gateway.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Status"; Value = $GatewayStatusAgentState; }) > $Null
+					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($GatewayStatus.CPULoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($GatewayStatus.MemLoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($GatewayStatus.DiskRead)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($GatewayStatus.DiskWrite)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Sessions"; Value = $Sessions.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Preferred PA"; Value = $GWStatus.PreferredPA; }) > $Null
-					$ScriptInformation.Add(@{Data = "Operating system"; Value = $GWStatus.ServerOS; }) > $Null
-					$ScriptInformation.Add(@{Data = "Agent version"; Value = $GWStatus.AgentVer; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preferred Broker"; Value = $GatewayStatus.PreferredBroker; }) > $Null
+					$ScriptInformation.Add(@{Data = "Operating system"; Value = $GatewayStatus.ServerOS; }) > $Null
+					$ScriptInformation.Add(@{Data = "Agent version"; Value = $GatewayStatus.AgentVer; }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
 					-Columns Data,Value `
@@ -4820,31 +4824,31 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t: " $GW.Server
-					Line 2 "Status`t`t: " $GWStatusAgentState
-					Line 2 "CPU`t`t: " "$($GWStatus.CPULoad)%"
-					Line 2 "RAM`t`t: " "$($GWStatus.MemLoad)%"
-					Line 2 "Disk read time`t: " "$($GWStatus.DiskRead)%"
-					Line 2 "Disk write time`t: " "$($GWStatus.DiskWrite)%"
+					Line 2 "Address`t`t: " $Gateway.Server
+					Line 2 "Status`t`t: " $GatewayStatusAgentState
+					Line 2 "CPU`t`t: " "$($GatewayStatus.CPULoad)%"
+					Line 2 "RAM`t`t: " "$($GatewayStatus.MemLoad)%"
+					Line 2 "Disk read time`t: " "$($GatewayStatus.DiskRead)%"
+					Line 2 "Disk write time`t: " "$($GatewayStatus.DiskWrite)%"
 					Line 2 "Sessions`t: " $Sessions.ToString()
-					Line 2 "Preferred PA`t: " $GWStatus.PreferredPA
-					Line 2 "Operating system: " $GWStatus.ServerOS
-					Line 2 "Agent version`t: " $GWStatus.AgentVer
+					Line 2 "Preferred Broker`t: " $GatewayStatus.PreferredBroker
+					Line 2 "Operating system: " $GatewayStatus.ServerOS
+					Line 2 "Agent version`t: " $GatewayStatus.AgentVer
 					Line 0 ""
 				}
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$GW.Server,$htmlwhite)
-					$rowdata += @(,("Status",($Script:htmlsb),$GWStatusAgentState.ToString(),$htmlwhite))
-					$rowdata += @(,("CPU",($Script:htmlsb),"$($GWStatus.CPULoad)%",$htmlwhite))
-					$rowdata += @(,("RAM",($Script:htmlsb),"$($GWStatus.MemLoad)%",$htmlwhite))
-					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($GWStatus.DiskRead)%",$htmlwhite))
-					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($GWStatus.DiskWrite)%",$htmlwhite))
+					$columnHeaders = @("Address",($Script:htmlsb),$Gateway.Server,$htmlwhite)
+					$rowdata += @(,("Status",($Script:htmlsb),$GatewayStatusAgentState.ToString(),$htmlwhite))
+					$rowdata += @(,("CPU",($Script:htmlsb),"$($GatewayStatus.CPULoad)%",$htmlwhite))
+					$rowdata += @(,("RAM",($Script:htmlsb),"$($GatewayStatus.MemLoad)%",$htmlwhite))
+					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($GatewayStatus.DiskRead)%",$htmlwhite))
+					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($GatewayStatus.DiskWrite)%",$htmlwhite))
 					$rowdata += @(,("Sessions",($Script:htmlsb),$Sessions.ToString(),$htmlwhite))
-					$rowdata += @(,("Preferred PA",($Script:htmlsb),$GWStatus.PreferredPA,$htmlwhite))
-					$rowdata += @(,("Operating system",($Script:htmlsb),$GWStatus.ServerOS,$htmlwhite))
-					$rowdata += @(,("Agent version",($Script:htmlsb),$GWStatus.AgentVer,$htmlwhite))
+					$rowdata += @(,("Preferred Broker",($Script:htmlsb),$GatewayStatus.PreferredBroker,$htmlwhite))
+					$rowdata += @(,("Operating system",($Script:htmlsb),$GatewayStatus.ServerOS,$htmlwhite))
+					$rowdata += @(,("Agent version",($Script:htmlsb),$GatewayStatus.AgentVer,$htmlwhite))
 
 					$msg = ""
 					$columnWidths = @("200","275")
@@ -4855,100 +4859,100 @@ Function OutputSite
 		}
 	}
 	
-	$PAs = Get-RASPA -Siteid $Site.Id -EA 0 4> $Null
+	$PAs = Get-RASBroker -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
 	{
 		Write-Warning "
 		`n
-		Unable to retrieve Publishing Agents for Site $($Site.Name)`
+		Unable to retrieve Connection Brokers for Site $($Site.Name)`
 		"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "Unable to retrieve Publishing Agents for Site $($Site.Name)"
+			WriteWordLine 0 0 "Unable to retrieve Connection Brokers for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "Unable to retrieve Publishing Agents for Site $($Site.Name)"
+			Line 0 "Unable to retrieve Connection Brokers for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "Unable to retrieve Publishing Agents for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "Unable to retrieve Connection Brokers for Site $($Site.Name)"
 		}
 	}
 	ElseIf($? -and $Null -eq $PAs)
 	{
 		Write-Host "
-		No Publishing Agents retrieved for Site $($Site.Name).`
+		No Connection Brokers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "No Publishing Agents retrieved for Site $($Site.Name)"
+			WriteWordLine 0 0 "No Connection Brokers retrieved for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "No Publishing Agents retrieved for Site $($Site.Name)"
+			Line 0 "No Connection Brokers retrieved for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "No Publishing Agents retrieved for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "No Connection Brokers retrieved for Site $($Site.Name)"
 		}
 	}
 	Else
 	{
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 2 0 "Publishing Agents"
+			WriteWordLine 2 0 "Connection Brokers"
 		}
 		If($Text)
 		{
-			Line 1 "Publishing Agents"
+			Line 1 "Connection Brokers"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 2 0 "Publishing Agents"
+			WriteHTMLLine 2 0 "Connection Brokers"
 		}
 
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Publishing Agents"
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput Connection Brokers"
 		ForEach($PA in $PAs)
 		{
-			$PAStatus = Get-RASPAStatus -Id $PA.Id -EA 0 4>$Null
+			$PAStatus = Get-RASBrokerStatus -Id $PA.Id -EA 0 4>$Null
 			
 			If(!$?)
 			{
 				Write-Warning "
 				`n
-				Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)`
+				Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)`
 				"
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)"
+					WriteWordLine 0 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)"
+					Line 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "Unable to retrieve Publishing Agents Status for Publishing Agents $($PA.Id)"
+					WriteHTMLLine 0 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)"
 				}
 			}
 			ElseIf($? -and $Null -eq $PAStatus)
 			{
 				Write-Host "
-				No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)`
+				No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)`
 				" -ForegroundColor White
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)"
+					WriteWordLine 0 0 "No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)"
+					Line 0 "No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "No Publishing Agents Status retrieved for Publishing Agents $($PA.Id)"
+					WriteHTMLLine 0 0 "No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)"
 				}
 			}
 			Else
@@ -5131,7 +5135,6 @@ Function OutputSite
 				}
 
 				$LogonStatus = "N/A"
-				$Status      = "N/A"
 
 				$FullAgentStatus = GetRASStatus $RDSStatus.AgentState
 				
@@ -5405,13 +5408,13 @@ Function OutputSite
 								Default				{$RDSDragAndDrop = "Unable to determine Drag and drop: $($GroupDefaults.DragAndDropMode)"; Break}
 							}
 							
-							If($GroupDefaults.PreferredPAId -eq 0)
+							If($GroupDefaults.PreferredBrokerId -eq 0)
 							{
 								$RDSPreferredPublishingAgent = "Automatically"
 							}
 							Else
 							{
-								$RDSPreferredPublishingAgent = (Get-RASPA -Id $GroupDefaults.PreferredPAId -EA 0 4>$Null).Server
+								$RDSPreferredPublishingAgent = (Get-RASBroker -Id $GroupDefaults.PreferredBrokerId -EA 0 4>$Null).Server
 							}
 
 							Switch ($GroupDefaults.FileTransferMode)
@@ -5509,13 +5512,13 @@ Function OutputSite
 								}
 								$RDSFileTransferChangeLocation = $RDSDefaults.FileTransferLockLocation.ToString()
 
-								If($RDSDefaults.PreferredPAId -eq 0)
+								If($RDSDefaults.PreferredBrokerId -eq 0)
 								{
 									$RDSPreferredPublishingAgent = "Automatically"
 								}
 								Else
 								{
-									$RDSPreferredPublishingAgent = (Get-RASPA -Id $RDSDefaults.PreferredPAId -EA 0 4>$Null).Server
+									$RDSPreferredPublishingAgent = (Get-RASBroker -Id $RDSDefaults.PreferredBrokerId -EA 0 4>$Null).Server
 								}
 								$RDSAllowRemoteExec             = $RDSDefaults.AllowRemoteExec.ToString()
 								$RDSUseRemoteApps               = $RDSDefaults.UseRemoteApps.ToString()
@@ -5611,13 +5614,13 @@ Function OutputSite
 					}
 					$RDSFileTransferChangeLocation = $RDSHost.FileTransferLockLocation.ToString()
 
-					If($RDSHost.PreferredPAId -eq 0)
+					If($RDSHost.PreferredBrokerId -eq 0)
 					{
 						$RDSPreferredPublishingAgent = "Automatically"
 					}
 					Else
 					{
-						$RDSPreferredPublishingAgent = (Get-RASPA -Id $RDSHost.PreferredPAId -EA 0 4>$Null).Server
+						$RDSPreferredPublishingAgent = (Get-RASBroker -Id $RDSHost.PreferredBrokerId -EA 0 4>$Null).Server
 					}
 					$RDSAllowRemoteExec             = $RDSHost.AllowRemoteExec.ToString()
 					$RDSUseRemoteApps               = $RDSHost.UseRemoteApps.ToString()
@@ -5691,13 +5694,13 @@ Function OutputSite
 				}
 				$RDSFileTransferChangeLocation = $RDSHost.FileTransferLockLocation.ToString()
 
-				If($RDSHost.PreferredPAId -eq 0)
+				If($RDSHost.PreferredBrokerId -eq 0)
 				{
 					$RDSPreferredPublishingAgent = "Automatically"
 				}
 				Else
 				{
-					$RDSPreferredPublishingAgent = (Get-RASPA -Id $RDSHost.PreferredPAId -EA 0 4>$Null).Server
+					$RDSPreferredPublishingAgent = (Get-RASBroker -Id $RDSHost.PreferredBrokerId -EA 0 4>$Null).Server
 				}
 				$RDSAllowRemoteExec             = $RDSHost.AllowRemoteExec.ToString()
 				$RDSUseRemoteApps               = $RDSHost.UseRemoteApps.ToString()
@@ -8276,7 +8279,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Enable Group in site"; Value = $RDSGroup.Enabled.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Name"; Value = $RDSGroup.Name; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $RDSGroup.Description; }) > $Null
-				$ScriptInformation.Add(@{Data = "RD session hosts based on a template"; Value = $RDSGroup.UseRASTemplate; }) > $Null
+				$ScriptInformation.Add(@{Data = "RD session hosts based on a template"; Value = $RDSGroup.Autoscale; }) > $Null
 				$ScriptInformation.Add(@{Data = "RAS template"; Value = $RDSGroup.RASTemplateId; }) > $Null
 				If($RDSGroupMembers.Count -gt 0)
 				{
@@ -8323,7 +8326,7 @@ Function OutputSite
 				Line 3 "Enable Group in site`t`t`t: " $RDSGroup.Enabled.ToString()
 				Line 3 "Name`t`t`t`t`t: " $RDSGroup.Name
 				Line 3 "Description`t`t`t`t: " $RDSGroup.Description
-				Line 3 "RD session hosts based on a template`t: " $RDSGroup.UseRASTemplate
+				Line 3 "RD session hosts based on a template`t: " $RDSGroup.Autoscale
 				Line 3 "RAS template`t`t`t`t: " $RDSGroup.RASTemplateId
 				If($RDSGroupMembers.Count -gt 0)
 				{
@@ -8354,7 +8357,7 @@ Function OutputSite
 				$columnHeaders = @("Enable Group in site",($Script:htmlsb),$RDSGroup.Enabled.ToString(),$htmlwhite)
 				$rowdata += @(,("Name",($Script:htmlsb),$RDSGroup.Name,$htmlwhite))
 				$rowdata += @(,("Description",($Script:htmlsb),$RDSGroup.Description,$htmlwhite))
-				$rowdata += @(,("RD session hosts based on a template",($Script:htmlsb),$RDSGroup.UseRASTemplate.ToString(),$htmlwhite))
+				$rowdata += @(,("RD session hosts based on a template",($Script:htmlsb),$RDSGroup.Autoscale.ToString(),$htmlwhite))
 				$rowdata += @(,("RAS template",($Script:htmlsb),$RDSGroup.RASTemplateId.ToString(),$htmlwhite))
 				If($RDSGroupMembers.Count -gt 0)
 				{
@@ -8470,13 +8473,13 @@ Function OutputSite
 					}
 					$RDSFileTransferChangeLocation = $RDSDefaults.FileTransferLockLocation.ToString()
 
-					If($RDSDefaults.PreferredPAId -eq 0)
+					If($RDSDefaults.PreferredBrokerId -eq 0)
 					{
 						$RDSPreferredPublishingAgent = "Automatically"
 					}
 					Else
 					{
-						$RDSPreferredPublishingAgent = (Get-RASPA -Id $RDSDefaults.PreferredPAId -EA 0 4>$Null).Server
+						$RDSPreferredPublishingAgent = (Get-RASBroker -Id $RDSDefaults.PreferredBrokerId -EA 0 4>$Null).Server
 					}
 					$RDSAllowRemoteExec     = $RDSDefaults.AllowRemoteExec.ToString()
 					$RDSUseRemoteApps       = $RDSDefaults.UseRemoteApps.ToString()
@@ -8551,13 +8554,13 @@ Function OutputSite
 					Default				{$RDSDragAndDrop = "Unable to determine Drag and drop: $($RDSGroup.DragAndDropMode)"; Break}
 				}
 				
-				If($RDSGroupDefaults.PreferredPAId -eq 0)
+				If($RDSGroupDefaults.PreferredBrokerId -eq 0)
 				{
 					$RDSPreferredPublishingAgent = "Automatically"
 				}
 				Else
 				{
-					$RDSPreferredPublishingAgent = (Get-RASPA -Id $RDSGroupDefaults.PreferredPAId -EA 0 4>$Null).Server
+					$RDSPreferredPublishingAgent = (Get-RASBroker -Id $RDSGroupDefaults.PreferredBrokerId -EA 0 4>$Null).Server
 				}
 				$RDSAllowRemoteExec     = $RDSGroupDefaults.AllowRemoteExec.ToString()
 				$RDSUseRemoteApps       = $RDSGroupDefaults.UseRemoteApps.ToString()
@@ -10411,7 +10414,7 @@ Function OutputSite
 				}
 			}
 
-			If($Action -eq "Reboot - Drain Mode")
+			<#If($Action -eq "Reboot - Drain Mode")
 			{
 				Switch ($RDSSchedule.CompleteRebootInSecs)
 				{
@@ -10438,8 +10441,13 @@ Function OutputSite
 					86400	{$ForceRebootTime = "1 day"; Break}
 					Default	{$ForceRebootTime = "Unable to determine Force reboot after seconds: $($RDSSchedule.ForceRebootAfterSecs)"; Break}
 				}
-			}
-			ElseIf($Action -eq "Disable")
+			}#>
+			<#RDSSchedItem	
+			Dropped Properties	DurationInSecs
+								EndDateTime
+								DisableAction
+			#>
+			<#ElseIf($Action -eq "Disable")
 			{
 				Switch ($RDSSchedule.DurationInSecs)
 				{
@@ -10463,7 +10471,7 @@ Function OutputSite
 					"ResetAllSessions"			{$OnDisable = "Reset all sessions"; Break}
 					Default						{$OnDisable = "Unable to determine On disable: $($RDSSchedule.DisableAction)"; Break}
 				}
-			}
+			}#>
 			
 			Switch ($RDSSchedule.Repeat)
 			{
@@ -10753,15 +10761,15 @@ Function OutputSite
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Date"; Value = $RDSSchedule.StartDateTime.ToShortDateString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Start"; Value = $RDSSchedule.StartDateTime.ToShortTimeString(); }) > $Null
-				If($Action -eq "Reboot - Drain Mode")
+				<#If($Action -eq "Reboot - Drain Mode")
 				{
 					$ScriptInformation.Add(@{Data = "Complete in"; Value = $TimeDuration  ; }) > $Null
 				}
 				ElseIf($Action -eq "Disable")
 				{
 					$ScriptInformation.Add(@{Data = "Duration"; Value = $TimeDuration; }) > $Null
-				}
-				$ScriptInformation.Add(@{Data = "Repeat"; Value = $Repeat; }) > $Null
+				}#>
+				$ScriptInformation.Add(@{Data = "Recur"; Value = $Repeat; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -10785,15 +10793,15 @@ Function OutputSite
 			{
 				Line 3 "Date`t`t`t`t: " $RDSSchedule.StartDateTime.ToShortDateString()
 				Line 3 "Start`t`t`t`t: " $RDSSchedule.StartDateTime.ToShortTimeString()
-				If($Action -eq "Reboot - Drain Mode")
+				<#If($Action -eq "Reboot - Drain Mode")
 				{
 					Line 3 "Complete in`t`t`t: " $TimeDuration
 				}
 				ElseIf($Action -eq "Disable")
 				{
 					Line 3 "Duration`t`t`t: " $TimeDuration
-				}
-				Line 3 "Repeat`t`t`t`t: " $Repeat
+				}#>
+				Line 3 "Recur`t`t`t`t: " $Repeat
 				Line 0 ""
 			}
 			If($HTML)
@@ -10801,15 +10809,15 @@ Function OutputSite
 				$rowdata = @()
 				$columnHeaders = @("Date",($Script:htmlsb),$RDSSchedule.StartDateTime.ToShortDateString(),$htmlwhite)
 				$rowdata += @(,("Start",($Script:htmlsb),$RDSSchedule.StartDateTime.ToShortTimeString(),$htmlwhite))
-				If($Action -eq "Reboot - Drain Mode")
+				<#If($Action -eq "Reboot - Drain Mode")
 				{
 					$rowdata += @(,("Complete in",($Script:htmlsb),$TimeDuration,$htmlwhite))
 				}
 				ElseIf($Action -eq "Disable")
 				{
 					$rowdata += @(,("Duration",($Script:htmlsb),$TimeDuration,$htmlwhite))
-				}
-				$rowdata += @(,("Repeat",($Script:htmlsb),$Repeat,$htmlwhite))
+				}#>
+				$rowdata += @(,("Recur",($Script:htmlsb),$Repeat,$htmlwhite))
 
 				$msg = "Trigger"
 				$columnWidths = @("200","275")
@@ -10863,10 +10871,10 @@ Function OutputSite
 				{
 					$ScriptInformation.Add(@{Data = "Enable Drain Mode"; Value = $RDSSchedule.DrainMode.ToString(); }) > $Null
 				}
-				If($Action -eq "Reboot - Drain Mode")
+				<#If($Action -eq "Reboot - Drain Mode")
 				{
 					$ScriptInformation.Add(@{Data = "Force server reboot after"; Value = $ForceRebootTime; }) > $Null
-				}
+				}#>
 				If($Action -like "Reboot*")
 				{
 					$ScriptInformation.Add(@{Data = "Enforce schedule for currently inactive RD Session Host"; Value = $RDSSchedule.EnforceOnInactive.ToString(); }) > $Null
@@ -10924,10 +10932,10 @@ Function OutputSite
 				{
 					Line 3 "Enable Drain Mode`t`t: " $RDSSchedule.DrainMode.ToString()
 				}
-				If($Action -eq "Reboot - Drain Mode")
+				<#If($Action -eq "Reboot - Drain Mode")
 				{
 					Line 3 "Force server reboot after`t: " $ForceRebootTime
-				}
+				}#>
 				If($Action -like "Reboot*")
 				{
 					Line 3 "Enforce schedule for currently"
@@ -10970,10 +10978,10 @@ Function OutputSite
 				{
 					$rowdata += @(,("Enable Drain Mode",($Script:htmlsb),$RDSSchedule.DrainMode.ToString(),$htmlwhite))
 				}
-				If($Action -eq "Reboot - Drain Mode")
+				<#If($Action -eq "Reboot - Drain Mode")
 				{
 					$rowdata += @(,("Force server reboot after",($Script:htmlsb),$ForceRebootTime,$htmlwhite))
-				}
+				}#>
 				If($Action -like "Reboot*")
 				{
 					$rowdata += @(,("Enforce schedule for currently inactive RD Session Host",($Script:htmlsb),$RDSSchedule.EnforceOnInactive.ToString(),$htmlwhite))
@@ -11194,7 +11202,7 @@ Function OutputSite
 				#Nothing
 			}
 			
-			$HostPA = Get-RASPA -Id $VDIHost.PreferredPAId -EA 0 4>$Null
+			$HostPA = Get-RASBroker -Id $VDIHost.PreferredBrokerId -EA 0 4>$Null
 			
 			If($? -and -$Null -ne $HostPA)
 			{
@@ -11447,7 +11455,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Allow Client URL/Mail Redirection"; Value = $VDIHost.AllowURLAndMailRedirection.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Support Windows Shell URL namespace objects"; Value = $VDIHost.SupportShellURLNamespaceObjects.ToString(); }) > $Null
 				#$ScriptInformation.Add(@{Data = "Drag and drop"; Value = $VDIHostDragAndDrop; }) > $Null
-				$ScriptInformation.Add(@{Data = "Preferred Publishing Agent"; Value = $VDIHostStatus.PreferredPA; }) > $Null
+				$ScriptInformation.Add(@{Data = "Preferred Publishing Agent"; Value = $VDIHostStatus.PreferredBroker; }) > $Null
 				$ScriptInformation.Add(@{Data = "Allow file transfer command (HTML5 and Chrome clients)"; Value = $VDIHost.AllowFileTransfer.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Configure File Transfer"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Direction"; Value = $VDIHostFileTransferMode; }) > $Null
@@ -11478,7 +11486,7 @@ Function OutputSite
 				Line 4 "Allow Client URL/Mail Redirection`t`t`t: " $VDIHost.AllowURLAndMailRedirection.ToString()
 				Line 4 "Support Windows Shell URL namespace objects`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
 				#Line 4 "Drag and drop`t`t`t`t`t`t: " $VDIHostDragAndDrop
-				Line 4 "Preferred Publishing Agent`t`t`t`t: " $VDIHostStatus.PreferredPA
+				Line 4 "Preferred Publishing Agent`t`t`t`t: " $VDIHostStatus.PreferredBroker
 				Line 4 "Allow file transfer command (HTML5 and Chrome clients)`t: " $VDIHost.AllowFileTransfer.ToString()
 				Line 4 "Configure File Transfer"
 				Line 5 "Direction`t`t`t: " $VDIHostFileTransferMode
@@ -11493,7 +11501,7 @@ Function OutputSite
 				$columnHeaders = @("Allow Client URL/Mail Redirection",($Script:htmlsb),$VDIHost.AllowURLAndMailRedirection.ToString(),$htmlwhite)
 				$rowdata += @(,("Support Windows Shell URL namespace objects",($Script:htmlsb),$VDIHost.SupportShellURLNamespaceObjects.ToString(),$htmlwhite))
 				#$rowdata += @(,("Drag and drop",($Script:htmlsb),$VDIHostDragAndDrop,$htmlwhite))
-				$rowdata += @(,("Preferred Publishing Agent",($Script:htmlsb),$VDIHostStatus.PreferredPA,$htmlwhite))
+				$rowdata += @(,("Preferred Publishing Agent",($Script:htmlsb),$VDIHostStatus.PreferredBroker,$htmlwhite))
 				$rowdata += @(,("Allow file transfer command (HTML5 and Chrome clients)",($Script:htmlsb),$VDIHost.AllowFileTransfer.ToString(),$htmlwhite))
 				$rowdata += @(,("Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("     Direction",($Script:htmlsb),$VDIHostFileTransferMode,$htmlwhite))
@@ -13498,7 +13506,7 @@ Function OutputSite
 	
 	#Remote PCs are not in PoSH
 	
-	$GWs = Get-RASGW -Siteid $Site.Id -EA 0 4> $Null
+	$Gateways = Get-RASGateway -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
 	{
@@ -13519,7 +13527,7 @@ Function OutputSite
 			WriteHTMLLine 0 0 "Unable to retrieve Gateways for Site $($Site.Name)"
 		}
 	}
-	ElseIf($? -and $Null -eq $GWs)
+	ElseIf($? -and $Null -eq $Gateways)
 	{
 		Write-Host "
 		No Gateways retrieved for Site $($Site.Name).`
@@ -13553,206 +13561,206 @@ Function OutputSite
 		}
 
 		Write-Verbose "$(Get-Date -Format G): `t`tOutput Gateways"
-		ForEach($GW in $GWs)
+		ForEach($Gateway in $Gateways)
 		{
-			$GWStatus = Get-RASGWStatus -Id $GW.Id -EA 0 4>$Null
+			$GatewayStatus = Get-RASGatewayStatus -Id $Gateway.Id -EA 0 4>$Null
 			
 			If(!$?)
 			{
 				Write-Warning "
 				`n
-				Unable to retrieve Gateway Status for Gateway $($GW.Id)`
+				Unable to retrieve Gateway Status for Gateway $($Gateway.Id)`
 				"
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "Unable to retrieve Gateway Status for Gateway $($GW.Id)"
+					WriteWordLine 0 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "Unable to retrieve Gateway Status for Gateway $($GW.Id)"
+					Line 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "Unable to retrieve Gateway Status for Gateway $($GW.Id)"
+					WriteHTMLLine 0 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
 				}
 				#unable to retrieve
-				$GWEnableHSTS            = "Unable to retrieve Gateway Status"
-				$GWEnableSSL             = "Unable to retrieve Gateway Status"
-				$GWEnableSSLOnPort       = "Unable to retrieve Gateway Status"
-				$GWAcceptedSSLVersions   = "Unable to retrieve Gateway Status"
-				$GWCipherStrength        = "Unable to retrieve Gateway Status"
-				$GWCipher                = "Unable to retrieve Gateway Status"
-				$GWCertificates          = "Unable to retrieve Gateway Status"
-				$GWHSTSMaxage            = "Unable to retrieve Gateway Status"
-				$GWHSTSIncludeSubdomains = "Unable to retrieve Gateway Status"
-				$GWHSTSPreload           = "Unable to retrieve Gateway Status"
+				$GatewayEnableHSTS            = "Unable to retrieve Gateway Status"
+				$GatewayEnableSSL             = "Unable to retrieve Gateway Status"
+				$GatewayEnableSSLOnPort       = "Unable to retrieve Gateway Status"
+				$GatewayAcceptedSSLVersions   = "Unable to retrieve Gateway Status"
+				$GatewayCipherStrength        = "Unable to retrieve Gateway Status"
+				$GatewayCipher                = "Unable to retrieve Gateway Status"
+				$GatewayCertificates          = "Unable to retrieve Gateway Status"
+				$GatewayHSTSMaxage            = "Unable to retrieve Gateway Status"
+				$GatewayHSTSIncludeSubdomains = "Unable to retrieve Gateway Status"
+				$GatewayHSTSPreload           = "Unable to retrieve Gateway Status"
 			}
-			ElseIf($? -and $Null -eq $GWStatus)
+			ElseIf($? -and $Null -eq $GatewayStatus)
 			{
 				Write-Host "
-				No Gateway Status retrieved for Gateway $($GW.Id)`
+				No Gateway Status retrieved for Gateway $($Gateway.Id)`
 				" -ForegroundColor White
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "No Gateway Status found for Gateway $($GW.Id)"
+					WriteWordLine 0 0 "No Gateway Status found for Gateway $($Gateway.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "No Gateway Status found for Gateway $($GW.Id)"
+					Line 0 "No Gateway Status found for Gateway $($Gateway.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "No Gateway Status found for Gateway $($GW.Id)"
+					WriteHTMLLine 0 0 "No Gateway Status found for Gateway $($Gateway.Id)"
 				}
 				#set all to blank
-				$GWEnableHSTS            = ""
-				$GWEnableSSL             = ""
-				$GWEnableSSLOnPort       = ""
-				$GWAcceptedSSLVersions   = ""
-				$GWCipherStrength        = ""
-				$GWCipher                = ""
-				$GWCertificates          = ""
-				$GWHSTSMaxage            = ""
-				$GWHSTSIncludeSubdomains = ""
-				$GWHSTSPreload           = ""
+				$GatewayEnableHSTS            = ""
+				$GatewayEnableSSL             = ""
+				$GatewayEnableSSLOnPort       = ""
+				$GatewayAcceptedSSLVersions   = ""
+				$GatewayCipherStrength        = ""
+				$GatewayCipher                = ""
+				$GatewayCertificates          = ""
+				$GatewayHSTSMaxage            = ""
+				$GatewayHSTSIncludeSubdomains = ""
+				$GatewayHSTSPreload           = ""
 			}
 			Else
 			{
-				If($GW.InheritDefaultSslTlsSettings)
+				If($Gateway.InheritDefaultSslTlsSettings)
 				{
 					#do we inherit site defaults?
 					#yes we do, get the default settings for the Site
 					#use the Site default settings
 
-					$GWDefaults = Get-RASGWDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+					$GatewayDefaults = Get-RASGatewayDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 					
-					If($? -and $Null -ne $GWDefaults)
+					If($? -and $Null -ne $GatewayDefaults)
 					{
-						If($GWDefaults.EnableHSTS)
+						If($GatewayDefaults.EnableHSTS)
 						{
-							$GWEnableHSTS            = $GWDefaults.EnableHSTS.ToString()
-							$GWHSTSMaxage            = $GWDefaults.HSTSMaxAge.ToString()
-							$GWHSTSIncludeSubdomains = $GWDefaults.HSTSIncludeSubdomains.ToString()
-							$GWHSTSPreload           = $GWDefaults.HSTSPreload.ToString()
+							$GatewayEnableHSTS            = $GatewayDefaults.EnableHSTS.ToString()
+							$GatewayHSTSMaxage            = $GatewayDefaults.HSTSMaxAge.ToString()
+							$GatewayHSTSIncludeSubdomains = $GatewayDefaults.HSTSIncludeSubdomains.ToString()
+							$GatewayHSTSPreload           = $GatewayDefaults.HSTSPreload.ToString()
 						}
 						Else
 						{
-							$GWEnableHSTS = $GWDefaults.EnableHSTS.ToString()
+							$GatewayEnableHSTS = $GatewayDefaults.EnableHSTS.ToString()
 						}
-						$GWEnableSSL       = $GWDefaults.EnableSSL.ToString()
-						$GWEnableSSLOnPort = $GWDefaults.SSLPort.ToString()
+						$GatewayEnableSSL       = $GatewayDefaults.EnableSSL.ToString()
+						$GatewayEnableSSLOnPort = $GatewayDefaults.SSLPort.ToString()
 						
-						Switch ($GWDefaults.MinSSLVersion)
+						Switch ($GatewayDefaults.MinSSLVersion)
 						{
-							"SSLv2"		{$GWAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
-							"SSLv3"		{$GWAcceptedSSLVersions = "SSL v3 - TLS v1.2"; Break}
-							"TLSv1"		{$GWAcceptedSSLVersions = "TLS v1 - TLS v1.2"; Break}
-							"TLSv1_1"	{$GWAcceptedSSLVersions = "TLS v1.1 - TLS v1.2"; Break}
-							"TLSv1_2"	{$GWAcceptedSSLVersions = "TLS v1.2 only (Strong)"; Break}
-							Default		{$GWAcceptedSSLVersions = "Unable to determine Minimum SSL Version: $($GWDefaults.MinSSLVersion)"; Break}
+							"SSLv2"		{$GatewayAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
+							"SSLv3"		{$GatewayAcceptedSSLVersions = "SSL v3 - TLS v1.2"; Break}
+							"TLSv1"		{$GatewayAcceptedSSLVersions = "TLS v1 - TLS v1.2"; Break}
+							"TLSv1_1"	{$GatewayAcceptedSSLVersions = "TLS v1.1 - TLS v1.2"; Break}
+							"TLSv1_2"	{$GatewayAcceptedSSLVersions = "TLS v1.2 only (Strong)"; Break}
+							Default		{$GatewayAcceptedSSLVersions = "Unable to determine Minimum SSL Version: $($GatewayDefaults.MinSSLVersion)"; Break}
 						}
 						
-						$GWCipherStrength = $GWDefaults.CipherStrength.ToString()
-						$GWCipher         = $GWDefaults.Cipher
+						$GatewayCipherStrength = $GatewayDefaults.CipherStrength.ToString()
+						$GatewayCipher         = $GatewayDefaults.Cipher
 						
-						If($GWDefaults.CertificateId -eq 0)
+						If($GatewayDefaults.CertificateId -eq 0)
 						{
-							$GWCertificates = "All matching usage"
+							$GatewayCertificates = "All matching usage"
 						}
 						Else
 						{
-							$Results = Get-RASCertificate -Id $GWDefaults.CertificateId -EA 0 4>$Null
+							$Results = Get-RASCertificate -Id $GatewayDefaults.CertificateId -EA 0 4>$Null
 							
 							If($? -and $Null -ne $Results)
 							{
-								$GWCertificates = $Results.Name
+								$GatewayCertificates = $Results.Name
 							}
 							Else
 							{
-								$GWCertificates = "Unable to determin Gateway Certificate: $($GWDefaults.CertificateId)"
+								$GatewayCertificates = "Unable to determin Gateway Certificate: $($GatewayDefaults.CertificateId)"
 							}
 						}
 					}
 					Else
 					{
 						#unable to retrieve default, use built-in default values
-						$GWEnableHSTS          = "False"
-						$GWEnableSSL           = "True"
-						$GWEnableSSLOnPort     = "443"
-						$GWAcceptedSSLVersions = "TLS v1 - TLS v1.2"
-						$GWCipherStrength      = "High"
-						$GWCipher              = "EECDH:!SSLv2:!SSLv3:!aNULL:!RC4:!ADH:!eNULL:!LOW:!MEDIUM:!EXP:+HIGH"
-						$GWCertificates        = "All matching usage"
+						$GatewayEnableHSTS          = "False"
+						$GatewayEnableSSL           = "True"
+						$GatewayEnableSSLOnPort     = "443"
+						$GatewayAcceptedSSLVersions = "TLS v1 - TLS v1.2"
+						$GatewayCipherStrength      = "High"
+						$GatewayCipher              = "EECDH:!SSLv2:!SSLv3:!aNULL:!RC4:!ADH:!eNULL:!LOW:!MEDIUM:!EXP:+HIGH"
+						$GatewayCertificates        = "All matching usage"
 					}
 				}
 				Else
 				{
 					#we don't inherit settings
 					#get the settings configured for this GW
-					If($GW.EnableHSTS)
+					If($Gateway.EnableHSTS)
 					{
-						$GWEnableHSTS            = $GW.EnableHSTS.ToString()
-						$GWHSTSMaxage            = $GW.HSTSMaxAge.ToString()
-						$GWHSTSIncludeSubdomains = $GW.HSTSIncludeSubdomains.ToString()
-						$GWHSTSPreload           = $GW.HSTSPreload.ToString()
+						$GatewayEnableHSTS            = $Gateway.EnableHSTS.ToString()
+						$GatewayHSTSMaxage            = $Gateway.HSTSMaxAge.ToString()
+						$GatewayHSTSIncludeSubdomains = $Gateway.HSTSIncludeSubdomains.ToString()
+						$GatewayHSTSPreload           = $Gateway.HSTSPreload.ToString()
 					}
 					Else
 					{
-						$GWEnableHSTS = $GW.EnableHSTS.ToString()
+						$GatewayEnableHSTS = $Gateway.EnableHSTS.ToString()
 					}
-					$GWEnableSSL       = $GW.EnableSSL.ToString()
-					$GWEnableSSLOnPort = $GW.SSLPort.ToString()
+					$GatewayEnableSSL       = $Gateway.EnableSSL.ToString()
+					$GatewayEnableSSLOnPort = $Gateway.SSLPort.ToString()
 					
-					Switch ($GW.MinSSLVersion)
+					Switch ($Gateway.MinSSLVersion)
 					{
-						"SSLv2"		{$GWAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
-						"SSLv3"		{$GWAcceptedSSLVersions = "SSL v3 - TLS v1.2"; Break}
-						"TLSv1"		{$GWAcceptedSSLVersions = "TLS v1 - TLS v1.2"; Break}
-						"TLSv1_1"	{$GWAcceptedSSLVersions = "TLS v1.1 - TLS v1.2"; Break}
-						"TLSv1_2"	{$GWAcceptedSSLVersions = "TLS v1.2 only (Strong)"; Break}
-						Default		{$GWAcceptedSSLVersions = "Unable to determine Minimum SSL Version: $($GW.MinSSLVersion)"; Break}
+						"SSLv2"		{$GatewayAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
+						"SSLv3"		{$GatewayAcceptedSSLVersions = "SSL v3 - TLS v1.2"; Break}
+						"TLSv1"		{$GatewayAcceptedSSLVersions = "TLS v1 - TLS v1.2"; Break}
+						"TLSv1_1"	{$GatewayAcceptedSSLVersions = "TLS v1.1 - TLS v1.2"; Break}
+						"TLSv1_2"	{$GatewayAcceptedSSLVersions = "TLS v1.2 only (Strong)"; Break}
+						Default		{$GatewayAcceptedSSLVersions = "Unable to determine Minimum SSL Version: $($Gateway.MinSSLVersion)"; Break}
 					}
 					
-					$GWCipherStrength = $GW.CipherStrength.ToString()
-					$GWCipher         = $GW.Cipher
+					$GatewayCipherStrength = $Gateway.CipherStrength.ToString()
+					$GatewayCipher         = $Gateway.Cipher
 					
-					If($GW.CertificateId -eq 0)
+					If($Gateway.CertificateId -eq 0)
 					{
-						$GWCertificates = "All matching usage"
+						$GatewayCertificates = "All matching usage"
 					}
 					Else
 					{
-						$Results = Get-RASCertificate -Id $GW.CertificateId -EA 0 4>$Null
+						$Results = Get-RASCertificate -Id $Gateway.CertificateId -EA 0 4>$Null
 						
 						If($? -and $Null -ne $Results)
 						{
 							#double replace to remove the < and > from the cert name so it doesn't mess up HTML output
-							$GWCertificates = $Results.Name.Replace("<","").Replace(">","")	
+							$GatewayCertificates = $Results.Name.Replace("<","").Replace(">","")	
 						}
 						Else
 						{
-							$GWCertificates = "Unable to determine Gateway Certificate: $($GW.CertificateId)"
+							$GatewayCertificates = "Unable to determine Gateway Certificate: $($Gateway.CertificateId)"
 						}
 					}
 				}
 				
-				$GWStatusAgentState = GetRASStatus $GWStatus.AgentState
+				$GatewayStatusAgentState = GetRASStatus $GatewayStatus.AgentState
 				
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 3 0 "Gateways $($GW.Server)"
+					WriteWordLine 3 0 "Gateways $($Gateway.Server)"
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Server"; Value = $GW.Server; }) > $Null
-					$ScriptInformation.Add(@{Data = "Mode"; Value = $GW.GWMode; }) > $Null
-					$ScriptInformation.Add(@{Data = "Status"; Value = $GWStatusAgentState; }) > $Null
-					$ScriptInformation.Add(@{Data = "Description"; Value = $GW.Description; }) > $Null
-					$ScriptInformation.Add(@{Data = "Certificate"; Value = $GWCertificates; }) > $Null
-					$ScriptInformation.Add(@{Data = "Log level"; Value = $GWStatus.LogLevel; }) > $Null
-					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $GW.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $GW.TimeLastMod.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Created by"; Value = $GW.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $GW.TimeCreate.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "ID"; Value = $GW.Id.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Server"; Value = $Gateway.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Mode"; Value = $Gateway.Mode; }) > $Null
+					$ScriptInformation.Add(@{Data = "Status"; Value = $GatewayStatusAgentState; }) > $Null
+					$ScriptInformation.Add(@{Data = "Description"; Value = $Gateway.Description; }) > $Null
+					$ScriptInformation.Add(@{Data = "Certificate"; Value = $GatewayCertificates; }) > $Null
+					$ScriptInformation.Add(@{Data = "Log level"; Value = $GatewayStatus.LogLevel; }) > $Null
+					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Gateway.AdminLastMod; }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = $Gateway.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created by"; Value = $Gateway.AdminCreate; }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = $Gateway.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "ID"; Value = $Gateway.Id.ToString(); }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
 					-Columns Data,Value `
@@ -13774,35 +13782,35 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Gateways $($GW.Server)"
-					Line 3 "Server`t`t`t: " $GW.Server
-					Line 3 "Mode`t`t`t: " $GW.GWMode
-					Line 3 "Status`t`t`t: " $GWStatusAgentState
-					Line 3 "Description`t`t: " $GW.Description
-					Line 3 "Certificate`t`t: " $GWCertificates
-					Line 3 "Log level`t`t: " $GWStatus.LogLevel
-					Line 3 "Last modification by`t: " $GW.AdminLastMod
-					Line 3 "Modified on`t`t: " $GW.TimeLastMod.ToString()
-					Line 3 "Created by`t`t: " $GW.AdminCreate
-					Line 3 "Created on`t`t: " $GW.TimeCreate.ToString()
-					Line 3 "ID`t`t`t: " $GW.Id.ToString()
+					Line 2 "Gateways $($Gateway.Server)"
+					Line 3 "Server`t`t`t: " $Gateway.Server
+					Line 3 "Mode`t`t`t: " $Gateway.Mode
+					Line 3 "Status`t`t`t: " $GatewayStatusAgentState
+					Line 3 "Description`t`t: " $Gateway.Description
+					Line 3 "Certificate`t`t: " $GatewayCertificates
+					Line 3 "Log level`t`t: " $GatewayStatus.LogLevel
+					Line 3 "Last modification by`t: " $Gateway.AdminLastMod
+					Line 3 "Modified on`t`t: " $Gateway.TimeLastMod.ToString()
+					Line 3 "Created by`t`t: " $Gateway.AdminCreate
+					Line 3 "Created on`t`t: " $Gateway.TimeCreate.ToString()
+					Line 3 "ID`t`t`t: " $Gateway.Id.ToString()
 					Line 0 ""
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 3 0 "Gateways $($GW.Server)"
+					WriteHTMLLine 3 0 "Gateways $($Gateway.Server)"
 					$rowdata = @()
-					$columnHeaders = @("Server",($Script:htmlsb),$GW.Server,$htmlwhite)
-					$rowdata += @(,("Mode",($Script:htmlsb),$GW.GWMode.ToString(),$htmlwhite))
-					$rowdata += @(,("Status",($Script:htmlsb),$GWStatusAgentState.ToString(),$htmlwhite))
-					$rowdata += @(,("Description",($Script:htmlsb),$GW.Description,$htmlwhite))
-					$rowdata += @(,("Certificate",($Script:htmlsb),$GWCertificates,$htmlwhite))
-					$rowdata += @(,("Log level",($Script:htmlsb),$GWStatus.LogLevel,$htmlwhite))
-					$rowdata += @(,("Last modification by",($Script:htmlsb), $GW.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $GW.TimeLastMod.ToString(),$htmlwhite))
-					$rowdata += @(,("Created by",($Script:htmlsb), $GW.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $GW.TimeCreate.ToString(),$htmlwhite))
-					$rowdata += @(,("ID",($Script:htmlsb),$GW.Id.ToString(),$htmlwhite))
+					$columnHeaders = @("Server",($Script:htmlsb),$Gateway.Server,$htmlwhite)
+					$rowdata += @(,("Mode",($Script:htmlsb),$Gateway.Mode.ToString(),$htmlwhite))
+					$rowdata += @(,("Status",($Script:htmlsb),$GatewayStatusAgentState.ToString(),$htmlwhite))
+					$rowdata += @(,("Description",($Script:htmlsb),$Gateway.Description,$htmlwhite))
+					$rowdata += @(,("Certificate",($Script:htmlsb),$GatewayCertificates,$htmlwhite))
+					$rowdata += @(,("Log level",($Script:htmlsb),$GatewayStatus.LogLevel,$htmlwhite))
+					$rowdata += @(,("Last modification by",($Script:htmlsb), $Gateway.AdminLastMod,$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), $Gateway.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Created by",($Script:htmlsb), $Gateway.AdminCreate,$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), $Gateway.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("ID",($Script:htmlsb),$Gateway.Id.ToString(),$htmlwhite))
 
 					$msg = ""
 					$columnWidths = @("300","275")
@@ -13824,71 +13832,71 @@ Function OutputSite
 				#Nothing
 			}
 			
-			Switch ($GW.IPVersion)
+			Switch ($Gateway.IPVersion)
 			{
 				"Version4"		{$IPVersion = "Version 4"; Break}
 				"Version6"		{$IPVersion = "Version 6"; Break}
 				"BothVersions"	{$IPVersion = "Both version 4 & 6"; Break}
-				Default			{$IPVersion = "Unable to determine IP version: $($GW.IPVersion)"; Break}
+				Default			{$IPVersion = "Unable to determine IP version: $($Gateway.IPVersion)"; Break}
 			}
 			
-			$GWIPs = $GW.IPs.Split(";")
+			$GatewayIPs = $Gateway.IPs.Split(";")
 			
-			If($GW.BindV4Addresses -eq "")
+			If($Gateway.BindV4Addresses -eq "")
 			{
-				$GWBindV4Addresses = "All available addresses"
+				$GatewayBindV4Addresses = "All available addresses"
 			}
 			Else
 			{
-				$GWBindV4Addresses = $GW.BindV4Addresses
+				$GatewayBindV4Addresses = $Gateway.BindV4Addresses
 			}
 
-			If($GW.OptimizeConnectionIPv4 -eq "<All>")
+			If($Gateway.OptimizeConnectionIPv4 -eq "<All>")
 			{
-				$GWOptimizeV4 = "All available addresses"
+				$GatewayOptimizeV4 = "All available addresses"
 			}
-			ElseIf($GW.OptimizeConnectionIPv4 -eq "<None>")
+			ElseIf($Gateway.OptimizeConnectionIPv4 -eq "<None>")
 			{
-				$GWOptimizeV4 = "None from the available"
+				$GatewayOptimizeV4 = "None from the available"
 			}
 			Else
 			{
-				$GWOptimizeV4 = $GW.OptimizeConnectionIPv4
+				$GatewayOptimizeV4 = $Gateway.OptimizeConnectionIPv4
 			}
 
-			If($GW.BindV6Addresses -eq "")
+			If($Gateway.BindV6Addresses -eq "")
 			{
-				$GWBindV6Addresses = "All available addresses"
+				$GatewayBindV6Addresses = "All available addresses"
 			}
 			Else
 			{
-				$GWBindV6Addresses = $GW.BindV6Addresses
+				$GatewayBindV6Addresses = $Gateway.BindV6Addresses
 			}
 
-			If($GW.OptimizeConnectionIPv6 -eq "<All>")
+			If($Gateway.OptimizeConnectionIPv6 -eq "<All>")
 			{
-				$GWOptimizeV6 = "All available addresses"
+				$GatewayOptimizeV6 = "All available addresses"
 			}
-			ElseIf($GW.OptimizeConnectionIPv6 -eq "<None>")
+			ElseIf($Gateway.OptimizeConnectionIPv6 -eq "<None>")
 			{
-				$GWOptimizeV6 = "None from the available"
+				$GatewayOptimizeV6 = "None from the available"
 			}
 			Else
 			{
-				$GWOptimizeV6 = $GW.OptimizeConnectionIPv6
+				$GatewayOptimizeV6 = $Gateway.OptimizeConnectionIPv6
 			}
 
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Enable RAS Secure Client Gateway in Site"; Value = $GW.Enabled.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Server"; Value = $GW.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "Description"; Value = $GW.Description; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable RAS Secure Client Gateway in Site"; Value = $Gateway.Enabled.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Server"; Value = $Gateway.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "Description"; Value = $Gateway.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "IP version"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Use IP version"; Value = $IPVersion; }) > $Null
 				
 				$cnt = -1
-				ForEach($Item in $GWIPs)
+				ForEach($Item in $GatewayIPs)
 				{
 					$cnt++
 					If($cnt -eq 0 )
@@ -13902,15 +13910,15 @@ Function OutputSite
 				}
 				
 				$ScriptInformation.Add(@{Data = "Bind to IP"; Value = ""; }) > $Null
-				If($GW.IPVersion -ne "Version6")
+				If($Gateway.IPVersion -ne "Version6")
 				{
-					$ScriptInformation.Add(@{Data = "     Bind to the following IPv4"; Value = $GWBindV4Addresses; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Remove system buffers for"; Value = $GWOptimizeV4; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Bind to the following IPv4"; Value = $GatewayBindV4Addresses; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Remove system buffers for"; Value = $GatewayOptimizeV4; }) > $Null
 				}
-				If($GW.IPVersion -ne "Version4")
+				If($Gateway.IPVersion -ne "Version4")
 				{
-					$ScriptInformation.Add(@{Data = "     Bind to the following IPv6"; Value = $GWBindV6Addresses; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Remove system buffers for"; Value = $GWOptimizeV6; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Bind to the following IPv6"; Value = $GatewayBindV6Addresses; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Remove system buffers for"; Value = $GatewayOptimizeV6; }) > $Null
 				}
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -13933,14 +13941,14 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Enable RAS Secure Client Gateway in Site: " $GW.Enabled.ToString()
-				Line 3 "Server`t`t`t`t`t: " $GW.Server
-				Line 3 "Description`t`t`t`t: " $GW.Description
+				Line 3 "Enable RAS Secure Client Gateway in Site: " $Gateway.Enabled.ToString()
+				Line 3 "Server`t`t`t`t`t: " $Gateway.Server
+				Line 3 "Description`t`t`t`t: " $Gateway.Description
 				Line 3 "IP version" ""
 				Line 4 "Use IP version`t`t`t: " $IPVersion
 				
 				$cnt = -1
-				ForEach($Item in $GWIPs)
+				ForEach($Item in $GatewayIPs)
 				{
 					$cnt++
 					If($cnt -eq 0 )
@@ -13954,29 +13962,29 @@ Function OutputSite
 				}
 				
 				Line 3 "Bind to IP" ""
-				If($GW.IPVersion -ne "Version6")
+				If($Gateway.IPVersion -ne "Version6")
 				{
-					Line 4 "Bind to the following IPv4`t: " $GWBindV4Addresses
-					Line 4 "Remove system buffers for`t: " $GWOptimizeV4
+					Line 4 "Bind to the following IPv4`t: " $GatewayBindV4Addresses
+					Line 4 "Remove system buffers for`t: " $GatewayOptimizeV4
 				}
-				If($GW.IPVersion -ne "Version4")
+				If($Gateway.IPVersion -ne "Version4")
 				{
-					Line 4 "Bind to the following IPv6`t: " $GWBindV6Addresses
-					Line 4 "Remove system buffers for`t: " $GWOptimizeV6
+					Line 4 "Bind to the following IPv6`t: " $GatewayBindV6Addresses
+					Line 4 "Remove system buffers for`t: " $GatewayOptimizeV6
 				}
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Enable RAS Secure Client Gateway in Site",($Script:htmlsb),$GW.Enabled.ToString(),$htmlwhite)
-				$rowdata += @(,("Server",($Script:htmlsb),$GW.Server,$htmlwhite))
-				$rowdata += @(,("Description",($Script:htmlsb),$GW.Description,$htmlwhite))
+				$columnHeaders = @("Enable RAS Secure Client Gateway in Site",($Script:htmlsb),$Gateway.Enabled.ToString(),$htmlwhite)
+				$rowdata += @(,("Server",($Script:htmlsb),$Gateway.Server,$htmlwhite))
+				$rowdata += @(,("Description",($Script:htmlsb),$Gateway.Description,$htmlwhite))
 				$rowdata += @(,("IP version",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("     Use IP version",($Script:htmlsb),$IPVersion,$htmlwhite))
 				
 				$cnt = -1
-				ForEach($Item in $GWIPs)
+				ForEach($Item in $GatewayIPs)
 				{
 					$cnt++
 					If($cnt -eq 0 )
@@ -13990,15 +13998,15 @@ Function OutputSite
 				}
 				
 				$rowdata += @(,("Bind to IP",($Script:htmlsb),"",$htmlwhite))
-				If($GW.IPVersion -ne "Version6")
+				If($Gateway.IPVersion -ne "Version6")
 				{
-					$rowdata += @(,("     Bind to the following IPv4",($Script:htmlsb),$GWBindV4Addresses,$htmlwhite))
-					$rowdata += @(,("     Remove system buffers for",($Script:htmlsb),$GWOptimizeV4,$htmlwhite))
+					$rowdata += @(,("     Bind to the following IPv4",($Script:htmlsb),$GatewayBindV4Addresses,$htmlwhite))
+					$rowdata += @(,("     Remove system buffers for",($Script:htmlsb),$GatewayOptimizeV4,$htmlwhite))
 				}
-				If($GW.IPVersion -ne "Version4")
+				If($Gateway.IPVersion -ne "Version4")
 				{
-					$rowdata += @(,("     Bind to the following IPv6",($Script:htmlsb),$GWBindV6Addresses,$htmlwhite))
-					$rowdata += @(,("     Remove system buffers for",($Script:htmlsb),$GWOptimizeV6,$htmlwhite))
+					$rowdata += @(,("     Bind to the following IPv6",($Script:htmlsb),$GatewayBindV6Addresses,$htmlwhite))
+					$rowdata += @(,("     Remove system buffers for",($Script:htmlsb),$GatewayOptimizeV6,$htmlwhite))
 				}
 
 				$msg = "General"
@@ -14022,84 +14030,84 @@ Function OutputSite
 				#Nothing
 			}
 			
-			If($GW.InheritDefaultModeSettings)
+			If($Gateway.InheritDefaultModeSettings)
 			{
 				#do we inherit site defaults?
 				#yes we do, get the default settings for the Site
 				#use the Site default settings
 
-				$GWDefaults = Get-RASGWDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+				$GatewayDefaults = Get-RASGatewayDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 				
-				If($? -and $Null -ne $GWDefaults)
+				If($? -and $Null -ne $GatewayDefaults)
 				{
-					$GWMode = $GWDefaults.GWMode.ToString()
-					$GWForwardRequests = $GWDefaults.NormalModeForwarding.ToString()
-					If($GWMode -eq "Normal")
+					$GatewayMode = $GatewayDefaults.Mode.ToString()
+					$GatewayForwardRequests = $GatewayDefaults.NormalModeForwarding.ToString()
+					If($GatewayMode -eq "Normal")
 					{
-						$GWServers = $GWDefaults.ForwardHttpServers.Split(";")
+						$GatewayServers = $GatewayDefaults.ForwardHttpServers.Split(";")
 					}
 					Else
 					{
-						$GWServers = $GWDefaults.ForwardGatewayServers.Split(";")
+						$GatewayServers = $GatewayDefaults.ForwardGatewayServers.Split(";")
 					}
 				
-					If($GWDefaults.PreferredPAId -eq 0)
+					If($GatewayDefaults.PreferredBrokerId -eq 0)
 					{
-						$GWPreferredPublishingAgent = "Automatically"
+						$GatewayPreferredPublishingAgent = "Automatically"
 					}
 					Else
 					{
-						$GWPreferredPublishingAgent = (Get-RASPA -Id $GWDefaults.PreferredPAId -EA 0 4>$Null).Server
+						$GatewayPreferredPublishingAgent = (Get-RASBroker -Id $GatewayDefaults.PreferredBrokerId -EA 0 4>$Null).Server
 					}
 				}
 				Else
 				{
 					#unable to retrieve default, use built-in default values
-					$GWMode = "Normal"
-					$GWForwardRequests = "False"
-					$GWServers = @("localhost:81")
-					$GWPreferredPublishingAgent = "Automatically"
+					$GatewayMode = "Normal"
+					$GatewayForwardRequests = "False"
+					$GatewayServers = @("localhost:81")
+					$GatewayPreferredPublishingAgent = "Automatically"
 				}
 			}
 			Else
 			{
 				#we don't inherit settings
 				#get the settings configured for this GW
-				$GWMode = $GW.GWMode.ToString()
-				$GWForwardRequests = $GW.NormalModeForwarding.ToString()
-				If($GWMode -eq "Normal")
+				$GatewayMode = $Gateway.Mode.ToString()
+				$GatewayForwardRequests = $Gateway.NormalModeForwarding.ToString()
+				If($GatewayMode -eq "Normal")
 				{
-					$GWServers = $GW.ForwardHttpServers.Split(";")
+					$GatewayServers = $Gateway.ForwardHttpServers.Split(";")
 				}
 				Else
 				{
-					$GWServers = $GW.ForwardGatewayServers.Split(";")
+					$GatewayServers = $Gateway.ForwardGatewayServers.Split(";")
 				}
 			
-				If($GW.PreferredPAId -eq 0)
+				If($Gateway.PreferredBrokerId -eq 0)
 				{
-					$GWPreferredPublishingAgent = "Automatically"
+					$GatewayPreferredPublishingAgent = "Automatically"
 				}
 				Else
 				{
-					$GWPreferredPublishingAgent = (Get-RASPA -Id $GW.PreferredPAId -EA 0 4>$Null).Server
+					$GatewayPreferredPublishingAgent = (Get-RASBroker -Id $Gateway.PreferredBrokerId -EA 0 4>$Null).Server
 				}
 			}
 			
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $GW.InheritDefaultModeSettings.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Gateway mode"; Value = $GWMode; }) > $Null
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $Gateway.InheritDefaultModeSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Gateway mode"; Value = $GatewayMode; }) > $Null
 				
-				If($GWMode -eq "Normal")
+				If($GatewayMode -eq "Normal")
 				{
-					If($GWForwardRequests -eq "True")
+					If($GatewayForwardRequests -eq "True")
 					{
-						$ScriptInformation.Add(@{Data = "Forward requests to HTTP Server"; Value = $GWForwardRequests; }) > $Null
+						$ScriptInformation.Add(@{Data = "Forward requests to HTTP Server"; Value = $GatewayForwardRequests; }) > $Null
 						
 						$cnt = -1
-						ForEach($Item in $GWServers)
+						ForEach($Item in $GatewayServers)
 						{
 							$cnt++
 							$tmparray = $Item.Split(":")
@@ -14116,16 +14124,16 @@ Function OutputSite
 						}
 					}
 					
-					$ScriptInformation.Add(@{Data = "Preferred Publishing Agent"; Value = $GWPreferredPublishingAgent; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preferred Publishing Agent"; Value = $GatewayPreferredPublishingAgent; }) > $Null
 				}
 				Else
 				{
-					$ScriptInformation.Add(@{Data = "Forward requests to next RAS Secure Client Gateway in chain (cascaded firewall)"; Value = $GWForwardRequests; }) > $Null
+					$ScriptInformation.Add(@{Data = "Forward requests to next RAS Secure Client Gateway in chain (cascaded firewall)"; Value = $GatewayForwardRequests; }) > $Null
 					
-					If($GWForwardRequests -eq "True")
+					If($GatewayForwardRequests -eq "True")
 					{
 						$cnt = -1
-						ForEach($Item in $GWServers)
+						ForEach($Item in $GatewayServers)
 						{
 							$cnt++
 							$tmparray = $Item.Split(":")
@@ -14163,14 +14171,14 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t: " $GW.InheritDefaultModeSettings.ToString()
-				Line 3 "Gateway mode`t`t`t`t: " $GWMode
-				If($GWMode -eq "Normal")
+				Line 3 "Inherit default settings`t`t: " $Gateway.InheritDefaultModeSettings.ToString()
+				Line 3 "Gateway mode`t`t`t`t: " $GatewayMode
+				If($GatewayMode -eq "Normal")
 				{
-					Line 3 "Forward requests to HTTP Server`t`t: " $GWForwardRequests
+					Line 3 "Forward requests to HTTP Server`t`t: " $GatewayForwardRequests
 					
 					$cnt = -1
-					ForEach($Item in $GWServers)
+					ForEach($Item in $GatewayServers)
 					{
 						$cnt++
 						$tmparray = $Item.Split(":")
@@ -14186,16 +14194,16 @@ Function OutputSite
 						}
 					}
 					
-					Line 3 "Preferred Publishing Agent`t`t: " $GWPreferredPublishingAgent
+					Line 3 "Preferred Publishing Agent`t`t: " $GatewayPreferredPublishingAgent
 				}
 				Else
 				{
 					Line 3 "Forward requests to next "
 					Line 3 "RAS Secure Client Gateway"
-					Line 3 "in chain (cascaded firewall)`t`t: " $GWForwardRequests
+					Line 3 "in chain (cascaded firewall)`t`t: " $GatewayForwardRequests
 					
 					$cnt = -1
-					ForEach($Item in $GWServers)
+					ForEach($Item in $GatewayServers)
 					{
 						$cnt++
 						$tmparray = $Item.Split(":")
@@ -14216,14 +14224,14 @@ Function OutputSite
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$GW.InheritDefaultModeSettings.ToString(),$htmlwhite)
-				$rowdata += @(,("Gateway mode",($Script:htmlsb),$GWMode,$htmlwhite))
-				If($GWMode -eq "Normal")
+				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$Gateway.InheritDefaultModeSettings.ToString(),$htmlwhite)
+				$rowdata += @(,("Gateway mode",($Script:htmlsb),$GatewayMode,$htmlwhite))
+				If($GatewayMode -eq "Normal")
 				{
-					$rowdata += @(,("Forward requests to HTTP Server",($Script:htmlsb),$GWForwardRequests,$htmlwhite))
+					$rowdata += @(,("Forward requests to HTTP Server",($Script:htmlsb),$GatewayForwardRequests,$htmlwhite))
 					
 					$cnt = -1
-					ForEach($Item in $GWServers)
+					ForEach($Item in $GatewayServers)
 					{
 						$cnt++
 						$tmparray = $Item.Split(":")
@@ -14239,14 +14247,14 @@ Function OutputSite
 						}
 					}
 					
-					$rowdata += @(,("Preferred Publishing Agent",($Script:htmlsb),$GWPreferredPublishingAgent,$htmlwhite))
+					$rowdata += @(,("Preferred Publishing Agent",($Script:htmlsb),$GatewayPreferredPublishingAgent,$htmlwhite))
 				}
 				Else
 				{
-					$rowdata += @(,("Forward requests to next RAS Secure Client Gateway in chain (cascaded firewall)",($Script:htmlsb),$GWForwardRequests,$htmlwhite))
+					$rowdata += @(,("Forward requests to next RAS Secure Client Gateway in chain (cascaded firewall)",($Script:htmlsb),$GatewayForwardRequests,$htmlwhite))
 					
 					$cnt = -1
-					ForEach($Item in $GWServers)
+					ForEach($Item in $GatewayServers)
 					{
 						$cnt++
 						$tmparray = $Item.Split(":")
@@ -14284,70 +14292,70 @@ Function OutputSite
 				#Nothing
 			}
 			
-			If($GW.InheritDefaultNetworkSettings)
+			If($Gateway.InheritDefaultNetworkSettings)
 			{
 				#do we inherit site defaults?
 				#yes we do, get the default settings for the Site
 				#use the Site default settings
 
-				$GWDefaults = Get-RASGWDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+				$GatewayDefaults = Get-RASGatewayDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 				
-				If($? -and $Null -ne $GWDefaults)
+				If($? -and $Null -ne $GatewayDefaults)
 				{
-					$GWEnableRASSecureClientGatewayPort             = $GWDefaults.EnableGWPort.ToString()
-					$GWRASSecureClientGatewayPort                   = $GWDefaults.GWPort.ToString()
-					$GWEnableRDPPort                                = $GWDefaults.EnableRDP.ToString()
-					$GWRDPPort                                      = $GWDefaults.RDPPort.ToString()
-					$GWEnableBroadcastRASSecureClientGatewayAddress = $GWDefaults.Broadcast.ToString()
-					$GWEnableRDPUPDDataTunneling                    = $GWDefaults.EnableRDPUDP.ToString()
-					$GWEnableClientManagerPort                      = $GWDefaults.EnableClientManagerPort.ToString()
-					$GWClientManagerPort                            = "20009"
-					$GWEnableRDPDOSAttackFilter                     = $GWDefaults.DOSPro.ToString()
-					$GWCipherPreference                             = $GWDefaults.CipherPreference.ToString()
+					$GatewayEnableRASSecureClientGatewayPort             = $GatewayDefaults.EnableGatewayPort.ToString()
+					$GatewayRASSecureClientGatewayPort                   = $GatewayDefaults.GatewayPort.ToString()
+					$GatewayEnableRDPPort                                = $GatewayDefaults.EnableRDP.ToString()
+					$GatewayRDPPort                                      = $GatewayDefaults.RDPPort.ToString()
+					$GatewayEnableBroadcastRASSecureClientGatewayAddress = $GatewayDefaults.Broadcast.ToString()
+					$GatewayEnableRDPUPDDataTunneling                    = $GatewayDefaults.EnableRDPUDP.ToString()
+					$GatewayEnableDeviceManagerPort                      = $GatewayDefaults.EnableDeviceManagerPort.ToString()
+					$GatewayDeviceManagerPort                            = "20009"
+					$GatewayEnableRDPDOSAttackFilter                     = $GatewayDefaults.DOSPro.ToString()
+					$GatewayCipherPreference                             = $GatewayDefaults.CipherPreference.ToString()
 				}
 				Else
 				{
 					#unable to retrieve default, use built-in default values
-					$GWEnableRASSecureClientGatewayPort             = "True"
-					$GWRASSecureClientGatewayPort                   = "80"
-					$GWEnableRDPPort                                = "False"
-					$GWEnableBroadcastRASSecureClientGatewayAddress = "True"
-					$GWEnableRDPUPDDataTunneling                    = "True"
-					$GWEnableClientManagerPort                      = "True"
-					$GWClientManagerPort                            = "20009"
-					$GWEnableRDPDOSAttackFilter                     = "True"
-					$GWCipherPreference                             = "True"
+					$GatewayEnableRASSecureClientGatewayPort             = "True"
+					$GatewayRASSecureClientGatewayPort                   = "80"
+					$GatewayEnableRDPPort                                = "False"
+					$GatewayEnableBroadcastRASSecureClientGatewayAddress = "True"
+					$GatewayEnableRDPUPDDataTunneling                    = "True"
+					$GatewayEnableDeviceManagerPort                      = "True"
+					$GatewayDeviceManagerPort                            = "20009"
+					$GatewayEnableRDPDOSAttackFilter                     = "True"
+					$GatewayCipherPreference                             = "True"
 				}
 			}
 			Else
 			{
 				#we don't inherit settings
 				#get the settings configured for this GW
-				$GWEnableRASSecureClientGatewayPort             = $GW.EnableGWPort.ToString()
-				$GWRASSecureClientGatewayPort                   = $GW.GWPort.ToString()
-				$GWEnableRDPPort                                = $GW.EnableRDP.ToString()
-				$GWRDPPort                                      = $GW.RDPPort.ToString()
-				$GWEnableBroadcastRASSecureClientGatewayAddress = $GW.Broadcast.ToString()
-				$GWEnableRDPUPDDataTunneling                    = $GW.EnableRDPUDP.ToString()
-				$GWEnableClientManagerPort                      = $GW.EnableClientManagerPort.ToString()
-				$GWClientManagerPort                            = "20009"
-				$GWEnableRDPDOSAttackFilter                     = $GW.DOSPro.ToString()
-				$GWCipherPreference                             = $GW.CipherPreference.ToString()
+				$GatewayEnableRASSecureClientGatewayPort             = $Gateway.EnableGatewayPort.ToString()
+				$GatewayRASSecureClientGatewayPort                   = $Gateway.GatewayPort.ToString()
+				$GatewayEnableRDPPort                                = $Gateway.EnableRDP.ToString()
+				$GatewayRDPPort                                      = $Gateway.RDPPort.ToString()
+				$GatewayEnableBroadcastRASSecureClientGatewayAddress = $Gateway.Broadcast.ToString()
+				$GatewayEnableRDPUPDDataTunneling                    = $Gateway.EnableRDPUDP.ToString()
+				$GatewayEnableDeviceManagerPort                      = $Gateway.EnableDeviceManagerPort.ToString()
+				$GatewayDeviceManagerPort                            = "20009"
+				$GatewayEnableRDPDOSAttackFilter                     = $Gateway.DOSPro.ToString()
+				$GatewayCipherPreference                             = $Gateway.CipherPreference.ToString()
 			}
 			
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $GW.InheritDefaultNetworkSettings.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable RAS Secure Client Gateway Port"; Value = $GWEnableRASSecureClientGatewayPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "RAS Secure Client Gateway Port"; Value = $GWRASSecureClientGatewayPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable RDP Port"; Value = $GWEnableRDPPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "RDP Port"; Value = $GWRDPPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable Broadcast RAS Secure Client Gateway Address"; Value = $GWEnableBroadcastRASSecureClientGatewayAddress; }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable RDP UDP Data Tunneling"; Value = $GWEnableRDPUPDDataTunneling; }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable Client Manager Port"; Value = $GWEnableClientManagerPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "Client Manager Port"; Value = $GWClientManagerPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable RDP DOS Attack Filter"; Value = $GWEnableRDPDOSAttackFilter; }) > $Null
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $Gateway.InheritDefaultNetworkSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable RAS Secure Client Gateway Port"; Value = $GatewayEnableRASSecureClientGatewayPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "RAS Secure Client Gateway Port"; Value = $GatewayRASSecureClientGatewayPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable RDP Port"; Value = $GatewayEnableRDPPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "RDP Port"; Value = $GatewayRDPPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable Broadcast RAS Secure Client Gateway Address"; Value = $GatewayEnableBroadcastRASSecureClientGatewayAddress; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable RDP UDP Data Tunneling"; Value = $GatewayEnableRDPUPDDataTunneling; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable Client Manager Port"; Value = $GatewayEnableDeviceManagerPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "Client Manager Port"; Value = $GatewayDeviceManagerPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable RDP DOS Attack Filter"; Value = $GatewayEnableRDPDOSAttackFilter; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -14369,32 +14377,32 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t: " $GW.InheritDefaultNetworkSettings.ToString()
-				Line 3 "Enable RAS Secure Client Gateway Port`t: " $GWEnableRASSecureClientGatewayPort
-				Line 3 "RAS Secure Client Gateway Port`t`t: " $GWRASSecureClientGatewayPort
-				Line 3 "Enable RDP Port`t`t`t`t: " $GWEnableRDPPort
-				Line 3 "RDP Port`t`t`t`t: " $GWRDPPort
+				Line 3 "Inherit default settings`t`t: " $Gateway.InheritDefaultNetworkSettings.ToString()
+				Line 3 "Enable RAS Secure Client Gateway Port`t: " $GatewayEnableRASSecureClientGatewayPort
+				Line 3 "RAS Secure Client Gateway Port`t`t: " $GatewayRASSecureClientGatewayPort
+				Line 3 "Enable RDP Port`t`t`t`t: " $GatewayEnableRDPPort
+				Line 3 "RDP Port`t`t`t`t: " $GatewayRDPPort
 				Line 3 "Enable Broadcast RAS Secure "
-				Line 3 "Client Gateway Address`t`t`t: " $GWEnableBroadcastRASSecureClientGatewayAddress
-				Line 3 "Enable RDP UDP Data Tunneling`t`t: " $GWEnableRDPUPDDataTunneling
-				Line 3 "Enable Client Manager Port`t`t: " $GWEnableClientManagerPort
-				Line 3 "Client Manager Port`t`t`t: " $GWClientManagerPort
-				Line 3 "Enable RDP DOS Attack Filter`t`t: " $GWEnableRDPDOSAttackFilter
+				Line 3 "Client Gateway Address`t`t`t: " $GatewayEnableBroadcastRASSecureClientGatewayAddress
+				Line 3 "Enable RDP UDP Data Tunneling`t`t: " $GatewayEnableRDPUPDDataTunneling
+				Line 3 "Enable Client Manager Port`t`t: " $GatewayEnableDeviceManagerPort
+				Line 3 "Client Manager Port`t`t`t: " $GatewayDeviceManagerPort
+				Line 3 "Enable RDP DOS Attack Filter`t`t: " $GatewayEnableRDPDOSAttackFilter
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$GW.InheritDefaultNetworkSettings.ToString(),$htmlwhite)
-				$rowdata += @(,("Enable RAS Secure Client Gateway Port",($Script:htmlsb),$GWEnableRASSecureClientGatewayPort,$htmlwhite))
-				$rowdata += @(,("RAS Secure Client Gateway Port",($Script:htmlsb),$GWRASSecureClientGatewayPort,$htmlwhite))
-				$rowdata += @(,("Enable RDP Port",($Script:htmlsb),$GWEnableRDPPort,$htmlwhite))
-				$rowdata += @(,("RDP Port",($Script:htmlsb),$GWRDPPort,$htmlwhite))
-				$rowdata += @(,("Enable Broadcast RAS Secure Client Gateway Address",($Script:htmlsb),$GWEnableBroadcastRASSecureClientGatewayAddress,$htmlwhite))
-				$rowdata += @(,("Enable RDP UDP Data Tunneling",($Script:htmlsb),$GWEnableRDPUPDDataTunneling,$htmlwhite))
-				$rowdata += @(,("Enable Client Manager Port",($Script:htmlsb),$GWEnableClientManagerPort,$htmlwhite))
-				$rowdata += @(,("Client Manager Port",($Script:htmlsb),$GWClientManagerPort,$htmlwhite))
-				$rowdata += @(,("Enable RDP DOS Attack Filter",($Script:htmlsb),$GWEnableRDPDOSAttackFilter,$htmlwhite))
+				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$Gateway.InheritDefaultNetworkSettings.ToString(),$htmlwhite)
+				$rowdata += @(,("Enable RAS Secure Client Gateway Port",($Script:htmlsb),$GatewayEnableRASSecureClientGatewayPort,$htmlwhite))
+				$rowdata += @(,("RAS Secure Client Gateway Port",($Script:htmlsb),$GatewayRASSecureClientGatewayPort,$htmlwhite))
+				$rowdata += @(,("Enable RDP Port",($Script:htmlsb),$GatewayEnableRDPPort,$htmlwhite))
+				$rowdata += @(,("RDP Port",($Script:htmlsb),$GatewayRDPPort,$htmlwhite))
+				$rowdata += @(,("Enable Broadcast RAS Secure Client Gateway Address",($Script:htmlsb),$GatewayEnableBroadcastRASSecureClientGatewayAddress,$htmlwhite))
+				$rowdata += @(,("Enable RDP UDP Data Tunneling",($Script:htmlsb),$GatewayEnableRDPUPDDataTunneling,$htmlwhite))
+				$rowdata += @(,("Enable Client Manager Port",($Script:htmlsb),$GatewayEnableDeviceManagerPort,$htmlwhite))
+				$rowdata += @(,("Client Manager Port",($Script:htmlsb),$GatewayDeviceManagerPort,$htmlwhite))
+				$rowdata += @(,("Enable RDP DOS Attack Filter",($Script:htmlsb),$GatewayEnableRDPDOSAttackFilter,$htmlwhite))
 
 				$msg = "Network"
 				$columnWidths = @("300","275")
@@ -14420,28 +14428,28 @@ Function OutputSite
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $GW.InheritDefaultSslTlsSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $Gateway.InheritDefaultSslTlsSettings.ToString(); }) > $Null
 
-				If($GWEnableHSTS -eq "False")
+				If($GatewayEnableHSTS -eq "False")
 				{
 					$ScriptInformation.Add(@{Data = "HSTS is off"; Value = ""; }) > $Null
 				}
 				Else
 				{
 					$ScriptInformation.Add(@{Data = "HSTS is on"; Value = ""; }) > $Null
-					$ScriptInformation.Add(@{Data = "Enforce HTTP strict transport security (HSTS)"; Value = $GWEnableHSTS; }) > $Null
-					$ScriptInformation.Add(@{Data = "Browser caache time"; Value = "$GWHSTSMaxage months"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Include subdomains"; Value = $GWHSTSIncludeSubdomains; }) > $Null
-					$ScriptInformation.Add(@{Data = "Preload"; Value = $GWHSTSPreload; }) > $Null
+					$ScriptInformation.Add(@{Data = "Enforce HTTP strict transport security (HSTS)"; Value = $GatewayEnableHSTS; }) > $Null
+					$ScriptInformation.Add(@{Data = "Browser caache time"; Value = "$GatewayHSTSMaxage months"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Include subdomains"; Value = $GatewayHSTSIncludeSubdomains; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preload"; Value = $GatewayHSTSPreload; }) > $Null
 				}
 
-				$ScriptInformation.Add(@{Data = "Enable SSL"; Value = $GWEnableSSL; }) > $Null
-				$ScriptInformation.Add(@{Data = "on Port"; Value = $GWEnableSSLOnPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "Accepted SSL Versions"; Value = $GWAcceptedSSLVersions; }) > $Null
-				$ScriptInformation.Add(@{Data = "Cipher Strength"; Value = $GWCipherStrength; }) > $Null
-				$ScriptInformation.Add(@{Data = "Cipher"; Value = $GWCipher; }) > $Null
-				$ScriptInformation.Add(@{Data = "Use ciphers according to server preference"; Value = $GWCipherPreference; }) > $Null
-				$ScriptInformation.Add(@{Data = "Certificates"; Value = $GWCertificates; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable SSL"; Value = $GatewayEnableSSL; }) > $Null
+				$ScriptInformation.Add(@{Data = "on Port"; Value = $GatewayEnableSSLOnPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "Accepted SSL Versions"; Value = $GatewayAcceptedSSLVersions; }) > $Null
+				$ScriptInformation.Add(@{Data = "Cipher Strength"; Value = $GatewayCipherStrength; }) > $Null
+				$ScriptInformation.Add(@{Data = "Cipher"; Value = $GatewayCipher; }) > $Null
+				$ScriptInformation.Add(@{Data = "Use ciphers according to server preference"; Value = $GatewayCipherPreference; }) > $Null
+				$ScriptInformation.Add(@{Data = "Certificates"; Value = $GatewayCertificates; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -14463,55 +14471,55 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t  : " $GW.InheritDefaultSslTlsSettings.ToString()
+				Line 3 "Inherit default settings`t`t  : " $Gateway.InheritDefaultSslTlsSettings.ToString()
 
-				If($GWEnableHSTS -eq "False")
+				If($GatewayEnableHSTS -eq "False")
 				{
 					Line 3 "HSTS is off"
 				}
 				Else
 				{
 					Line 3 "HSTS is on"
-					Line 3 "Enforce HTTP strict transport security`t  : " $GWEnableHSTS
-					Line 3 "Browser caache time`t`t`t  : " "$GWHSTSMaxage months"
-					Line 3 "Include subdomains`t`t`t  : " $GWHSTSIncludeSubdomains
-					Line 3 "Preload`t`t`t`t`t  : " $GWHSTSPreload
+					Line 3 "Enforce HTTP strict transport security`t  : " $GatewayEnableHSTS
+					Line 3 "Browser caache time`t`t`t  : " "$GatewayHSTSMaxage months"
+					Line 3 "Include subdomains`t`t`t  : " $GatewayHSTSIncludeSubdomains
+					Line 3 "Preload`t`t`t`t`t  : " $GatewayHSTSPreload
 				}
 
-				Line 3 "Enable SSL`t`t`t`t  : " $GWEnableSSL
-				Line 3 "on Port`t`t`t`t`t  : " $GWEnableSSLOnPort
-				Line 3 "Accepted SSL Versions`t`t`t  : " $GWAcceptedSSLVersions
-				Line 3 "Cipher Strength`t`t`t`t  : " $GWCipherStrength
-				Line 3 "Cipher`t`t`t`t`t  : " $GWCipher
-				Line 3 "Use ciphers according to server preference: " $GWCipherPreference
-				Line 3 "Certificates`t`t`t`t  : " $GWCertificates
+				Line 3 "Enable SSL`t`t`t`t  : " $GatewayEnableSSL
+				Line 3 "on Port`t`t`t`t`t  : " $GatewayEnableSSLOnPort
+				Line 3 "Accepted SSL Versions`t`t`t  : " $GatewayAcceptedSSLVersions
+				Line 3 "Cipher Strength`t`t`t`t  : " $GatewayCipherStrength
+				Line 3 "Cipher`t`t`t`t`t  : " $GatewayCipher
+				Line 3 "Use ciphers according to server preference: " $GatewayCipherPreference
+				Line 3 "Certificates`t`t`t`t  : " $GatewayCertificates
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$GW.InheritDefaultSslTlsSettings.ToString(),$htmlwhite)
+				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$Gateway.InheritDefaultSslTlsSettings.ToString(),$htmlwhite)
 
-				If($GWEnableHSTS -eq "False")
+				If($GatewayEnableHSTS -eq "False")
 				{
 					$rowdata += @(,("HSTS is off",($Script:htmlsb),"",$htmlwhite))
 				}
 				Else
 				{
 					$rowdata += @(,("HSTS is on",($Script:htmlsb),,$htmlwhite))
-					$rowdata += @(,("Enforce HTTP strict transport security (HSTS)",($Script:htmlsb),$GWEnableHSTS,$htmlwhite))
-					$rowdata += @(,("Browser caache time",($Script:htmlsb),"$GWHSTSMaxage months",$htmlwhite))
-					$rowdata += @(,("Include subdomains",($Script:htmlsb),$GWHSTSIncludeSubdomains,$htmlwhite))
-					$rowdata += @(,("Preload",($Script:htmlsb),$GWHSTSPreload,$htmlwhite))
+					$rowdata += @(,("Enforce HTTP strict transport security (HSTS)",($Script:htmlsb),$GatewayEnableHSTS,$htmlwhite))
+					$rowdata += @(,("Browser caache time",($Script:htmlsb),"$GatewayHSTSMaxage months",$htmlwhite))
+					$rowdata += @(,("Include subdomains",($Script:htmlsb),$GatewayHSTSIncludeSubdomains,$htmlwhite))
+					$rowdata += @(,("Preload",($Script:htmlsb),$GatewayHSTSPreload,$htmlwhite))
 				}
 
-				$rowdata += @(,("Enable SSL",($Script:htmlsb),$GWEnableSSL,$htmlwhite))
-				$rowdata += @(,("on Port",($Script:htmlsb),$GWEnableSSLOnPort,$htmlwhite))
-				$rowdata += @(,("Accepted SSL Versions",($Script:htmlsb),$GWAcceptedSSLVersions,$htmlwhite))
-				$rowdata += @(,("Cipher Strength",($Script:htmlsb),$GWCipherStrength,$htmlwhite))
-				$rowdata += @(,("Cipher",($Script:htmlsb),$GWCipher,$htmlwhite))
-				$rowdata += @(,("Use ciphers according to server preference",($Script:htmlsb),$GWCipherPreference,$htmlwhite))
-				$rowdata += @(,("Certificates",($Script:htmlsb),$GWCertificates,$htmlwhite))
+				$rowdata += @(,("Enable SSL",($Script:htmlsb),$GatewayEnableSSL,$htmlwhite))
+				$rowdata += @(,("on Port",($Script:htmlsb),$GatewayEnableSSLOnPort,$htmlwhite))
+				$rowdata += @(,("Accepted SSL Versions",($Script:htmlsb),$GatewayAcceptedSSLVersions,$htmlwhite))
+				$rowdata += @(,("Cipher Strength",($Script:htmlsb),$GatewayCipherStrength,$htmlwhite))
+				$rowdata += @(,("Cipher",($Script:htmlsb),$GatewayCipher,$htmlwhite))
+				$rowdata += @(,("Use ciphers according to server preference",($Script:htmlsb),$GatewayCipherPreference,$htmlwhite))
+				$rowdata += @(,("Certificates",($Script:htmlsb),$GatewayCertificates,$htmlwhite))
 
 				$msg = "SSL/TLS"
 				$columnWidths = @("300","275")
@@ -14534,156 +14542,156 @@ Function OutputSite
 				#Nothing
 			}
 			
-			If($GW.InheritDefaultHTML5Settings)
+			If($Gateway.InheritDefaultUserPortalSettings)
 			{
 				#do we inherit site defaults?
 				#yes we do, get the default settings for the Site
 				#use the Site default settings
 
-				$GWDefaults = Get-RASGWDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+				$GatewayDefaults = Get-RASGatewayDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 				
-				If($? -and $Null -ne $GWDefaults)
+				If($? -and $Null -ne $GatewayDefaults)
 				{
-					$GWEnableHTML5Client = $GWDefaults.EnableHTML5.ToString()
+					$GatewayEnableUserPortalClient = $GatewayDefaults.EnableUserPortal.ToString()
 					
-					Switch($GWDefaults.LaunchMethod)
+					Switch($GatewayDefaults.LaunchMethod)
 					{
-						"ParallelsClientAndHTML5"	{$GWLaunchSessionsUsing = "Launch apps with Parallels Client & Fallback to HTML5"; Break}
-						"ParallelsClient"			{$GWLaunchSessionsUsing = "Launch apps with Parallels Client"; Break}
-						"HTML5"						{$GWLaunchSessionsUsing = "Launch apps in Browser only (HTML5 Only)"; Break}
-						Default						{$GWLaunchSessionsUsing = "Unable to determine Launch sessions using: $($GWDefaults.LaunchMethod)"; Break}
+						"ParallelsClientAndHTML5"	{$GatewayLaunchSessionsUsing = "Launch apps with Parallels Client & Fallback to HTML5"; Break}
+						"ParallelsClient"			{$GatewayLaunchSessionsUsing = "Launch apps with Parallels Client"; Break}
+						"HTML5"						{$GatewayLaunchSessionsUsing = "Launch apps in Browser only (HTML5 Only)"; Break}
+						Default						{$GatewayLaunchSessionsUsing = "Unable to determine Launch sessions using: $($GatewayDefaults.LaunchMethod)"; Break}
 					}
 					
-					Switch ($GWDefaults.FileTransferMode)
+					Switch ($GatewayDefaults.FileTransferMode)
 					{
-						"Bidirectional"		{$GWFileTransferMode = "Bidirectional"; Break}
-						"Disabled"			{$GWFileTransferMode = "Disabled"; Break}
-						"ClientToServer"	{$GWFileTransferMode = "Client to server only"; Break}
-						"ServerToClient"	{$GWFileTransferMode = "Server to client only"; Break}
-						Default				{$GWFileTransferMode = "Unable to determine File Transfer mode: $($GWDefaults.FileTransferMode)"; Break}
+						"Bidirectional"		{$GatewayFileTransferMode = "Bidirectional"; Break}
+						"Disabled"			{$GatewayFileTransferMode = "Disabled"; Break}
+						"ClientToServer"	{$GatewayFileTransferMode = "Client to server only"; Break}
+						"ServerToClient"	{$GatewayFileTransferMode = "Server to client only"; Break}
+						Default				{$GatewayFileTransferMode = "Unable to determine File Transfer mode: $($GatewayDefaults.FileTransferMode)"; Break}
 					}
 
-					Switch ($GWDefaults.ClipboardDirection)
+					Switch ($GatewayDefaults.ClipboardDirection)
 					{
-						"Bidirectional"		{$GWClipboardTransferMode = "Bidirectional"; Break}
-						"Disabled"			{$GWClipboardTransferMode = "Disabled"; Break}
-						"ClientToServer"	{$GWClipboardTransferMode = "Client to server only"; Break}
-						"ServerToClient"	{$GWClipboardTransferMode = "Server to client only"; Break}
-						Default				{$GWClipboardTransferMode = "Unable to determine Clipboard mode: $($GWDefaults.ClipboardDirection)"; Break}
+						"Bidirectional"		{$GatewayClipboardTransferMode = "Bidirectional"; Break}
+						"Disabled"			{$GatewayClipboardTransferMode = "Disabled"; Break}
+						"ClientToServer"	{$GatewayClipboardTransferMode = "Client to server only"; Break}
+						"ServerToClient"	{$GatewayClipboardTransferMode = "Server to client only"; Break}
+						Default				{$GatewayClipboardTransferMode = "Unable to determine Clipboard mode: $($GatewayDefaults.ClipboardDirection)"; Break}
 					}
 
-					$GWAllowLaunchMethod          = $GWDefaults.AllowLaunchMethod.ToString()
-					$GWAllowAppsInNewTab          = $GWDefaults.AllowAppsInNewTab.ToString()
-					$GWUsePreWin2000LoginFormat   = $GWDefaults.UsePreWin2000LoginFormat.ToString()
-					$GWAllowEmbed                 = $GWDefaults.AllowEmbed.ToString()
-					$GWAllowFileTransfer          = $GWDefaults.AllowFileTransfer.ToString()
-					$GWAllowClipboard             = $GWDefaults.AllowClipboard.ToString()
-					$GWAllowCORS                  = $GWDefaults.AllowCORS
-					$GWAllowedDomainsForCORS      = $GWDefaults.AllowedDomainsForCORS
-					$GWBrowserCacheTimeInMonths   = $GWDefaults.BrowserCacheTimeInMonths
-					$GWEnableAlternateNLBHostname = $GWDefaults.EnableAlternateNLBHost.ToString()
-					$GWAlternameNLBHostname       = $GWDefaults.AlternateNLBHost
-					$GWEnableAlternateNLBPort     = $GWDefaults.EnableAlternateNLBPort.ToString()
-					$GWAlternateNLBPort           = $GWDefaults.AlternateNLBPort.ToString()
+					$GatewayAllowLaunchMethod          = $GatewayDefaults.AllowLaunchMethod.ToString()
+					$GatewayAllowAppsInNewTab          = $GatewayDefaults.AllowAppsInNewTab.ToString()
+					$GatewayUsePreWin2000LoginFormat   = $GatewayDefaults.UsePreWin2000LoginFormat.ToString()
+					$GatewayAllowEmbed                 = $GatewayDefaults.AllowEmbed.ToString()
+					$GatewayAllowFileTransfer          = $GatewayDefaults.AllowFileTransfer.ToString()
+					$GatewayAllowClipboard             = $GatewayDefaults.AllowClipboard.ToString()
+					$GatewayAllowCORS                  = $GatewayDefaults.AllowCORS
+					$GatewayAllowedDomainsForCORS      = $GatewayDefaults.AllowedDomainsForCORS
+					$GatewayBrowserCacheTimeInMonths   = $GatewayDefaults.BrowserCacheTimeInMonths
+					$GatewayEnableAlternateNLBHostname = $GatewayDefaults.EnableAlternateNLBHost.ToString()
+					$GatewayAlternameNLBHostname       = $GatewayDefaults.AlternateNLBHost
+					$GatewayEnableAlternateNLBPort     = $GatewayDefaults.EnableAlternateNLBPort.ToString()
+					$GatewayAlternateNLBPort           = $GatewayDefaults.AlternateNLBPort.ToString()
 				}
 				Else
 				{
 					#unable to retrieve default, use built-in default values
-					$GWEnableHTML5Client          = "True"
-					$GWLaunchSessionsUsing        = "Launch apps with Parallels CLient & Fallback to HTML5"
-					$GWAllowLaunchMethod          = "True"
-					$GWAllowAppsInNewTab          = "False"
-					$GWUsePreWin2000LoginFormat   = "True"
-					$GWAllowEmbed                 = "False"
-					$GWAllowFileTransfer          = "True"
-					$GWAllowClipboard             = "True"
-					$GWAllowCORS                  = "False"
-					$GWAllowedDomainsForCORS      = @()
-					$GWBrowserCacheTimeInMonths   = 12
-					$GWEnableAlternateNLBHostname = "False"
-					$GWAlternameNLBHostname       = ""
-					$GWEnableAlternateNLBPort     = "False"
-					$GWAlternateNLBPort           = "8443"
-					$GWClipboardTransferMode      = "Bidirectional"
-					$GWClipboardTransferMode      = "Bidirectional"
+					$GatewayEnableUserPortalClient          = "True"
+					$GatewayLaunchSessionsUsing        = "Launch apps with Parallels CLient & Fallback to HTML5"
+					$GatewayAllowLaunchMethod          = "True"
+					$GatewayAllowAppsInNewTab          = "False"
+					$GatewayUsePreWin2000LoginFormat   = "True"
+					$GatewayAllowEmbed                 = "False"
+					$GatewayAllowFileTransfer          = "True"
+					$GatewayAllowClipboard             = "True"
+					$GatewayAllowCORS                  = "False"
+					$GatewayAllowedDomainsForCORS      = @()
+					$GatewayBrowserCacheTimeInMonths   = 12
+					$GatewayEnableAlternateNLBHostname = "False"
+					$GatewayAlternameNLBHostname       = ""
+					$GatewayEnableAlternateNLBPort     = "False"
+					$GatewayAlternateNLBPort           = "8443"
+					$GatewayClipboardTransferMode      = "Bidirectional"
+					$GatewayClipboardTransferMode      = "Bidirectional"
 				}
 			}
 			Else
 			{
 				#we don't inherit settings
 				#get the settings configured for this GW
-				$GWEnableHTML5Client = $GW.EnableHTML5.ToString()
+				$GatewayEnableUserPortalClient = $Gateway.EnableUserPortal.ToString()
 				
-				Switch($GW.LaunchMethod)
+				Switch($Gateway.LaunchMethod)
 				{
-					"ParallelsClientAndHTML5"	{$GWLaunchSessionsUsing = "Launch apps with Parallels Client & Fallback to HTML5"; Break}
-					"ParallelsClient"			{$GWLaunchSessionsUsing = "Launch apps with Parallels Client"; Break}
-					"HTML5"						{$GWLaunchSessionsUsing = "Launch apps in Browser only (HTML5 Only)"; Break}
-					Default						{$GWLaunchSessionsUsing = "Unable to determine Launch sessions using: $($GW.LaunchMethod)"; Break}
+					"ParallelsClientAndHTML5"	{$GatewayLaunchSessionsUsing = "Launch apps with Parallels Client & Fallback to HTML5"; Break}
+					"ParallelsClient"			{$GatewayLaunchSessionsUsing = "Launch apps with Parallels Client"; Break}
+					"HTML5"						{$GatewayLaunchSessionsUsing = "Launch apps in Browser only (HTML5 Only)"; Break}
+					Default						{$GatewayLaunchSessionsUsing = "Unable to determine Launch sessions using: $($Gateway.LaunchMethod)"; Break}
 				}
 				
-				Switch ($GW.FileTransferMode)
+				Switch ($Gateway.FileTransferMode)
 				{
-					"Bidirectional"		{$GWFileTransferMode = "Bidirectional"; Break}
-					"Disabled"			{$GWFileTransferMode = "Disabled"; Break}
-					"ClientToServer"	{$GWFileTransferMode = "Client to server only"; Break}
-					"ServerToClient"	{$GWFileTransferMode = "Server to client only"; Break}
-					Default				{$GWFileTransferMode = "Unable to determine File Transfer mode: $($GW.FileTransferMode)"; Break}
+					"Bidirectional"		{$GatewayFileTransferMode = "Bidirectional"; Break}
+					"Disabled"			{$GatewayFileTransferMode = "Disabled"; Break}
+					"ClientToServer"	{$GatewayFileTransferMode = "Client to server only"; Break}
+					"ServerToClient"	{$GatewayFileTransferMode = "Server to client only"; Break}
+					Default				{$GatewayFileTransferMode = "Unable to determine File Transfer mode: $($Gateway.FileTransferMode)"; Break}
 				}
 
-				Switch ($GW.ClipboardDirection)
+				Switch ($Gateway.ClipboardDirection)
 				{
-					"Bidirectional"		{$GWClipboardTransferMode = "Bidirectional"; Break}
-					"Disabled"			{$GWClipboardTransferMode = "Disabled"; Break}
-					"ClientToServer"	{$GWClipboardTransferMode = "Client to server only"; Break}
-					"ServerToClient"	{$GWClipboardTransferMode = "Server to client only"; Break}
-					Default				{$GWClipboardTransferMode = "Unable to determine Clipboard mode: $($GW.ClipboardDirection)"; Break}
+					"Bidirectional"		{$GatewayClipboardTransferMode = "Bidirectional"; Break}
+					"Disabled"			{$GatewayClipboardTransferMode = "Disabled"; Break}
+					"ClientToServer"	{$GatewayClipboardTransferMode = "Client to server only"; Break}
+					"ServerToClient"	{$GatewayClipboardTransferMode = "Server to client only"; Break}
+					Default				{$GatewayClipboardTransferMode = "Unable to determine Clipboard mode: $($Gateway.ClipboardDirection)"; Break}
 				}
 
-				$GWAllowLaunchMethod          = $GW.AllowLaunchMethod.ToString()
-				$GWAllowAppsInNewTab          = $GW.AllowAppsInNewTab.ToString()
-				$GWUsePreWin2000LoginFormat   = $GW.UsePreWin2000LoginFormat.ToString()
-				$GWAllowEmbed                 = $GW.AllowEmbed.ToString()
-				$GWAllowFileTransfer          = $GW.AllowFileTransfer
-				$GWAllowClipboard             = $GW.AllowClipboard
-				$GWAllowCORS                  = $GW.AllowCORS
-				$GWAllowedDomainsForCORS      = $GW.AllowedDomainsForCORS
-				$GWBrowserCacheTimeInMonths   = $GW.BrowserCacheTimeInMonths
-				$GWEnableAlternateNLBHostname = $GW.EnableAlternateNLBHost.ToString()
-				$GWAlternameNLBHostname       = $GW.AlternateNLBHost
-				$GWEnableAlternateNLBPort     = $GW.EnableAlternateNLBPort.ToString()
-				$GWAlternateNLBPort           = $GW.AlternateNLBPort.ToString()
+				$GatewayAllowLaunchMethod          = $Gateway.AllowLaunchMethod.ToString()
+				$GatewayAllowAppsInNewTab          = $Gateway.AllowAppsInNewTab.ToString()
+				$GatewayUsePreWin2000LoginFormat   = $Gateway.UsePreWin2000LoginFormat.ToString()
+				$GatewayAllowEmbed                 = $Gateway.AllowEmbed.ToString()
+				$GatewayAllowFileTransfer          = $Gateway.AllowFileTransfer
+				$GatewayAllowClipboard             = $Gateway.AllowClipboard
+				$GatewayAllowCORS                  = $Gateway.AllowCORS
+				$GatewayAllowedDomainsForCORS      = $Gateway.AllowedDomainsForCORS
+				$GatewayBrowserCacheTimeInMonths   = $Gateway.BrowserCacheTimeInMonths
+				$GatewayEnableAlternateNLBHostname = $Gateway.EnableAlternateNLBHost.ToString()
+				$GatewayAlternameNLBHostname       = $Gateway.AlternateNLBHost
+				$GatewayEnableAlternateNLBPort     = $Gateway.EnableAlternateNLBPort.ToString()
+				$GatewayAlternateNLBPort           = $Gateway.AlternateNLBPort.ToString()
 			}
 			
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $GW.InheritDefaultHTML5Settings.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable HTML5 Client"; Value = $GWEnableHTML5Client; }) > $Null
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $Gateway.InheritDefaultUserPortalSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable HTML5 Client"; Value = $GatewayEnableUserPortalClient; }) > $Null
 				$ScriptInformation.Add(@{Data = "Client"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Launch sessions using"; Value = $GWLaunchSessionsUsing; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Allow user to select a launch method"; Value = $GWAllowLaunchMethod; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Allow opening applications in a new tab"; Value = $GWAllowAppsInNewTab; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Use Pre Windows 2000 login format"; Value = $GWUsePreWin2000LoginFormat; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Allow embedding of Parallels HTML5 Client into other web pages"; Value = $GWAllowEmbed; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Launch sessions using"; Value = $GatewayLaunchSessionsUsing; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Allow user to select a launch method"; Value = $GatewayAllowLaunchMethod; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Allow opening applications in a new tab"; Value = $GatewayAllowAppsInNewTab; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Use Pre Windows 2000 login format"; Value = $GatewayUsePreWin2000LoginFormat; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Allow embedding of Parallels HTML5 Client into other web pages"; Value = $GatewayAllowEmbed; }) > $Null
 
-				$ScriptInformation.Add(@{Data = "     Allow file transfer command"; Value = $GWAllowFileTransfer.ToString(); }) > $Null
-				If($GWAllowFileTransfer)
+				$ScriptInformation.Add(@{Data = "     Allow file transfer command"; Value = $GatewayAllowFileTransfer.ToString(); }) > $Null
+				If($GatewayAllowFileTransfer)
 				{
-					$ScriptInformation.Add(@{Data = "          Direction"; Value = $GWFileTransferMode; }) > $Null
+					$ScriptInformation.Add(@{Data = "          Direction"; Value = $GatewayFileTransferMode; }) > $Null
 				}
 
-				$ScriptInformation.Add(@{Data = "     Allow clipboard command"; Value = $GWAllowClipboard.ToString(); }) > $Null
-				If($GWAllowClipboard)
+				$ScriptInformation.Add(@{Data = "     Allow clipboard command"; Value = $GatewayAllowClipboard.ToString(); }) > $Null
+				If($GatewayAllowClipboard)
 				{
-					$ScriptInformation.Add(@{Data = "          Clipboard Redirection"; Value = $GWClipboardTransferMode; }) > $Null
+					$ScriptInformation.Add(@{Data = "          Clipboard Redirection"; Value = $GatewayClipboardTransferMode; }) > $Null
 				}
 
-				$ScriptInformation.Add(@{Data = "     Allow cross-origin resource sharing"; Value = $GWAllowCORS.ToString(); }) > $Null
-				If($GWAllowCORS)
+				$ScriptInformation.Add(@{Data = "     Allow cross-origin resource sharing"; Value = $GatewayAllowCORS.ToString(); }) > $Null
+				If($GatewayAllowCORS)
 				{
 					$cnt=-1
-					ForEach($Domain in $GWAllowedDomainsForCORS)
+					ForEach($Domain in $GatewayAllowedDomainsForCORS)
 					{
 						$cnt++
 						
@@ -14696,19 +14704,19 @@ Function OutputSite
 							$ScriptInformation.Add(@{Data = ""; Value = $Domain; }) > $Null
 						}
 					}
-					$ScriptInformation.Add(@{Data = "     Browser cache time"; Value = "$($GWBrowserCacheTimeInMonths.ToString()) months"; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Browser cache time"; Value = "$($GatewayBrowserCacheTimeInMonths.ToString()) months"; }) > $Null
 				}
 
 				$ScriptInformation.Add(@{Data = "Network Load Balancer access"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Use alternate hostname"; Value = $GWEnableAlternateNLBHostname; }) > $Null
-				If($GWEnableAlternateNLBHostname -eq "True")
+				$ScriptInformation.Add(@{Data = "     Use alternate hostname"; Value = $GatewayEnableAlternateNLBHostname; }) > $Null
+				If($GatewayEnableAlternateNLBHostname -eq "True")
 				{
-					$ScriptInformation.Add(@{Data = ""; Value = $GWAlternameNLBHostname; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = $GatewayAlternameNLBHostname; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "     Use alternate port"; Value = $GWEnableAlternateNLBPort; }) > $Null
-				If($GWEnableAlternateNLBPort -eq "True")
+				$ScriptInformation.Add(@{Data = "     Use alternate port"; Value = $GatewayEnableAlternateNLBPort; }) > $Null
+				If($GatewayEnableAlternateNLBPort -eq "True")
 				{
-					$ScriptInformation.Add(@{Data = ""; Value = $GWAlternateNLBPort; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = $GatewayAlternateNLBPort; }) > $Null
 				}
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -14731,33 +14739,33 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t`t: " $GW.InheritDefaultHTML5Settings.ToString()
-				Line 3 "Enable HTML5 Client`t`t`t`t: " $GWEnableHTML5Client
+				Line 3 "Inherit default settings`t`t`t: " $Gateway.InheritDefaultUserPortalSettings.ToString()
+				Line 3 "Enable HTML5 Client`t`t`t`t: " $GatewayEnableUserPortalClient
 				Line 3 "Client" ""
-				Line 4 "Launch sessions using`t`t`t: " $GWLaunchSessionsUsing
-				Line 4 "Allow user to select a launch method`t: " $GWAllowLaunchMethod
-				Line 4 "Allow opening applications in a new tab`t: " $GWAllowAppsInNewTab
-				Line 4 "Use Pre Windows 2000 login format`t: " $GWUsePreWin2000LoginFormat
+				Line 4 "Launch sessions using`t`t`t: " $GatewayLaunchSessionsUsing
+				Line 4 "Allow user to select a launch method`t: " $GatewayAllowLaunchMethod
+				Line 4 "Allow opening applications in a new tab`t: " $GatewayAllowAppsInNewTab
+				Line 4 "Use Pre Windows 2000 login format`t: " $GatewayUsePreWin2000LoginFormat
 				Line 4 "Allow embedding of Parallels HTML5"
-				Line 4 "Client into other web pages`t`t: " $GWAllowEmbed
+				Line 4 "Client into other web pages`t`t: " $GatewayAllowEmbed
 
-				Line 4 "Allow file transfer command`t`t: " $GWAllowFileTransfer.ToString()
-				If($GW.AllowFileTransfer)
+				Line 4 "Allow file transfer command`t`t: " $GatewayAllowFileTransfer.ToString()
+				If($Gateway.AllowFileTransfer)
 				{
-					Line 5 "Direction: " $GWFileTransferMode
+					Line 5 "Direction: " $GatewayFileTransferMode
 				}
 
-				Line 4 "Allow clipboard command`t`t`t: " $GWAllowClipboard.ToString()
-				If($GW.AllowClipboard)
+				Line 4 "Allow clipboard command`t`t`t: " $GatewayAllowClipboard.ToString()
+				If($Gateway.AllowClipboard)
 				{
-					Line 5 "Clipboard Redirection: " $GWClipboardTransferMode
+					Line 5 "Clipboard Redirection: " $GatewayClipboardTransferMode
 				}
 
-				Line 4 "Allow cross-origin resource sharing`t: " $GWAllowCORS.ToString()
-				If($GWAllowCORS)
+				Line 4 "Allow cross-origin resource sharing`t: " $GatewayAllowCORS.ToString()
+				If($GatewayAllowCORS)
 				{
 					$cnt=-1
-					ForEach($Domain in $GWAllowedDomainsForCORS)
+					ForEach($Domain in $GatewayAllowedDomainsForCORS)
 					{
 						$cnt++
 						
@@ -14770,51 +14778,51 @@ Function OutputSite
 							Line 9 "  " $Domain
 						}
 					}
-					Line 6 "Browser cache time      : " "$($GWBrowserCacheTimeInMonths.ToString()) months"
+					Line 6 "Browser cache time      : " "$($GatewayBrowserCacheTimeInMonths.ToString()) months"
 				}
 
 				Line 3 "Network Load Balancer access" ""
-				Line 4 "Use alternate hostname`t`t: " $GWEnableAlternateNLBHostname
-				If($GWEnableAlternateNLBHostname -eq "True")
+				Line 4 "Use alternate hostname`t`t: " $GatewayEnableAlternateNLBHostname
+				If($GatewayEnableAlternateNLBHostname -eq "True")
 				{
-					Line 8 $GWAlternameNLBHostname
+					Line 8 $GatewayAlternameNLBHostname
 				}
-				Line 4 "Use alternate port`t`t: " $GWEnableAlternateNLBPort
-				If($GWEnableAlternateNLBPort -eq "True")
+				Line 4 "Use alternate port`t`t: " $GatewayEnableAlternateNLBPort
+				If($GatewayEnableAlternateNLBPort -eq "True")
 				{
-					Line 8 $GWAlternateNLBPort
+					Line 8 $GatewayAlternateNLBPort
 				}
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$GW.InheritDefaultHTML5Settings.ToString(),$htmlwhite)
-				$rowdata += @(,("Enable HTML5 Client",($Script:htmlsb),$GWEnableHTML5Client,$htmlwhite))
+				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$Gateway.InheritDefaultUserPortalSettings.ToString(),$htmlwhite)
+				$rowdata += @(,("Enable HTML5 Client",($Script:htmlsb),$GatewayEnableUserPortalClient,$htmlwhite))
 				$rowdata += @(,("Client",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("     Launch sessions using",($Script:htmlsb),$GWLaunchSessionsUsing,$htmlwhite))
-				$rowdata += @(,("     Allow user to select a launch method",($Script:htmlsb),$GWAllowLaunchMethod,$htmlwhite))
-				$rowdata += @(,("     Allow opening applications in a new tab",($Script:htmlsb),$GWAllowAppsInNewTab,$htmlwhite))
-				$rowdata += @(,("     Use Pre Windows 2000 login format",($Script:htmlsb),$GWUsePreWin2000LoginFormat,$htmlwhite))
-				$rowdata += @(,("     Allow embedding of Parallels HTML5 Client into other web pages",($Script:htmlsb),$GWAllowEmbed,$htmlwhite))
+				$rowdata += @(,("     Launch sessions using",($Script:htmlsb),$GatewayLaunchSessionsUsing,$htmlwhite))
+				$rowdata += @(,("     Allow user to select a launch method",($Script:htmlsb),$GatewayAllowLaunchMethod,$htmlwhite))
+				$rowdata += @(,("     Allow opening applications in a new tab",($Script:htmlsb),$GatewayAllowAppsInNewTab,$htmlwhite))
+				$rowdata += @(,("     Use Pre Windows 2000 login format",($Script:htmlsb),$GatewayUsePreWin2000LoginFormat,$htmlwhite))
+				$rowdata += @(,("     Allow embedding of Parallels HTML5 Client into other web pages",($Script:htmlsb),$GatewayAllowEmbed,$htmlwhite))
 
-				$rowdata += @(,("     Allow file transfer command",($Script:htmlsb),$GWAllowFileTransfer.ToString(),$htmlwhite))
-				If($GW.AllowFileTransfer)
+				$rowdata += @(,("     Allow file transfer command",($Script:htmlsb),$GatewayAllowFileTransfer.ToString(),$htmlwhite))
+				If($Gateway.AllowFileTransfer)
 				{
-					$rowdata += @(,("          Direction",($Script:htmlsb),$GWFileTransferMode,$htmlwhite))
+					$rowdata += @(,("          Direction",($Script:htmlsb),$GatewayFileTransferMode,$htmlwhite))
 				}
 
-				$rowdata += @(,("     Allow clipboard command",($Script:htmlsb),$GWAllowClipboard.ToString(),$htmlwhite))
-				If($GW.AllowClipboard)
+				$rowdata += @(,("     Allow clipboard command",($Script:htmlsb),$GatewayAllowClipboard.ToString(),$htmlwhite))
+				If($Gateway.AllowClipboard)
 				{
-					$rowdata += @(,("          Clipboard Redirection",($Script:htmlsb),$GWClipboardTransferMode,$htmlwhite))
+					$rowdata += @(,("          Clipboard Redirection",($Script:htmlsb),$GatewayClipboardTransferMode,$htmlwhite))
 				}
 
-				$rowdata += @(,("     Allow cross-origin resource sharing",($Script:htmlsb),$GWAllowCORS.ToString(),$htmlwhite))
-				If($GWAllowCORS)
+				$rowdata += @(,("     Allow cross-origin resource sharing",($Script:htmlsb),$GatewayAllowCORS.ToString(),$htmlwhite))
+				If($GatewayAllowCORS)
 				{
 					$cnt=-1
-					ForEach($Domain in $GWAllowedDomainsForCORS)
+					ForEach($Domain in $GatewayAllowedDomainsForCORS)
 					{
 						$cnt++
 						
@@ -14827,19 +14835,19 @@ Function OutputSite
 							$rowdata += @(,("",($Script:htmlsb),$Domain,$htmlwhite))
 						}
 					}
-					$rowdata += @(,("     Browser cache time",($Script:htmlsb),"$($GWBrowserCacheTimeInMonths.ToString()) months",$htmlwhite))
+					$rowdata += @(,("     Browser cache time",($Script:htmlsb),"$($GatewayBrowserCacheTimeInMonths.ToString()) months",$htmlwhite))
 				}
 
 				$rowdata += @(,("Network Load Balancer access",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("     Use alternate hostname",($Script:htmlsb),$GWEnableAlternateNLBHostname,$htmlwhite))
-				If($GWEnableAlternateNLBHostname -eq "True")
+				$rowdata += @(,("     Use alternate hostname",($Script:htmlsb),$GatewayEnableAlternateNLBHostname,$htmlwhite))
+				If($GatewayEnableAlternateNLBHostname -eq "True")
 				{
-					$rowdata += @(,("",($Script:htmlsb),$GWAlternameNLBHostname,$htmlwhite))
+					$rowdata += @(,("",($Script:htmlsb),$GatewayAlternameNLBHostname,$htmlwhite))
 				}
-				$rowdata += @(,("     Use alternate port",($Script:htmlsb),$GWEnableAlternateNLBPort,$htmlwhite))
-				If($GWEnableAlternateNLBPort -eq "True")
+				$rowdata += @(,("     Use alternate port",($Script:htmlsb),$GatewayEnableAlternateNLBPort,$htmlwhite))
+				If($GatewayEnableAlternateNLBPort -eq "True")
 				{
-					$rowdata += @(,("",($Script:htmlsb),$GWAlternateNLBPort,$htmlwhite))
+					$rowdata += @(,("",($Script:htmlsb),$GatewayAlternateNLBPort,$htmlwhite))
 				}
 
 				$msg = "HTML5"
@@ -14863,40 +14871,40 @@ Function OutputSite
 				#Nothing
 			}
 			
-			If($GW.InheritDefaultWyseSettings)
+			If($Gateway.InheritDefaultWyseSettings)
 			{
 				#do we inherit site defaults?
 				#yes we do, get the default settings for the Site
 				#use the Site default settings
 
-				$GWDefaults = Get-RASGWDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+				$GatewayDefaults = Get-RASGatewayDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 				
-				If($? -and $Null -ne $GWDefaults)
+				If($? -and $Null -ne $GatewayDefaults)
 				{
-					$GWEnableWyse          = $GWDefaults.EnableWyseSupport.ToString()
-					$GWDisableWyseCertWarn = $GWDefaults.DisableWyseCertWarn.ToString()
+					$GatewayEnableWyse          = $GatewayDefaults.EnableWyseSupport.ToString()
+					$GatewayDisableWyseCertWarn = $GatewayDefaults.DisableWyseCertWarn.ToString()
 				}
 				Else
 				{
 					#unable to retrieve default, use built-in default values
-					$GWEnableWyse          = "True"
-					$GWDisableWyseCertWarn = "False"
+					$GatewayEnableWyse          = "True"
+					$GatewayDisableWyseCertWarn = "False"
 				}
 			}
 			Else
 			{
 				#we don't inherit settings
 				#get the settings configured for this GW
-				$GWEnableWyse          = $GW.EnableWyseSupport.ToString()
-				$GWDisableWyseCertWarn = $GW.DisableWyseCertWarn.ToString()
+				$GatewayEnableWyse          = $Gateway.EnableWyseSupport.ToString()
+				$GatewayDisableWyseCertWarn = $Gateway.DisableWyseCertWarn.ToString()
 			}
 			
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $GW.InheritDefaultWyseSettings.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable Wyse ThinOS Support"; Value = $GWEnableWyse; }) > $Null
-				$ScriptInformation.Add(@{Data = "Do not warn if server certificate is not verified"; Value = $GWDisableWyseCertWarn; }) > $Null
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $Gateway.InheritDefaultWyseSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable Wyse ThinOS Support"; Value = $GatewayEnableWyse; }) > $Null
+				$ScriptInformation.Add(@{Data = "Do not warn if server certificate is not verified"; Value = $GatewayDisableWyseCertWarn; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -14918,17 +14926,17 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t`t : " $GW.InheritDefaultWyseSettings.ToString()
-				Line 3 "Enable Wyse ThinOS Support`t`t`t : " $GWEnableWyse
-				Line 3 "Do not warn if server certificate is not verified: " $GWDisableWyseCertWarn
+				Line 3 "Inherit default settings`t`t`t : " $Gateway.InheritDefaultWyseSettings.ToString()
+				Line 3 "Enable Wyse ThinOS Support`t`t`t : " $GatewayEnableWyse
+				Line 3 "Do not warn if server certificate is not verified: " $GatewayDisableWyseCertWarn
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$GW.InheritDefaultWyseSettings.ToString(),$htmlwhite)
-				$rowdata += @(,("Enable Wyse ThinOS Support",($Script:htmlsb),$GWEnableWyse,$htmlwhite))
-				$rowdata += @(,("Do not warn if server certificate is not verified",($Script:htmlsb),$GWDisableWyseCertWarn,$htmlwhite))
+				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$Gateway.InheritDefaultWyseSettings.ToString(),$htmlwhite)
+				$rowdata += @(,("Enable Wyse ThinOS Support",($Script:htmlsb),$GatewayEnableWyse,$htmlwhite))
+				$rowdata += @(,("Do not warn if server certificate is not verified",($Script:htmlsb),$GatewayDisableWyseCertWarn,$htmlwhite))
 
 				$msg = "Wyse"
 				$columnWidths = @("300","275")
@@ -14951,30 +14959,30 @@ Function OutputSite
 				#Nothing
 			}
 			
-			If($GW.InheritDefaultSecuritySettings)
+			If($Gateway.InheritDefaultSecuritySettings)
 			{
 				#do we inherit site defaults?
 				#yes we do, get the default settings for the Site
 				#use the Site default settings
 
-				$GWDefaults = Get-RASGWDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+				$GatewayDefaults = Get-RASGatewayDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 				
-				If($? -and $Null -ne $GWDefaults)
+				If($? -and $Null -ne $GatewayDefaults)
 				{
-					If($GWDefaults.SecurityMode -eq "AllowAllExcept")
+					If($GatewayDefaults.SecurityMode -eq "AllowAllExcept")
 					{
-						$GWAllow = "AllowAllExcept"
+						$GatewayAllow = "AllowAllExcept"
 						$MACAddresses = @()
-						ForEach($Item in $GWDefaults.MACAllowExcept)
+						ForEach($Item in $GatewayDefaults.MACAllowExcept)
 						{
 							$MACAddresses += $Item
 						}
 					}
 					Else
 					{
-						$GWAllow = "AllowOnly"
+						$GatewayAllow = "AllowOnly"
 						$MACAddresses = @()
-						ForEach($Item in $GWDefaults.MACAllowOnly)
+						ForEach($Item in $GatewayDefaults.MACAllowOnly)
 						{
 							$MACAddresses += $Item
 						}
@@ -14983,7 +14991,7 @@ Function OutputSite
 				Else
 				{
 					#unable to retrieve default, use built-in default values
-					$GWAllow = "AllowAllExcept"
+					$GatewayAllow = "AllowAllExcept"
 					$MACAddresses = @()
 				}
 			}
@@ -14991,20 +14999,20 @@ Function OutputSite
 			{
 				#we don't inherit settings
 				#get the settings configured for this GW
-				If($GW.SecurityMode -eq "AllowAllExcept")
+				If($Gateway.SecurityMode -eq "AllowAllExcept")
 				{
-					$GWAllow = "AllowAllExcept"
+					$GatewayAllow = "AllowAllExcept"
 					$MACAddresses = @()
-					ForEach($Item in $GW.MACAllowExcept)
+					ForEach($Item in $Gateway.MACAllowExcept)
 					{
 						$MACAddresses += $Item
 					}
 				}
 				Else
 				{
-					$GWAllow = "AllowOnly"
+					$GatewayAllow = "AllowOnly"
 					$MACAddresses = @()
-					ForEach($Item in $GW.MACAllowOnly)
+					ForEach($Item in $Gateway.MACAllowOnly)
 					{
 						$MACAddresses += $Item
 					}
@@ -15014,8 +15022,8 @@ Function OutputSite
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $GW.InheritDefaultSecuritySettings.ToString(); }) > $Null
-				If($GWAllow -eq "AllowAllExcept")
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $Gateway.InheritDefaultSecuritySettings.ToString(); }) > $Null
+				If($GatewayAllow -eq "AllowAllExcept")
 				{
 					$ScriptInformation.Add(@{Data = "Allow all except"; Value = ""; }) > $Null
 				}
@@ -15057,8 +15065,8 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t: " $GW.InheritDefaultSecuritySettings.ToString()
-				If($GWAllow -eq "AllowAllExcept")
+				Line 3 "Inherit default settings`t`t: " $Gateway.InheritDefaultSecuritySettings.ToString()
+				If($GatewayAllow -eq "AllowAllExcept")
 				{
 					Line 3 "Allow all except"
 				}
@@ -15084,8 +15092,8 @@ Function OutputSite
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$GW.InheritDefaultSecuritySettings.ToString(),$htmlwhite)
-				If($GWAllow -eq "AllowAllExcept")
+				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$Gateway.InheritDefaultSecuritySettings.ToString(),$htmlwhite)
+				If($GatewayAllow -eq "AllowAllExcept")
 				{
 					$rowdata += @(,("Allow all except",($Script:htmlsb),"",$htmlwhite))
 				}
@@ -15128,40 +15136,40 @@ Function OutputSite
 				#Nothing
 			}
 			
-			If($GW.InheritDefaultWebSettings)
+			If($Gateway.InheritDefaultWebSettings)
 			{
 				#do we inherit site defaults?
 				#yes we do, get the default settings for the Site
 				#use the Site default settings
 
-				$GWDefaults = Get-RASGWDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+				$GatewayDefaults = Get-RASGatewayDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
 				
-				If($? -and $Null -ne $GWDefaults)
+				If($? -and $Null -ne $GatewayDefaults)
 				{
-					$GWDefaultURL = $GWDefaults.WebRequestsURL
-					$GWWebCookie = $GWDefaults.WebCookie
+					$GatewayDefaultURL = $GatewayDefaults.WebRequestsURL
+					$GatewayWebCookie = $GatewayDefaults.WebCookie
 				}
 				Else
 				{
 					#unable to retrieve default, use built-in default values
-					$GWDefaultURL = "https://%hostname%/RASHTML5Gateway"
-					$GWWebCookie = "ASP.NET_SessionId"
+					$GatewayDefaultURL = "https://%hostname%/RASHTML5Gateway"
+					$GatewayWebCookie = "ASP.NET_SessionId"
 				}
 			}
 			Else
 			{
 				#we don't inherit settings
 				#get the settings configured for this GW
-				$GWDefaultURL = $GW.WebRequestsURL
-				$GWWebCookie = $GW.WebCookie
+				$GatewayDefaultURL = $Gateway.WebRequestsURL
+				$GatewayWebCookie = $Gateway.WebCookie
 			}
 			
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $GW.InheritDefaultWebSettings.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Default URL"; Value = $GWDefaultURL; }) > $Null
-				$ScriptInformation.Add(@{Data = "Web cookie"; Value = $GWWebCookie; }) > $Null
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $Gateway.InheritDefaultWebSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Default URL"; Value = $GatewayDefaultURL; }) > $Null
+				$ScriptInformation.Add(@{Data = "Web cookie"; Value = $GatewayWebCookie; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -15183,17 +15191,17 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Inherit default settings`t`t: " $GW.InheritDefaultWebSettings.ToString()
-				Line 3 "Default URL`t`t`t`t: " $GWDefaultURL
-				Line 3 "Web cookie`t`t`t`t: " $GWWebCookie
+				Line 3 "Inherit default settings`t`t: " $Gateway.InheritDefaultWebSettings.ToString()
+				Line 3 "Default URL`t`t`t`t: " $GatewayDefaultURL
+				Line 3 "Web cookie`t`t`t`t: " $GatewayWebCookie
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$GW.InheritDefaultWebSettings.ToString(),$htmlwhite)
-				$rowdata += @(,("Default URL",($Script:htmlsb),$GWDefaultURL,$htmlwhite))
-				$rowdata += @(,("Web cookie",($Script:htmlsb),$GWWebCookie,$htmlwhite))
+				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$Gateway.InheritDefaultWebSettings.ToString(),$htmlwhite)
+				$rowdata += @(,("Default URL",($Script:htmlsb),$GatewayDefaultURL,$htmlwhite))
+				$rowdata += @(,("Web cookie",($Script:htmlsb),$GatewayWebCookie,$htmlwhite))
 
 				$msg = "Web"
 				$columnWidths = @("300","275")
@@ -15203,64 +15211,64 @@ Function OutputSite
 		}
 	}
 
-	$PAs = Get-RASPA -Siteid $Site.Id -EA 0 4> $Null
+	$PAs = Get-RASBroker -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
 	{
 		Write-Warning "
 		`n
-		Unable to retrieve Publishing Agents for Site $($Site.Name)`
+		Unable to retrieve Connection Brokers for Site $($Site.Name)`
 		"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "Unable to retrieve Publishing Agents for Site $($Site.Name)"
+			WriteWordLine 0 0 "Unable to retrieve Connection Brokers for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "Unable to retrieve Publishing Agents for Site $($Site.Name)"
+			Line 0 "Unable to retrieve Connection Brokers for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "Unable to retrieve Publishing Agents for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "Unable to retrieve Connection Brokers for Site $($Site.Name)"
 		}
 	}
 	ElseIf($? -and $Null -eq $PAs)
 	{
 		Write-Host "
-		No Publishing Agents retrieved for Site $($Site.Name).`
+		No Connection Brokers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "No Publishing Agents retrieved for Site $($Site.Name)"
+			WriteWordLine 0 0 "No Connection Brokers retrieved for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "No Publishing Agents retrieved for Site $($Site.Name)"
+			Line 0 "No Connection Brokers retrieved for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "No Publishing Agents retrieved for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "No Connection Brokers retrieved for Site $($Site.Name)"
 		}
 	}
 	Else
 	{
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 2 0 "Publishing Agents"
+			WriteWordLine 2 0 "Connection Brokers"
 		}
 		If($Text)
 		{
-			Line 1 "Publishing Agents"
+			Line 1 "Connection Brokers"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 2 0 "Publishing Agents"
+			WriteHTMLLine 2 0 "Connection Brokers"
 		}
 
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Publishing Agents"
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput Connection Brokers"
 		ForEach($PA in $PAs)
 		{
-			$PAStatus = Get-RASPAStatus -Id $PA.Id -EA 0 4>$Null
+			$PAStatus = Get-RASBrokerStatus -Id $PA.Id -EA 0 4>$Null
 			
 			If(!$?)
 			{
@@ -15314,7 +15322,7 @@ Function OutputSite
 				
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 3 0 "Publishing Agents $($PA.Server)"
+					WriteWordLine 3 0 "Connection Brokers $($PA.Server)"
 					$ScriptInformation = New-Object System.Collections.ArrayList
 					$ScriptInformation.Add(@{Data = "Server"; Value = $PA.Server; }) > $Null
 					$ScriptInformation.Add(@{Data = "Priority"; Value = $PAPriority; }) > $Null
@@ -15346,7 +15354,7 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Publishing Agents $($PA.Server)"
+					Line 2 "Connection Brokers $($PA.Server)"
 					Line 3 "Server`t`t`t: " $PA.Server
 					Line 3 "Priority`t`t: " $PAPriority
 					Line 3 "Status`t`t`t: " $PAStatusAgentState
@@ -15360,7 +15368,7 @@ Function OutputSite
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 3 0 "Publishing Agents $($PA.Server)"
+					WriteHTMLLine 3 0 "Connection Brokers $($PA.Server)"
 					$rowdata = @()
 					$columnHeaders = @("Server",($Script:htmlsb),$PA.Server,$htmlwhite)
 					$rowdata += @(,("Priority",($Script:htmlsb),$PAPriority,$htmlwhite))
@@ -15477,7 +15485,7 @@ Function OutputSite
 		ElseIf($? -and $Null -eq $HALBs)
 		{
 			Write-Host "
-			No HALBs retrieved for Site $($Site.Name).`
+		No HALBs retrieved for Site $($Site.Name).`
 			" -ForegroundColor White
 			If($MSWord -or $PDF)
 			{
@@ -15768,12 +15776,12 @@ Function OutputSite
 				}
 				
 				#process the gateways data
-				ForEach($GWItem in $HALBGateways)
+				ForEach($GatewayItem in $HALBGateways)
 				{
-					$ip = $GWItem.Keys
+					$ip = $GatewayItem.Keys
 					$Results = [System.Net.Dns]::gethostentry($ip)
 					$hostname = $Results.HostName
-					$TempGW = Get-RASGWStatus -Server $hostname -EA 0 4> $Null
+					$TempGW = Get-RASGatewayStatus -Server $hostname -EA 0 4> $Null
 					$HALBGWStatus = GetRASStatus $TempGW.AgentState
 					
 					If($MSWord -or $PDF)
@@ -16003,12 +16011,12 @@ Function OutputSite
 				}
 				
 				#process the gateways data
-				ForEach($GWItem in $HALBSSLGateways)
+				ForEach($GatewayItem in $HALBSSLGateways)
 				{
-					$ip = $GWItem.Keys
+					$ip = $GatewayItem.Keys
 					$Results = [System.Net.Dns]::gethostentry($ip)
 					$hostname = $Results.HostName
-					$TempGW = Get-RASGWStatus -Server $hostname -EA 0 4> $Null
+					$TempGW = Get-RASGatewayStatus -Server $hostname -EA 0 4> $Null
 					$HALBGWStatus = GetRASStatus $TempGW.AgentState
 					
 					If($MSWord -or $PDF)
@@ -16402,12 +16410,12 @@ Function OutputSite
 		ForEach($Theme in $Themes)
 		{
 			$ThemePostLogonMessage        = $Theme.PostLogonMessage.Split("`n")
-			$ThemeHTML5PrelogonMessage    = $Theme.HTML5Client.Message.PreLogonMessage.Split("`n")
-			$ThemeHTML5PostlogonMessage   = $Theme.HTML5Client.Message.HTML5PostLogonMessage.Split("`n")
+			$ThemeHTML5PrelogonMessage    = $Theme.UserPortal.Message.PreLogonMessage.Split("`n")
+			$ThemeHTML5PostlogonMessage   = $Theme.UserPortal.Message.UserPortalPostLogonMessage.Split("`n")
 			$ThemeWindowsPostlogonMessage = $Theme.WindowsClient.Messages.WindowsClientPostLogonMessage.Split("`n")
-			$ThemeHTML5URL                = "https://FQDN/$($Theme.HTML5Client.Url.LoginPageURLPath)"
-			$ThemeShowDownloadURL         = $Theme.HTML5Client.Url.ShowDownloadURL.ToString()
-			$ThemeOverrideDownloadURL     = $Theme.HTML5Client.Url.OverrideWindowsClientDownloadURL
+			$ThemeHTML5URL                = "https://FQDN/$($Theme.UserPortal.Url.LoginPageURLPath)"
+			$ThemeShowDownloadURL         = $Theme.UserPortal.Url.ShowDownloadURL.ToString()
+			$ThemeOverrideDownloadURL     = $Theme.UserPortal.Url.OverrideWindowsClientDownloadURL
 			$ThemeFooterURLs              = @(Get-RASThemeFooterURL -Name $Theme.Name -EA 0) 4> $Null #fixed in 2.52 thanks to Thomas Krampe
 			
 			If(!$? -or $Null -eq $ThemeFooterURLs)
@@ -16450,7 +16458,7 @@ Function OutputSite
 			}
 			
 			$ThemeHTML5LaunchSessionsUsing = ""
-			Switch($Theme.HTML5Client.Gateway.LaunchMethod)
+			Switch($Theme.UserPortal.Gateway.LaunchMethod)
 			{
 				"Launch_Applications_with_Parallels_Client_Fallback_to_HTML_5"	
 				{
@@ -16466,28 +16474,28 @@ Function OutputSite
 				}
 				Default															
 				{
-					$ThemeHTML5LaunchSessionsUsing = "Unable to determine Launch sessions using: $($Theme.HTML5Client.Gateway.LaunchMethod)"; Break
+					$ThemeHTML5LaunchSessionsUsing = "Unable to determine Launch sessions using: $($Theme.UserPortal.Gateway.LaunchMethod)"; Break
 				}
 			}
 			
 			$ThemeHTMLFileTransfer = ""
-			Switch($Theme.HTML5Client.Gateway.FileTransferMode)
+			Switch($Theme.UserPortal.Gateway.FileTransferMode)
 			{
 				"Disabled"			{$ThemeHTMLFileTransfer = "Disabled"; Break}
 				"ClientToServer"	{$ThemeHTMLFileTransfer = "Client to server only"; Break}
 				"ServerToClient"	{$ThemeHTMLFileTransfer = "Server to client only"; Break}
 				"Bidirectional"		{$ThemeHTMLFileTransfer = "Bidirectional"; Break}
-				Default				{$ThemeHTMLFileTransfer = "Unable to determine File transfer mode: $($Theme.HTML5Client.Gateway.FileTransferMode)"; Break}
+				Default				{$ThemeHTMLFileTransfer = "Unable to determine File transfer mode: $($Theme.UserPortal.Gateway.FileTransferMode)"; Break}
 			}
 			
 			$ThemeHTMLClipboardDirection = ""
-			Switch($Theme.HTML5Client.Gateway.ClipboardDirection)
+			Switch($Theme.UserPortal.Gateway.ClipboardDirection)
 			{
 				"None"				{$ThemeHTMLClipboardDirection = "None"; Break}
 				"ClientToServer"	{$ThemeHTMLClipboardDirection = "Client to server only"; Break}
 				"ServerToClient"	{$ThemeHTMLClipboardDirection = "Server to client only"; Break}
 				"Bidirectional"		{$ThemeHTMLClipboardDirection = "Bidirectional"; Break}
-				Default				{$ThemeHTMLClipboardDirection = "Unable to determine Clipboard direction: $($Theme.HTML5Client.Gateway.ClipboardDirection)"; Break}
+				Default				{$ThemeHTMLClipboardDirection = "Unable to determine Clipboard direction: $($Theme.UserPortal.Gateway.ClipboardDirection)"; Break}
 			}
 			
 			If($MSWord -or $PDF)
@@ -16909,8 +16917,8 @@ Function OutputSite
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Webpage title"; Value = $Theme.HTML5Client.Branding.WebpageTitle; }) > $Null
-				$ScriptInformation.Add(@{Data = "Login to"; Value = $Theme.HTML5Client.Branding.LoginTo; }) > $Null
+				$ScriptInformation.Add(@{Data = "Webpage title"; Value = $Theme.UserPortal.Branding.WebpageTitle; }) > $Null
+				$ScriptInformation.Add(@{Data = "Login to"; Value = $Theme.UserPortal.Branding.LoginTo; }) > $Null
 				$ScriptInformation.Add(@{Data = "Company logo"; Value = $ThemeCompanyLogo; }) > $Null
 				$ScriptInformation.Add(@{Data = "Favicon icon"; Value = $ThemeFaviconIcon; }) > $Null
 
@@ -16934,8 +16942,8 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Webpage title`t: " $Theme.HTML5Client.Branding.WebpageTitle
-				Line 3 "Login to`t: " $Theme.HTML5Client.Branding.LoginTo
+				Line 3 "Webpage title`t: " $Theme.UserPortal.Branding.WebpageTitle
+				Line 3 "Login to`t: " $Theme.UserPortal.Branding.LoginTo
 				Line 3 "Company logo`t: " $ThemeCompanyLogo
 				Line 3 "Favicon icon`t: " $ThemeFaviconIcon
 				Line 0 ""
@@ -16943,8 +16951,8 @@ Function OutputSite
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Webpage title",($Script:htmlsb),$Theme.HTML5Client.Branding.WebpageTitle,$htmlwhite)
-				$rowdata += @(,("Login to",($Script:htmlsb),$Theme.HTML5Client.Branding.LoginTo,$htmlwhite))
+				$columnHeaders = @("Webpage title",($Script:htmlsb),$Theme.UserPortal.Branding.WebpageTitle,$htmlwhite)
+				$rowdata += @(,("Login to",($Script:htmlsb),$Theme.UserPortal.Branding.LoginTo,$htmlwhite))
 				$rowdata += @(,("Company logo",($Script:htmlsb),$ThemeCompanyLogo,$htmlwhite))
 				$rowdata += @(,("Favicon icon",($Script:htmlsb),$ThemeFaviconIcon,$htmlwhite))
 
@@ -16970,19 +16978,19 @@ Function OutputSite
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Default language"   ; Value = $Theme.HTML5Client.LanguageBar.Default.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "English"            ; Value = $Theme.HTML5Client.LanguageBar.en_US.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "German"             ; Value = $Theme.HTML5Client.LanguageBar.de_DE.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Japanese"           ; Value = $Theme.HTML5Client.LanguageBar.ja_JP.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Russian"            ; Value = $Theme.HTML5Client.LanguageBar.ru_RU.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "French"             ; Value = $Theme.HTML5Client.LanguageBar.fr_FR.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Spanish"            ; Value = $Theme.HTML5Client.LanguageBar.es_ES.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Italian"            ; Value = $Theme.HTML5Client.LanguageBar.it_IT.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Portuguese"         ; Value = $Theme.HTML5Client.LanguageBar.pt_BR.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Chinese Simplified" ; Value = $Theme.HTML5Client.LanguageBar.zh_CN.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Chinese Traditional"; Value = $Theme.HTML5Client.LanguageBar.zh_TW.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Korean"             ; Value = $Theme.HTML5Client.LanguageBar.ko_KR.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Dutch"              ; Value = $Theme.HTML5Client.LanguageBar.nl_NL.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Default language"   ; Value = $Theme.UserPortal.LanguageBar.Default.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "English"            ; Value = $Theme.UserPortal.LanguageBar.en_US.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "German"             ; Value = $Theme.UserPortal.LanguageBar.de_DE.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Japanese"           ; Value = $Theme.UserPortal.LanguageBar.ja_JP.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Russian"            ; Value = $Theme.UserPortal.LanguageBar.ru_RU.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "French"             ; Value = $Theme.UserPortal.LanguageBar.fr_FR.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Spanish"            ; Value = $Theme.UserPortal.LanguageBar.es_ES.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Italian"            ; Value = $Theme.UserPortal.LanguageBar.it_IT.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Portuguese"         ; Value = $Theme.UserPortal.LanguageBar.pt_BR.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Chinese Simplified" ; Value = $Theme.UserPortal.LanguageBar.zh_CN.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Chinese Traditional"; Value = $Theme.UserPortal.LanguageBar.zh_TW.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Korean"             ; Value = $Theme.UserPortal.LanguageBar.ko_KR.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Dutch"              ; Value = $Theme.UserPortal.LanguageBar.nl_NL.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -17004,37 +17012,37 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Default language`t: "    $Theme.HTML5Client.LanguageBar.Default.ToString()
-				Line 3 "English`t`t`t: "         $Theme.HTML5Client.LanguageBar.en_US.ToString()
-				Line 3 "German`t`t`t: "          $Theme.HTML5Client.LanguageBar.de_DE.ToString()
-				Line 3 "Japanese`t`t: "          $Theme.HTML5Client.LanguageBar.ja_JP.ToString()
-				Line 3 "Russian`t`t`t: "         $Theme.HTML5Client.LanguageBar.ru_RU.ToString()
-				Line 3 "French`t`t`t: "          $Theme.HTML5Client.LanguageBar.fr_FR.ToString()
-				Line 3 "Spanish`t`t`t: "         $Theme.HTML5Client.LanguageBar.es_ES.ToString()
-				Line 3 "Italian`t`t`t: "         $Theme.HTML5Client.LanguageBar.it_IT.ToString()
-				Line 3 "Portuguese`t`t: "        $Theme.HTML5Client.LanguageBar.pt_BR.ToString()
-				Line 3 "Chinese Simplified`t: "  $Theme.HTML5Client.LanguageBar.zh_CN.ToString()
-				Line 3 "Chinese Traditional`t: " $Theme.HTML5Client.LanguageBar.zh_TW.ToString()
-				Line 3 "Korean`t`t`t: "          $Theme.HTML5Client.LanguageBar.ko_KR.ToString()
-				Line 3 "Dutch`t`t`t: "           $Theme.HTML5Client.LanguageBar.nl_NL.ToString()
+				Line 3 "Default language`t: "    $Theme.UserPortal.LanguageBar.Default.ToString()
+				Line 3 "English`t`t`t: "         $Theme.UserPortal.LanguageBar.en_US.ToString()
+				Line 3 "German`t`t`t: "          $Theme.UserPortal.LanguageBar.de_DE.ToString()
+				Line 3 "Japanese`t`t: "          $Theme.UserPortal.LanguageBar.ja_JP.ToString()
+				Line 3 "Russian`t`t`t: "         $Theme.UserPortal.LanguageBar.ru_RU.ToString()
+				Line 3 "French`t`t`t: "          $Theme.UserPortal.LanguageBar.fr_FR.ToString()
+				Line 3 "Spanish`t`t`t: "         $Theme.UserPortal.LanguageBar.es_ES.ToString()
+				Line 3 "Italian`t`t`t: "         $Theme.UserPortal.LanguageBar.it_IT.ToString()
+				Line 3 "Portuguese`t`t: "        $Theme.UserPortal.LanguageBar.pt_BR.ToString()
+				Line 3 "Chinese Simplified`t: "  $Theme.UserPortal.LanguageBar.zh_CN.ToString()
+				Line 3 "Chinese Traditional`t: " $Theme.UserPortal.LanguageBar.zh_TW.ToString()
+				Line 3 "Korean`t`t`t: "          $Theme.UserPortal.LanguageBar.ko_KR.ToString()
+				Line 3 "Dutch`t`t`t: "           $Theme.UserPortal.LanguageBar.nl_NL.ToString()
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Default language",($Script:htmlsb),$Theme.HTML5Client.LanguageBar.Default.ToString(),$htmlwhite)
-				$rowdata += @(,("English"            ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.en_US.ToString(),$htmlwhite))
-				$rowdata += @(,("German"             ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.de_DE.ToString(),$htmlwhite))
-				$rowdata += @(,("Japanese"           ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.ja_JP.ToString(),$htmlwhite))
-				$rowdata += @(,("Russian"            ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.ru_RU.ToString(),$htmlwhite))
-				$rowdata += @(,("French"             ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.fr_FR.ToString(),$htmlwhite))
-				$rowdata += @(,("Spanish"            ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.es_ES.ToString(),$htmlwhite))
-				$rowdata += @(,("Italian"            ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.it_IT.ToString(),$htmlwhite))
-				$rowdata += @(,("Portuguese"         ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.pt_BR.ToString(),$htmlwhite))
-				$rowdata += @(,("Chinese Simplified" ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.zh_CN.ToString(),$htmlwhite))
-				$rowdata += @(,("Chinese Traditional",($Script:htmlsb),$Theme.HTML5Client.LanguageBar.zh_TW.ToString(),$htmlwhite))
-				$rowdata += @(,("Korean"             ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.ko_KR.ToString(),$htmlwhite))
-				$rowdata += @(,("Dutch"              ,($Script:htmlsb),$Theme.HTML5Client.LanguageBar.nl_NL.ToString(),$htmlwhite))
+				$columnHeaders = @("Default language",($Script:htmlsb),$Theme.UserPortal.LanguageBar.Default.ToString(),$htmlwhite)
+				$rowdata += @(,("English"            ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.en_US.ToString(),$htmlwhite))
+				$rowdata += @(,("German"             ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.de_DE.ToString(),$htmlwhite))
+				$rowdata += @(,("Japanese"           ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.ja_JP.ToString(),$htmlwhite))
+				$rowdata += @(,("Russian"            ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.ru_RU.ToString(),$htmlwhite))
+				$rowdata += @(,("French"             ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.fr_FR.ToString(),$htmlwhite))
+				$rowdata += @(,("Spanish"            ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.es_ES.ToString(),$htmlwhite))
+				$rowdata += @(,("Italian"            ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.it_IT.ToString(),$htmlwhite))
+				$rowdata += @(,("Portuguese"         ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.pt_BR.ToString(),$htmlwhite))
+				$rowdata += @(,("Chinese Simplified" ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.zh_CN.ToString(),$htmlwhite))
+				$rowdata += @(,("Chinese Traditional",($Script:htmlsb),$Theme.UserPortal.LanguageBar.zh_TW.ToString(),$htmlwhite))
+				$rowdata += @(,("Korean"             ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.ko_KR.ToString(),$htmlwhite))
+				$rowdata += @(,("Dutch"              ,($Script:htmlsb),$Theme.UserPortal.LanguageBar.nl_NL.ToString(),$htmlwhite))
 
 				$msg = "HTML5 client/Language bar"
 				$columnWidths = @("200","275")
@@ -17092,8 +17100,8 @@ Function OutputSite
 				WriteWordLine 0 0 ""
 
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Override post-logon message"; Value = $Theme.HTML5Client.Message.OverridePostLogonMessage.ToString(); }) > $Null
-				If($Theme.HTML5Client.Message.OverridePostLogonMessage)
+				$ScriptInformation.Add(@{Data = "Override post-logon message"; Value = $Theme.UserPortal.Message.OverridePostLogonMessage.ToString(); }) > $Null
+				If($Theme.UserPortal.Message.OverridePostLogonMessage)
 				{
 					ForEach($line in $ThemeHTML5PostlogonMessage)
 					{
@@ -17137,8 +17145,8 @@ Function OutputSite
 				}
 				Line 0 ""
 
-				Line 3 "Override post-logon message: " $Theme.HTML5Client.Message.OverridePostLogonMessage.ToString()
-				If($Theme.HTML5Client.Message.OverridePostLogonMessage)
+				Line 3 "Override post-logon message: " $Theme.UserPortal.Message.OverridePostLogonMessage.ToString()
+				If($Theme.UserPortal.Message.OverridePostLogonMessage)
 				{
 					ForEach($line in $ThemeHTML5PostlogonMessage)
 					{
@@ -17171,8 +17179,8 @@ Function OutputSite
 				WriteHTMLLine 0 0 ""
 
 				$rowdata = @()
-				$columnHeaders = @("Override post-logon message",($Script:htmlsb),$Theme.HTML5Client.Message.OverridePostLogonMessage.ToString(),$htmlwhite)
-				If($Theme.HTML5Client.Message.OverridePostLogonMessage)
+				$columnHeaders = @("Override post-logon message",($Script:htmlsb),$Theme.UserPortal.Message.OverridePostLogonMessage.ToString(),$htmlwhite)
+				If($Theme.UserPortal.Message.OverridePostLogonMessage)
 				{
 					ForEach($line in $ThemeHTML5PostlogonMessage)
 					{
@@ -17202,15 +17210,15 @@ Function OutputSite
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Override gateway settings for theme"; Value = $Theme.HTML5Client.Gateway.OverrideGWSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Override gateway settings for theme"; Value = $Theme.UserPortal.Gateway.OverrideGatewaySettings.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Client"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Launch sessions using"; Value = $ThemeHTML5LaunchSessionsUsing; }) > $Null
-				Switch($Theme.HTML5Client.Gateway.LaunchMethod)
+				Switch($Theme.UserPortal.Gateway.LaunchMethod)
 				{
 					"Launch_Applications_with_Parallels_Client_Fallback_to_HTML_5"	
 					{
-						$ScriptInformation.Add(@{Data = "     Allow user to select a launch method"; Value = $Theme.HTML5Client.Gateway.AllowLaunchMethod.ToString(); }) > $Null
-						$ScriptInformation.Add(@{Data = "     Allow opening applications in a new tab"; Value = $Theme.HTML5Client.Gateway.AllowAppsInNewTab.ToString(); }) > $Null
+						$ScriptInformation.Add(@{Data = "     Allow user to select a launch method"; Value = $Theme.UserPortal.Gateway.AllowLaunchMethod.ToString(); }) > $Null
+						$ScriptInformation.Add(@{Data = "     Allow opening applications in a new tab"; Value = $Theme.UserPortal.Gateway.AllowAppsInNewTab.ToString(); }) > $Null
 						Break
 					}
 					"Launch_Applications_with_Parallels_Client"						
@@ -17219,19 +17227,19 @@ Function OutputSite
 					}
 					"Launch_Applications_with_Browser_HTML5"						
 					{
-						$ScriptInformation.Add(@{Data = "     Allow opening applications in a new tab"; Value = $Theme.HTML5Client.Gateway.AllowAppsInNewTab.ToString(); }) > $Null
+						$ScriptInformation.Add(@{Data = "     Allow opening applications in a new tab"; Value = $Theme.UserPortal.Gateway.AllowAppsInNewTab.ToString(); }) > $Null
 						Break
 					}
 				}
-				$ScriptInformation.Add(@{Data = "     Use Pre Windows 2000 login format"; Value = $Theme.HTML5Client.Gateway.Pre2000Cred.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Allow embedding of Parallels HTML5 Client into other web pages"; Value = $Theme.HTML5Client.Gateway.AllowEmbed.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Use Pre Windows 2000 login format"; Value = $Theme.UserPortal.Gateway.Pre2000Cred.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Allow embedding of Parallels HTML5 Client into other web pages"; Value = $Theme.UserPortal.Gateway.AllowEmbed.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "     Allow file transfer command"; Value = $ThemeHTMLFileTransfer; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Allow clipboard command"; Value = $ThemeHTMLClipboardDirection; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Allow cross-origin resource sharing"; Value = $Theme.HTML5Client.Gateway.AllowCORS.ToString(); }) > $Null
-				If($Theme.HTML5Client.Gateway.AllowCORS)
+				$ScriptInformation.Add(@{Data = "     Allow cross-origin resource sharing"; Value = $Theme.UserPortal.Gateway.AllowCORS.ToString(); }) > $Null
+				If($Theme.UserPortal.Gateway.AllowCORS)
 				{
 					$cnt=-1
-					ForEach($Domain in $Theme.HTML5Client.Gateway.AllowedDomainsForCORS)
+					ForEach($Domain in $Theme.UserPortal.Gateway.AllowedDomainsForCORS)
 					{
 						$cnt++
 						
@@ -17244,7 +17252,7 @@ Function OutputSite
 							$ScriptInformation.Add(@{Data = ""; Value = $Domain; }) > $Null
 						}
 					}
-					$ScriptInformation.Add(@{Data = "Browser cache time"; Value = "$($Theme.HTML5Client.Gateway.BrowserCacheTimeInMonths.ToString()) months"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Browser cache time"; Value = "$($Theme.UserPortal.Gateway.BrowserCacheTimeInMonths.ToString()) months"; }) > $Null
 				}
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -17267,15 +17275,15 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Override gateway settings for theme: " $Theme.HTML5Client.Gateway.OverrideGWSettings.ToString()
+				Line 3 "Override gateway settings for theme: " $Theme.UserPortal.Gateway.OverrideGatewaySettings.ToString()
 				Line 3 "Client"
 				Line 4 "Launch sessions using`t`t`t: " $ThemeHTML5LaunchSessionsUsing
-				Switch($Theme.HTML5Client.Gateway.LaunchMethod)
+				Switch($Theme.UserPortal.Gateway.LaunchMethod)
 				{
 					"Launch_Applications_with_Parallels_Client_Fallback_to_HTML_5"	
 					{
-						Line 4 "Allow user to select a launch method`t: " $Theme.HTML5Client.Gateway.AllowLaunchMethod.ToString()
-						Line 4 "Allow opening applications in a new tab`t: " $Theme.HTML5Client.Gateway.AllowAppsInNewTab.ToString()
+						Line 4 "Allow user to select a launch method`t: " $Theme.UserPortal.Gateway.AllowLaunchMethod.ToString()
+						Line 4 "Allow opening applications in a new tab`t: " $Theme.UserPortal.Gateway.AllowAppsInNewTab.ToString()
 						Break
 					}
 					"Launch_Applications_with_Parallels_Client"						
@@ -17284,20 +17292,20 @@ Function OutputSite
 					}
 					"Launch_Applications_with_Browser_HTML5"						
 					{
-						Line 4 "Allow opening applications in a new tab`t: " $Theme.HTML5Client.Gateway.AllowAppsInNewTab.ToString()
+						Line 4 "Allow opening applications in a new tab`t: " $Theme.UserPortal.Gateway.AllowAppsInNewTab.ToString()
 						Break
 					}
 				}
-				Line 4 "Use Pre Windows 2000 login format`t: " $Theme.HTML5Client.Gateway.Pre2000Cred.ToString()
+				Line 4 "Use Pre Windows 2000 login format`t: " $Theme.UserPortal.Gateway.Pre2000Cred.ToString()
 				Line 4 "Allow embedding of Parallels HTML5 "
-				Line 4 "Client into other web pages`t`t: " $Theme.HTML5Client.Gateway.AllowEmbed.ToString()
+				Line 4 "Client into other web pages`t`t: " $Theme.UserPortal.Gateway.AllowEmbed.ToString()
 				Line 4 "Allow file transfer command`t`t: " $ThemeHTMLFileTransfer
 				Line 4 "Allow clipboard command`t`t`t: " $ThemeHTMLClipboardDirection
-				Line 4 "Allow cross-origin resource sharing`t: " $Theme.HTML5Client.Gateway.AllowCORS.ToString()
-				If($Theme.HTML5Client.Gateway.AllowCORS)
+				Line 4 "Allow cross-origin resource sharing`t: " $Theme.UserPortal.Gateway.AllowCORS.ToString()
+				If($Theme.UserPortal.Gateway.AllowCORS)
 				{
 					$cnt=-1
-					ForEach($Domain in $Theme.HTML5Client.Gateway.AllowedDomainsForCORS)
+					ForEach($Domain in $Theme.UserPortal.Gateway.AllowedDomainsForCORS)
 					{
 						$cnt++
 						
@@ -17310,7 +17318,7 @@ Function OutputSite
 							Line 9 "  " $Domain
 						}
 					}
-					Line 5 "Browser cache time`t`t: "  "$($Theme.HTML5Client.Gateway.BrowserCacheTimeInMonths.ToString()) months"
+					Line 5 "Browser cache time`t`t: "  "$($Theme.UserPortal.Gateway.BrowserCacheTimeInMonths.ToString()) months"
 				}
 
 				Line 0 ""
@@ -17318,15 +17326,15 @@ Function OutputSite
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Override gateway settings for theme",($Script:htmlsb),$Theme.HTML5Client.Gateway.OverrideGWSettings.ToString(),$htmlwhite)
+				$columnHeaders = @("Override gateway settings for theme",($Script:htmlsb),$Theme.UserPortal.Gateway.OverrideGatewaySettings.ToString(),$htmlwhite)
 				$rowdata += @(,("Client",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("     Launch sessions using",($Script:htmlsb),$ThemeHTML5LaunchSessionsUsing,$htmlwhite))
-				Switch($Theme.HTML5Client.Gateway.LaunchMethod)
+				Switch($Theme.UserPortal.Gateway.LaunchMethod)
 				{
 					"Launch_Applications_with_Parallels_Client_Fallback_to_HTML_5"	
 					{
-						$rowdata += @(,("     Allow user to select a launch method",($Script:htmlsb),$Theme.HTML5Client.Gateway.AllowLaunchMethod.ToString(),$htmlwhite))
-						$rowdata += @(,("     Allow opening applications in a new tab",($Script:htmlsb), $Theme.HTML5Client.Gateway.AllowAppsInNewTab.ToString(),$htmlwhite))
+						$rowdata += @(,("     Allow user to select a launch method",($Script:htmlsb),$Theme.UserPortal.Gateway.AllowLaunchMethod.ToString(),$htmlwhite))
+						$rowdata += @(,("     Allow opening applications in a new tab",($Script:htmlsb), $Theme.UserPortal.Gateway.AllowAppsInNewTab.ToString(),$htmlwhite))
 						Break
 					}
 					"Launch_Applications_with_Parallels_Client"						
@@ -17335,19 +17343,19 @@ Function OutputSite
 					}
 					"Launch_Applications_with_Browser_HTML5"						
 					{
-						$rowdata += @(,("     Allow opening applications in a new tab",($Script:htmlsb), $Theme.HTML5Client.Gateway.AllowAppsInNewTab.ToString(),$htmlwhite))
+						$rowdata += @(,("     Allow opening applications in a new tab",($Script:htmlsb), $Theme.UserPortal.Gateway.AllowAppsInNewTab.ToString(),$htmlwhite))
 						Break
 					}
 				}
-				$rowdata += @(,("     Use Pre Windows 2000 login format",($Script:htmlsb), $Theme.HTML5Client.Gateway.Pre2000Cred.ToString(),$htmlwhite))
-				$rowdata += @(,("     Allow embedding of Parallels HTML5 Client into other web pages",($Script:htmlsb), $Theme.HTML5Client.Gateway.AllowEmbed.ToString(),$htmlwhite))
+				$rowdata += @(,("     Use Pre Windows 2000 login format",($Script:htmlsb), $Theme.UserPortal.Gateway.Pre2000Cred.ToString(),$htmlwhite))
+				$rowdata += @(,("     Allow embedding of Parallels HTML5 Client into other web pages",($Script:htmlsb), $Theme.UserPortal.Gateway.AllowEmbed.ToString(),$htmlwhite))
 				$rowdata += @(,("     Allow file transfer command",($Script:htmlsb),$ThemeHTMLFileTransfer,$htmlwhite))
 				$rowdata += @(,("     Allow clipboard command",($Script:htmlsb),$ThemeHTMLClipboardDirection,$htmlwhite))
-				$rowdata += @(,("     Allow cross-origin resource sharing",($Script:htmlsb),$Theme.HTML5Client.Gateway.AllowCORS.ToString(),$htmlwhite))
-				If($Theme.HTML5Client.Gateway.AllowCORS)
+				$rowdata += @(,("     Allow cross-origin resource sharing",($Script:htmlsb),$Theme.UserPortal.Gateway.AllowCORS.ToString(),$htmlwhite))
+				If($Theme.UserPortal.Gateway.AllowCORS)
 				{
 					$cnt=-1
-					ForEach($Domain in $Theme.HTML5Client.Gateway.AllowedDomainsForCORS)
+					ForEach($Domain in $Theme.UserPortal.Gateway.AllowedDomainsForCORS)
 					{
 						$cnt++
 						
@@ -17360,7 +17368,7 @@ Function OutputSite
 							$rowdata += @(,("",($Script:htmlsb),$Domain,$htmlwhite))
 						}
 					}
-					$rowdata += @(,("Browser cache time",($Script:htmlsb),"$($Theme.HTML5Client.Gateway.BrowserCacheTimeInMonths.ToString()) months",$htmlwhite))
+					$rowdata += @(,("Browser cache time",($Script:htmlsb),"$($Theme.UserPortal.Gateway.BrowserCacheTimeInMonths.ToString()) months",$htmlwhite))
 				}
 
 				$msg = "HTML5 client/Gateway"
@@ -17386,9 +17394,9 @@ Function OutputSite
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Cookie consent"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Enable cookie consent"; Value = $Theme.HTML5Client.LegalPolicies.AllowCookieConsent.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Enable cookie consent"; Value = $Theme.UserPortal.LegalPolicies.AllowCookieConsent.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "End User License Agreement"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Enable EULA"; Value = $Theme.HTML5Client.LegalPolicies.AllowEULA.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Enable EULA"; Value = $Theme.UserPortal.LegalPolicies.AllowEULA.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -17411,18 +17419,18 @@ Function OutputSite
 			If($Text)
 			{
 				Line 3 "Cookie consent" 
-				Line 4 "Enable cookie consent`t: " $Theme.HTML5Client.LegalPolicies.AllowCookieConsent.ToString()
+				Line 4 "Enable cookie consent`t: " $Theme.UserPortal.LegalPolicies.AllowCookieConsent.ToString()
 				Line 3 "End User License Agreement" 
-				Line 4 "Enable EULA`t`t: " $Theme.HTML5Client.LegalPolicies.AllowEULA.ToString()
+				Line 4 "Enable EULA`t`t: " $Theme.UserPortal.LegalPolicies.AllowEULA.ToString()
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
 				$columnHeaders = @("Cookie consent",($Script:htmlsb),"",$htmlwhite)
-				$rowdata += @(,("     Enable cookie consent",($Script:htmlsb),$Theme.HTML5Client.LegalPolicies.AllowCookieConsent.ToString(),$htmlwhite))
+				$rowdata += @(,("     Enable cookie consent",($Script:htmlsb),$Theme.UserPortal.LegalPolicies.AllowCookieConsent.ToString(),$htmlwhite))
 				$rowdata += @(,("End User License Agreement",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("     Enable EULA",($Script:htmlsb), $Theme.HTML5Client.LegalPolicies.AllowEULA.ToString(),$htmlwhite))
+				$rowdata += @(,("     Enable EULA",($Script:htmlsb), $Theme.UserPortal.LegalPolicies.AllowEULA.ToString(),$htmlwhite))
 
 				$msg = "HTML5 client/Legal policies"
 				$columnWidths = @("200","275")
@@ -17937,37 +17945,37 @@ Function OutputSite
 	{
 		Write-Warning "
 		`n
-		Unable to retrieve Certificates for Site $($Site.Name)`
+		Unable to retrieve Settings for Site $($Site.Name)`
 		"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "Unable to retrieve Certificates for Site $($Site.Name)"
+			WriteWordLine 0 0 "Unable to retrieve Settings for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "Unable to retrieve Certificates for Site $($Site.Name)"
+			Line 0 "Unable to retrieve Settings for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "Unable to retrieve Certificates for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "Unable to retrieve Settings for Site $($Site.Name)"
 		}
 	}
 	ElseIf($? -and $Null -eq $FarmSettings)
 	{
 		Write-Host "
-		No Certificates retrieved for Site $($Site.Name).`
+		No Settings retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "No Certificates retrieved for Site $($Site.Name)"
+			WriteWordLine 0 0 "No Settings retrieved for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "No Certificates retrieved for Site $($Site.Name)"
+			Line 0 "No Settings retrieved for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "No Certificates retrieved for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "No Settings retrieved for Site $($Site.Name)"
 		}
 	}
 	Else
@@ -17987,7 +17995,18 @@ Function OutputSite
 
 		Write-Verbose "$(Get-Date -Format G): `t`tOutput Settings"
 	}
-		
+	
+	<#RASFarmSettings	
+		Dropped Properties	ExcludeDirectRDP
+							ExcludeDirectRDPForVDI
+							SendHDIcons
+							ReplicateSendHDIcons
+							EnableOverlayIcons
+							ShowPasswordExpiry
+							ReplicateURLRedirection
+							URLBlackList
+							TokenValidationTime
+
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 3 0 "URL redirection"
@@ -18075,7 +18094,7 @@ Function OutputSite
 
 		WriteHTMLLine 0 0 ""
 	}
-		
+	#>	
 	$RASNotificationHandlers = Get-RASNotification -SiteId $Site.Id -EA 0 4>$Null
 	
 	If(!($?))
@@ -18163,79 +18182,49 @@ Function OutputSite
 	{
 		OutputRASNotificationScripts $RASNotificationScripts
 	}
-		
-	If($MSWord -or $PDF)
+	
+	$RASClientSettings = Get-RASClientSettings -SiteId $Site.Id -EA 0 4>$Null
+	
+	If(!($?))
 	{
-		WriteWordLine 3 0 "Client settings"
-		$ScriptInformation = New-Object System.Collections.ArrayList
-		If($FarmSettings.SendHDIcons)
+		Write-Warning "
+		`n
+		Unable to retrieve CLient Settings information
+		"
+		If($MSWord -or $PDF)
 		{
-			$ScriptInformation.Add(@{Data = "Published application icons"; Value = "Send high resolution icons (uses more network bandwidth)"; }) > $Null
+			WriteWordLine 0 0 "Unable to retrieve CLient Settings information"
 		}
-		Else
+		If($Text)
 		{
-			$ScriptInformation.Add(@{Data = "Published application icons"; Value = "Send standard resolution icons"; }) > $Null
+			Line 0 "Unable to retrieve CLient Settings information"
 		}
-		$ScriptInformation.Add(@{Data = "Enable overlay icon"; Value = $FarmSettings.EnableOverlayIcons.ToString(); }) > $Null
-		$ScriptInformation.Add(@{Data = "Show password expiration reminder"; Value = $FarmSettings.ShowPasswordExpiry.ToString(); }) > $Null
-		$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FarmSettings.ReplicateSendHDIcons.ToString(); }) > $Null
-
-		$Table = AddWordTable -Hashtable $ScriptInformation `
-		-Columns Data,Value `
-		-List `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
-
-		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 250;
-
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-		FindWordDocumentEnd
-		$Table = $Null
-
-		WriteWordLine 0 0 ""
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve CLient Settings information"
+		}
 	}
-	If($Text)
+	ElseIf($? -and $null -eq $RASClientSettings)
 	{
-		Line 2 "Client settings"
-		If($FarmSettings.SendHDIcons)
+		Write-Host "
+		No CLient Settings information was found
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
 		{
-			Line 3 "Published application icons`t`t: " "Send high resolution icons (uses more network bandwidth)" ""
+			WriteWordLine 0 0 "No CLient Settings information was found"
 		}
-		Else
+		If($Text)
 		{
-			Line 3 "Published application icons`t`t: " "Send standard resolution icons" ""
+			Line 0 "No CLient Settings information was found"
 		}
-		Line 3 "Enable overlay icon`t`t`t: " $FarmSettings.EnableOverlayIcons.ToString()
-		Line 3 "Show password expiration reminder`t: " $FarmSettings.ShowPasswordExpiry.ToString()
-		Line 3 "Settings are replicated to all Sites`t: " $FarmSettings.ReplicateSendHDIcons.ToString()
-		Line 0 ""
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No CLient Settings information was found"
+		}
 	}
-	If($HTML)
+	Else
 	{
-		WriteHTMLLine 3 0 "Client settings"
-		$rowdata = @()
-		If($FarmSettings.SendHDIcons)
-		{
-			$columnHeaders = @("Published application icons",($Script:htmlsb),"Send high resolution icons (uses more network bandwidth)",$htmlwhite)
-		}
-		Else
-		{
-			$columnHeaders = @("Published application icons",($Script:htmlsb),"Send standard resolution icons",$htmlwhite)
-		}
-		$rowdata += @(,("Enable overlay icon",($Script:htmlsb),$FarmSettings.EnableOverlayIcons.ToString(),$htmlwhite))
-		$rowdata += @(,("Show password expiration reminder",($Script:htmlsb),$FarmSettings.ShowPasswordExpiry.ToString(),$htmlwhite))
-		$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FarmSettings.ReplicateSendHDIcons.ToString(),$htmlwhite))
-
-		$msg = ""
-		$columnWidths = @("200","275")
-		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-
-		WriteHTMLLine 0 0 ""
+		OutputRASClientSettings $RASClientSettings
 	}
 
 	$FSLogixDeploymentSettings = Get-RASFSLogixSettings -EA 0 4>$Null | Where-Object{ $_.SiteId -eq $Site.Id}
@@ -18995,7 +18984,7 @@ Function OutputPublishingSettings
 			}
 		}
 
-		If($PubItem.PreferredRoutingEnabled)
+		<#If($PubItem.PreferredRoutingEnabled)
 		{
 			$Results = Get-RASPubItemPreferredRoute -Id $PubItem.Id -EA 0 4> $Null
 			
@@ -19011,7 +19000,7 @@ Function OutputPublishingSettings
 		Else
 		{
 			$PreRouting = ""
-		}
+		}#>
 		
 		If($MSWord -or $PDF)
 		{
@@ -30851,50 +30840,50 @@ Function ProcessConnection
 
 	Write-Verbose "$(Get-Date -Format G): `tProcessing Second level authentication"
 	
-	$results = Get-RAS2FASetting -SiteId $Site.Id -EA 0 4>$Null
+	$MFA = Get-RASMFA -SiteId $Site.Id -EA 0 4>$Null
 	
 	If(!($?))
 	{
 		Write-Warning "
 		`n
-		Unable to retrieve Second level authentication information
+		Unable to retrieve Multi-Factor authentication information
 		"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "Unable to retrieve Second level authentication information"
+			WriteWordLine 0 0 "Unable to retrieve Multi-Factor authentication information"
 		}
 		If($Text)
 		{
-			Line 0 "Unable to retrieve Second level authentication information"
+			Line 0 "Unable to retrieve Multi-Factor authentication information"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "Unable to retrieve Second level authentication information"
+			WriteHTMLLine 0 0 "Unable to retrieve Multi-Factor authentication information"
 		}
 	}
-	ElseIf($? -and $null -eq $results)
+	ElseIf($? -and $null -eq $MFA)
 	{
 		Write-Host "
-		No Second level authentication information was found
+		No Multi-Factor authentication information was found
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "No Second level authentication information was found"
+			WriteWordLine 0 0 "No Multi-Factor authentication information was found"
 		}
 		If($Text)
 		{
-			Line 0 "No Second level authentication information was found"
+			Line 0 "No Multi-Factor authentication information was found"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "No Second level authentication information was found"
+			WriteHTMLLine 0 0 "No Multi-Factor authentication information was found"
 		}
 	}
 	Else
 	{
-		Output2FASetting $results
+		OutputMFASetting $MFA
 	}
-
+	
 	Write-Verbose "$(Get-Date -Format G): `tProcessing Allowed devices"
 	
 	$results = Get-RASAllowedDevicesSetting -SiteId $Site.Id -EA 0 4>$Null
@@ -31179,11 +31168,11 @@ Function OutputRASSessionSetting
 	}
 }
 
-Function Output2FASetting
+Function OutputMFASetting
 {
-	Param([object] $RAS2FASettings)
+	Param([object] $RASMFASettings)
 	
-	Write-Verbose "$(Get-Date -Format G): `t`tOutput Second level authentication"
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput Multi-Factor authentication"
 	
 	If($MSWord -or $PDF)
 	{
@@ -31198,37 +31187,42 @@ Function Output2FASetting
 		WriteHTMLLine 2 0 "Multi-factor authentication"
 	}
 
-	Switch ($RAS2FASettings.Provider)
+	Switch ($RASMFASettings.Type)
 	{
-		"None" 			{$RAS2FASettingsProvider = "None"; Break}
-		"Deepnet" 		{$RAS2FASettingsProvider = "Deepnet"; Break}
-		"SafeNet" 		{$RAS2FASettingsProvider = "SafeNet"; Break}
-		"Radius" 		{$RAS2FASettingsProvider = "RADIUS"; Break}
-		"AzureRadius"	{$RAS2FASettingsProvider = "Azure MFA server (RADIUS)"; Break}
-		"DuoRadius" 	{$RAS2FASettingsProvider = "Duo (RADIUS)"; Break}
-		"FortiRadius" 	{$RAS2FASettingsProvider = "FortiAuthenticator (RADIUS)"; Break}
-		"TekRadius" 	{$RAS2FASettingsProvider = "TekRADIUS"; Break}
-		"GAuthTOTP"		{$RAS2FASettingsProvider = "Google Authenticator"; Break}
-		Default 		{$RAS2FASettingsProvider = "Unable to determine 2FA Provider: $($RAS2FASettings.Provider)"; Break}
+		"None" 			{$RASMFASettingsProvider = "None"; Break}
+		"Deepnet" 		{$RASMFASettingsProvider = "Deepnet"; Break}
+		"SafeNet" 		{$RASMFASettingsProvider = "SafeNet"; Break}
+		"Radius" 		{$RASMFASettingsProvider = "RADIUS"; Break}
+		"AzureRadius"	{$RASMFASettingsProvider = "Azure MFA server (RADIUS)"; Break}
+		"DuoRadius" 	{$RASMFASettingsProvider = "Duo (RADIUS)"; Break}
+		"FortiRadius" 	{$RASMFASettingsProvider = "FortiAuthenticator (RADIUS)"; Break}
+		"TekRadius" 	{$RASMFASettingsProvider = "TekRADIUS"; Break}
+		"GAuthTOTP"		{$RASMFASettingsProvider = "Google Authenticator"; Break}
+		Default 		{$RASMFASettingsProvider = "Unable to determine MFA Provider: $($RASMFASettings.Type)"; Break}
 	}
 
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 3 0 "Provider settings"
 		$ScriptInformation = New-Object System.Collections.ArrayList
-		$ScriptInformation.Add(@{Data = "Provider"; Value = $RAS2FASettingsProvider; }) > $Null
+		$ScriptInformation.Add(@{Data = "Provider"; Value = $RASMFASettingsProvider; }) > $Null
 		
-		If($RAS2FASettingsProvider -ne "None")
+		If($RASMFASettingsProvider -ne "None")
 		{
 			$ScriptInformation.Add(@{Data = "Settings"; Value = ""; }) > $Null
 			
-			If($RAS2FASettings.Provider -eq "AzureRadius")
+			If($RASMFASettings.Type -eq "AzureRadius")
 			{
+				$ScriptInformation.Add(@{Data = "     General"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Enable MFA provider in site"; Value = $RASMFASettings.Enabled.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Name"; Value = $RASMFASettings.Name; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Description"; Value = $RASMFASettings.Description; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type"; Value = $RASMFASettings.DisplayName; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Connection"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.AzureRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.AzureRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.AzureRadiusSettings.BackupServer; }) > $Null
-				If($RAS2FASettings.AzureRadiusSettings.HAMode -eq "Parallel")
+				$ScriptInformation.Add(@{Data = "          Display Name"; Value = $RASMFASettings.DisplayName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RASMFASettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RASMFASettings.BackupServer; }) > $Null
+				If($RASMFASettings.HAMode -eq "Parallel")
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
@@ -31236,15 +31230,62 @@ Function Output2FASetting
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.AzureRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.AzureRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.AzureRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.AzureRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RASMFASettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout (seconds)"; Value = $RASMFASettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RASMFASettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RASMFASettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RASMFASettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RASMFASettings.ForwardFirstPwdToAD.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.AttributeInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Name: $($Item.RadiusAttrName)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Vendor: $($Item.VendorID)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Type: $($Item.AttributeType)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Value: $($Item.Value)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RASMFASettings.AutomationInfoList)
+				{
+					$cnt++
+					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Enable Action: $($Item.Enabled.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Title: $($Item.Title)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Command: $($Item.Command)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Description: $($Item.Description)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Action message: $($Item.ActionMessage)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Image: $($Item.Image)"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = "     Autosend: $($Item.AutoSend.ToString())"; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
+				}
+			}
+			ElseIf($RASMFASettings.Type -eq "DuoRadius")
+			{
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RASMFASettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary Server"; Value = $RASMFASettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary Server"; Value = $RASMFASettings.BackupServer; }) > $Null
+				If($RASMFASettings.HAMode -eq "Parallel")
+				{
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
+				}
+				Else
+				{
+					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
+				}
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RASMFASettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RASMFASettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RASMFASettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RASMFASettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RASMFASettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RASMFASettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$cnt=0
+				ForEach($Item in $RASMFASettings.AttributeInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
@@ -31256,7 +31297,7 @@ Function Output2FASetting
 				}
 				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.AutomationInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
@@ -31268,12 +31309,12 @@ Function Output2FASetting
 					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "DuoRadius")
+			ElseIf($RASMFASettings.Type -eq "FortiRadius")
 			{
-				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.DuoRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Primary Server"; Value = $RAS2FASettings.DuoRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Secondary Server"; Value = $RAS2FASettings.DuoRadiusSettings.BackupServer; }) > $Null
-				If($RAS2FASettings.DuoRadiusSettings.HAMode -eq "Parallel")
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RASMFASettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RASMFASettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RASMFASettings.BackupServer; }) > $Null
+				If($RASMFASettings.HAMode -eq "Parallel")
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
@@ -31281,15 +31322,15 @@ Function Output2FASetting
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.DuoRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.DuoRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.DuoRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.DuoRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RASMFASettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RASMFASettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RASMFASettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RASMFASettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RASMFASettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RASMFASettings.ForwardFirstPwdToAD.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.AttributeInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
@@ -31301,7 +31342,7 @@ Function Output2FASetting
 				}
 				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.AutomationInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
@@ -31313,12 +31354,12 @@ Function Output2FASetting
 					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "FortiRadius")
+			ElseIf($RASMFASettings.Type -eq "TekRadius")
 			{
-				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.FortiRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.FortiRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.FortiRadiusSettings.BackupServer; }) > $Null
-				If($RAS2FASettings.FortiRadiusSettings.HAMode -eq "Parallel")
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RASMFASettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RASMFASettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RASMFASettings.BackupServer; }) > $Null
+				If($RASMFASettings.HAMode -eq "Parallel")
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
@@ -31326,15 +31367,15 @@ Function Output2FASetting
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.FortiRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.FortiRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.FortiRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.FortiRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RASMFASettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RASMFASettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RASMFASettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RASMFASettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RASMFASettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RASMFASettings.ForwardFirstPwdToAD.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.AttributeInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
@@ -31346,7 +31387,7 @@ Function Output2FASetting
 				}
 				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.AutomationInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
@@ -31358,12 +31399,12 @@ Function Output2FASetting
 					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "TekRadius")
+			ElseIf($RASMFASettings.Type -eq "Radius")
 			{
-				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.TekRadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.TekRadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.TekRadiusSettings.BackupServer; }) > $Null
-				If($RAS2FASettings.TekRadiusSettings.HAMode -eq "Parallel")
+				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RASMFASettings.TypeName; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RASMFASettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RASMFASettings.BackupServer; }) > $Null
+				If($RASMFASettings.HAMode -eq "Parallel")
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
 				}
@@ -31371,15 +31412,17 @@ Function Output2FASetting
 				{
 					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
 				}
-				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.TekRadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.TekRadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.TekRadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.TekRadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RASMFASettings.Port; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RASMFASettings.Timeout; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RASMFASettings.Retries; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RASMFASettings.PasswordEncoding; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RASMFASettings.UsernameOnly.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RASMFASettings.ForwardFirstPwdToAD.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.AttributeInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
@@ -31391,7 +31434,7 @@ Function Output2FASetting
 				}
 				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.AutomationInfoList)
 				{
 					$cnt++
 					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
@@ -31403,106 +31446,59 @@ Function Output2FASetting
 					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "Radius")
+			ElseIf($RASMFASettings.Type -eq "Deepnet")
 			{
-				$ScriptInformation.Add(@{Data = "          Type Name"; Value = $RAS2FASettings.RadiusSettings.TypeName; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Primary server"; Value = $RAS2FASettings.RadiusSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Secondary server"; Value = $RAS2FASettings.RadiusSettings.BackupServer; }) > $Null
-				If($RAS2FASettings.RadiusSettings.HAMode -eq "Parallel")
-				{
-					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - active (parallel)"; }) > $Null
-				}
-				Else
-				{
-					$ScriptInformation.Add(@{Data = "          HA mode"; Value = "Active - passive (failover)"; }) > $Null
-				}
-				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.RadiusSettings.Port; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Timeout"; Value = $RAS2FASettings.RadiusSettings.Timeout; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Retries"; Value = $RAS2FASettings.RadiusSettings.Retries; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Password Encoding"; Value = $RAS2FASettings.RadiusSettings.PasswordEncoding; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward username only to Radius Server"; Value = $RAS2FASettings.RadiusSettings.UsernameOnly.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Forward the first password to Windows authentication provider"; Value = $RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Attributes"; Value = ""; }) > $Null
-				$cnt=0
-				ForEach($Item in $RAS2FASettings.RadiusSettings.AttributeInfoList)
-				{
-					$cnt++
-					$ScriptInformation.Add(@{Data = ""; Value = "Attribute $cnt"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Name: $($Item.Name)"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Vendor: $($Item.Vendor)"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Type: $($Item.AttributeType)"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Value: $($Item.Value)"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
-				}
-				$ScriptInformation.Add(@{Data = "     Automation"; Value = ""; }) > $Null
-				$cnt=0
-				ForEach($Item in $RAS2FASettings.RadiusSettings.AutomationInfoList)
-				{
-					$cnt++
-					$ScriptInformation.Add(@{Data = ""; Value = "Automation $cnt"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Enabled: $($Item.Enabled.ToString())"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Title: $($Item.Title)"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Command: $($Item.Command)"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Image: $($Item.Image)"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = "     Autosend: $($Item.AutoSend.ToString())"; }) > $Null
-					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null #blank separator line
-				}
-			}
-			ElseIf($RAS2FASettings.Provider -eq "Deepnet")
-			{
-				Switch($RAS2FASettings.DeepnetSettings.AuthMode)
+				Switch($RASMFASettings.AuthMode)
 				{
 					"MandatoryForAllUsers"						{$DeepNetAuthMode = "Mandatory for all users"; Break}
 					"CreateTokenForDomainAuthenticatedUsers"	{$DeepNetAuthMode = "Create token for Domain Authenticated users"; Break}
 					"UsersWithSafeNetAcc"						{$DeepNetAuthMode = "Use only for users with a safe account"; Break}
-					Default										{$DeepNetAuthMode = "Deepnet mode not found: $($RAS2FASettings.DeepnetSettings.AuthMode)"; Break}
+					Default										{$DeepNetAuthMode = "Deepnet mode not found: $($RASMFASettings.AuthMode)"; Break}
 				}
 				
 				$ScriptInformation.Add(@{Data = "     Connection"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Type"; Value = $RAS2FASettings.DeepnetSettings.DeepnetType; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Server"; Value = $RAS2FASettings.DeepnetSettings.Server; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Port"; Value = $RAS2FASettings.DeepnetSettings.Port.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Enable SSL"; Value = $RAS2FASettings.DeepnetSettings.SSL.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Agent"; Value = $RAS2FASettings.DeepnetSettings.DeepnetAgent; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Type"; Value = $RASMFASettings.DeepnetType; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Server"; Value = $RASMFASettings.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Port"; Value = $RASMFASettings.Port.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Enable SSL"; Value = $RASMFASettings.SSL.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Agent"; Value = $RASMFASettings.DeepnetAgent; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Application"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Application"; Value = $RAS2FASettings.DeepnetSettings.App; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Domain"; Value = $RAS2FASettings.DeepnetSettings.DefaultDomain; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Application"; Value = $RASMFASettings.App; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Domain"; Value = $RASMFASettings.DefaultDomain; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Authentication"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Mode"; Value = $DeepNetAuthMode; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Token Type"; Value = $RAS2FASettings.DeepnetSettings.TokenType.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "          Allow Channels"; Value = "Email: $($RAS2FASettings.DeepnetSettings.ActivateEmail.ToString())"; }) > $Null
-				$ScriptInformation.Add(@{Data = "                        "; Value = "SMS: $($RAS2FASettings.DeepnetSettings.ActivateSMS.ToString())"; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Token Type"; Value = $RASMFASettings.TokenType.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "          Allow Channels"; Value = "Email: $($RASMFASettings.ActivateEmail.ToString())"; }) > $Null
+				$ScriptInformation.Add(@{Data = "                        "; Value = "SMS: $($RASMFASettings.ActivateSMS.ToString())"; }) > $Null
 			}
-			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
+			ElseIf($RASMFASettings.Type -eq "SafeNet")
 			{
-				Switch($RAS2FASettings.SafeNetSettings.AuthMode)
+				Switch($RASMFASettings.AuthMode)
 				{
 					"MandatoryForAllUsers"						{$SafeNetAuthMode = "Mandatory for all users"; Break}
 					"CreateTokenForDomainAuthenticatedUsers"	{$SafeNetAuthMode = "Create token for Domain Authenticated users"; Break}
 					"UsersWithSafeNetAcc"						{$SafeNetAuthMode = "Use only for users with a safe account"; Break}
-					Default										{$SafeNetAuthMode = "Safenet mode not found: $($RAS2FASettings.SafeNetSettings.AuthMode)"; Break}
+					Default										{$SafeNetAuthMode = "Safenet mode not found: $($RASMFASettings.AuthMode)"; Break}
 				}
 
 				$ScriptInformation.Add(@{Data = "     Connection"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "          OTP Service URL"; Value = $RAS2FASettings.SafeNetSettings.OTPServiceURL; }) > $Null
+				$ScriptInformation.Add(@{Data = "          OTP Service URL"; Value = $RASMFASettings.OTPServiceURL; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Authentication"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Mode"; Value = $SafeNetAuthMode; }) > $Null
-				$ScriptInformation.Add(@{Data = "          TMS Web API URL"; Value = $RAS2FASettings.SafeNetSettings.TMSWebApiURL; }) > $Null
-				$ScriptInformation.Add(@{Data = "          User Repository"; Value = $RAS2FASettings.SafeNetSettings.UserRepository; }) > $Null
+				$ScriptInformation.Add(@{Data = "          TMS Web API URL"; Value = $RASMFASettings.TMSWebApiURL; }) > $Null
+				$ScriptInformation.Add(@{Data = "          User Repository"; Value = $RASMFASettings.UserRepository; }) > $Null
 			}
-			ElseIf($RAS2FASettings.Provider -eq "GAuthTOTP")
+			ElseIf($RASMFASettings.Type -eq "GAuthTOTP")
 			{
-				Switch($RAS2FASettings.GAuthTOTPSettings.UserEnrollment)
+				Switch($RASMFASettings.UserEnrollment)
 				{
 					"Allow"			{$GAuthAllow = "Allow"; Break}
 					"AllowUntil"	{$GAuthAllow = "Allow until"; Break}
 					"DoNotAllow"	{$GAuthAllow = "Do not allow"; Break}
-					Default			{$GAuthAllow = "Google Authenticator Allow status not found: $($RAS2FASettings.GAuthTOTPSettings.UserEnrollment)"; Break}
+					Default			{$GAuthAllow = "Google Authenticator Allow status not found: $($RASMFASettings.UserEnrollment)"; Break}
 				}
 				
-				Switch($RAS2FASettings.GAuthTOTPSettings.Tolerance)
+				Switch($RASMFASettings.Tolerance)
 				{
 					0		{$TOTPTolerance = "None"; Break}
 					30		{$TOTPTolerance = "+/- 30 seconds"; Break}
@@ -31512,11 +31508,11 @@ Function Output2FASetting
 					Default	{$TOTPTolerance = "TOTP tolerence not found: $()"; Break}
 				}
 				
-				$ScriptInformation.Add(@{Data = "     Type Name"; Value = $RAS2FASettings.GAuthTOTPSettings.Type; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Type Name"; Value = $RASMFASettings.Type; }) > $Null
 				$ScriptInformation.Add(@{Data = "     User Enrollment"; Value = ""; }) > $Null
 				If($GAuthAllow -eq "Allow until")
 				{
-					$GAuthFullDate = $RAS2FASettings.GAuthTOTPSettings.UntilDateTime
+					$GAuthFullDate = $RASMFASettings.UntilDateTime
 					$GAuthDate     = ($GAuthFullDate.ToUniversalTime()).ToShortDateString()
 					$GAuthTime     = ($GAuthFullDate.ToUniversalTime()).ToLongTimeString()
 					$ScriptInformation.Add(@{Data = "          $GAuthAllow"; Value = "Date: $GAuthDate"; }) > $Null
@@ -31530,14 +31526,14 @@ Function Output2FASetting
 				$ScriptInformation.Add(@{Data = "          TOTP tolerence"; Value = $TOTPTolerance; }) > $Null
 			}
 
-			If($RAS2FASettings.RestrictionMode -eq "Exclusion")
+			<#If($RASMFASettings.RestrictionMode -eq "Exclusion")
 			{
 				$ScriptInformation.Add(@{Data = "Enable MFA for all users except"; Value = ""; }) > $Null
 			}
 			Else
 			{
 				$ScriptInformation.Add(@{Data = "Disable MFA for all users except"; Value = ""; }) > $Null
-			}
+			}#>
 			
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
@@ -31557,14 +31553,14 @@ Function Output2FASetting
 			$Table = $Null
 			WriteWordLine 0 0 ""
 
-			WriteWordLine 3 0 "Restriction"
+			<#WriteWordLine 3 0 "Restrictions"
 			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "User or group list"; Value = $RAS2FASettings.ExcludeUserGroup.ToString(); }) > $Null
-			If($RAS2FASettings.ExcludeUserGroup)
+			$ScriptInformation.Add(@{Data = "User or group list"; Value = $RASMFASettings.ExcludeUserGroup.ToString(); }) > $Null
+			If($RASMFASettings.ExcludeUserGroup)
 			{
-				If($RAS2FASettings.ExcludeUserGroupList.Count -gt 0)
+				If($RASMFASettings.ExcludeUserGroupList.Count -gt 0)
 				{
-					ForEach($Item in $RAS2FASettings.ExcludeUserGroupList)
+					ForEach($Item in $RASMFASettings.ExcludeUserGroupList)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User: $($Item.Account)"; }) > $Null
 						$ScriptInformation.Add(@{Data = ""; Value = "Type: $($Item.Type)"; }) > $Null
@@ -31573,16 +31569,16 @@ Function Output2FASetting
 				}
 			}
 
-			$ScriptInformation.Add(@{Data = "Client IP list"; Value = $RAS2FASettings.ExcludeClientIPs.ToString(); }) > $Null
-			If($RAS2FASettings.ExcludeClientIPs)
+			$ScriptInformation.Add(@{Data = "Client IP list"; Value = $RASMFASettings.ExcludeClientIPs.ToString(); }) > $Null
+			If($RASMFASettings.ExcludeClientIPs)
 			{
-				If($RAS2FASettings.ExcludeClientIPList.Count -gt 0)
+				If($RASMFASettings.ExcludeClientIPList.Count -gt 0)
 				{
 					$cnt     = -1
-					$MaxFrom = (($RAS2FASettings.ExcludeClientIPList.From | Measure-Object -Property length -maximum).Maximum * -1)
-					$MaxTo   = (($RAS2FASettings.ExcludeClientIPList.To | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxFrom = (($RASMFASettings.ExcludeClientIPList.From | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxTo   = (($RASMFASettings.ExcludeClientIPList.To | Measure-Object -Property length -maximum).Maximum * -1)
 
-					ForEach($Item in $RAS2FASettings.ExcludeClientIPList)
+					ForEach($Item in $RASMFASettings.ExcludeClientIPList)
 					{
 						$cnt++
 						$tmp = ("From: {0,$($MaxFrom)} To: {1,$($MaxTo)}" -f $Item.From, $Item.To)
@@ -31598,13 +31594,13 @@ Function Output2FASetting
 					}
 				}
 				
-				If($RAS2FASettings.ExcludeClientIPv6List.Count -gt 0)
+				If($RASMFASettings.ExcludeClientIPv6List.Count -gt 0)
 				{
 					$cnt     = -1
-					$MaxFrom = (($RAS2FASettings.ExcludeClientIPv6List.From | Measure-Object -Property length -maximum).Maximum * -1)
-					$MaxTo   = (($RAS2FASettings.ExcludeClientIPv6List.To | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxFrom = (($RASMFASettings.ExcludeClientIPv6List.From | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxTo   = (($RASMFASettings.ExcludeClientIPv6List.To | Measure-Object -Property length -maximum).Maximum * -1)
 
-					ForEach($Item in $RAS2FASettings.ExcludeClientIPv6List)
+					ForEach($Item in $RASMFASettings.ExcludeClientIPv6List)
 					{
 						$cnt++
 						$tmp = ("From: {0,$($MaxFrom)} To: {1,$($MaxTo)}" -f $Item.From, $Item.To)
@@ -31621,11 +31617,11 @@ Function Output2FASetting
 				}
 			}
 
-			$ScriptInformation.Add(@{Data = "Client MAC list"; Value = $RAS2FASettings.ExcludeClientMAC.ToString(); }) > $Null
-			If($RAS2FASettings.ExcludeClientMAC)
+			$ScriptInformation.Add(@{Data = "Client MAC list"; Value = $RASMFASettings.ExcludeClientMAC.ToString(); }) > $Null
+			If($RASMFASettings.ExcludeClientMAC)
 			{
 				$cnt = -1
-				ForEach($MAC in $RAS2FASettings.ExcludeClientMACList)
+				ForEach($MAC in $RASMFASettings.ExcludeClientMACList)
 				{
 					$cnt++
 					
@@ -31640,11 +31636,11 @@ Function Output2FASetting
 				}
 			}
 
-			$ScriptInformation.Add(@{Data = "Connection to the following Gateway IPs"; Value = $RAS2FASettings.ExcludeClientGWIPs.ToString(); }) > $Null
-			If($RAS2FASettings.ExcludeClientGWIPs)
+			$ScriptInformation.Add(@{Data = "Connection to the following Gateway IPs"; Value = $RASMFASettings.ExcludeClientGWIPs.ToString(); }) > $Null
+			If($RASMFASettings.ExcludeClientGWIPs)
 			{
 				$cnt = -1
-				ForEach($Server in $RAS2FASettings.ExcludeClientGWIPList)
+				ForEach($Server in $RASMFASettings.ExcludeClientGWIPList)
 				{
 					$cnt++
 					
@@ -31675,45 +31671,78 @@ Function Output2FASetting
 
 			FindWordDocumentEnd
 			$Table = $Null
-			WriteWordLine 0 0 ""
+			WriteWordLine 0 0 ""#>
 		}
-
-		$ScriptInformation = New-Object System.Collections.ArrayList
-		$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $RAS2FASettings.ReplicateSettings.ToString(); }) > $Null
-
-		$Table = AddWordTable -Hashtable $ScriptInformation `
-		-Columns Data,Value `
-		-List `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
-
-		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-		$Table.Columns.Item(1).Width = 250;
-		$Table.Columns.Item(2).Width = 175;
-
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
 	}
 	If($Text)
 	{
 		Line 2 "Provider settings"
-		Line 3 "Provider: " $RAS2FASettingsProvider
-		If($RAS2FASettingsProvider -ne "None")
+		Line 3 "Provider: " $RASMFASettingsProvider
+		If($RASMFASettingsProvider -ne "None")
 		{
 			Line 3 "Settings"
 			
-			If($RAS2FASettings.Provider -eq "AzureRadius")
+			If($RASMFASettings.Type -eq "AzureRadius")
+			{
+				Line 4 "General"
+				Line 5 "Enable MFA provider in site: " $RASMFASettings.Enabled.ToString()
+				Line 5 "Name: " $RASMFASettings.Name
+				Line 5 "Description: " $RASMFASettings.Description
+				Line 5 "Type: " $RASMFASettings.DisplayName
+				Line 4 "Connection"
+				Line 5 "Display Name: " $RASMFASettings.DisplayName
+				Line 5 "Primary server: " $RASMFASettings.Server
+				Line 5 "Secondary server: " $RASMFASettings.BackupServer
+				If($RASMFASettings.HAMode -eq "Parallel")
+				{
+					Line 5 "HA mode: Active - active (parallel)"
+				}
+				Else
+				{
+					Line 5 "HA mode: Active - passive (failover)"
+				}
+				Line 5 "Port: " $RASMFASettings.Port
+				Line 5 "Timeout (seconds): " $RASMFASettings.Timeout
+				Line 5 "Retries: " $RASMFASettings.Retries
+				Line 5 "Password Encoding: " $RASMFASettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server: " $RASMFASettings.UsernameOnly.ToString()
+				Line 5 "Forward the first password to Windows authentication provider: " $RASMFASettings.ForwardFirstPwdToAD.ToString()
+				Line 4 "Attributes"
+				$cnt=0
+				ForEach($Item in $RASMFASettings.AttributeInfoList)
+				{
+					$cnt++
+					Line 5 "Attribute $cnt"
+					Line 6 "Name: $($Item.RadiusAttrName)"
+					Line 6 "Vendor: $($Item.VendorID)"
+					Line 6 "Type: $($Item.AttributeType)"
+					Line 6 "Value: $($Item.Value)"
+					Line 5 "" #blank separator line
+				}
+				Line 5 "Automation"
+				$cnt=0
+				ForEach($Item in $RASMFASettings.AutomationInfoList)
+				{
+					$cnt++
+					Line 5 "Automation $cnt"
+					Line 6 "Enable Action: $($Item.Enabled.ToString())"
+					Line 6 "Title: $($Item.Title)"
+					Line 6 "Command: $($Item.Command)"
+					Line 6 "Description: $($Item.Description)"
+					Line 6 "Action message: $($Item.ActionMessage)"
+					Line 6 "Image: $($Item.Image)"
+					Line 6 "Autosend: $($Item.AutoSend.ToString())"
+					Line 6 "" #blank separator line
+				}
+				Line 0 ""
+			}
+			ElseIf($RASMFASettings.Type -eq "DuoRadius")
 			{
 				Line 4 "Connection"
-				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.TypeName
-				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Server
-				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.AzureRadiusSettings.BackupServer
-				If($RAS2FASettings.AzureRadiusSettings.HAMode -eq "Parallel")
+				Line 5 "Type Name`t`t`t`t: " $RASMFASettings.DuoRadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RASMFASettings.DuoRadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RASMFASettings.DuoRadiusSettings.BackupServer
+				If($RASMFASettings.DuoRadiusSettings.HAMode -eq "Parallel")
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
@@ -31721,16 +31750,16 @@ Function Output2FASetting
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Port
-				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Timeout
-				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.AzureRadiusSettings.Retries
-				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.AzureRadiusSettings.PasswordEncoding
-				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RASMFASettings.DuoRadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RASMFASettings.DuoRadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RASMFASettings.DuoRadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RASMFASettings.DuoRadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RASMFASettings.DuoRadiusSettings.UsernameOnly.ToString()
 				Line 5 "Forward the first password to "
-				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Windows authentication provider`t`t: " $RASMFASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString()
 				Line 4 "Attributes"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.DuoRadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					Line 5 "Attribute $cnt"
@@ -31742,7 +31771,7 @@ Function Output2FASetting
 				}
 				Line 4 "Automation"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.DuoRadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					Line 5 "" "Automation $cnt"
@@ -31755,13 +31784,13 @@ Function Output2FASetting
 				}
 				Line 0 ""
 			}
-			ElseIf($RAS2FASettings.Provider -eq "DuoRadius")
+			ElseIf($RASMFASettings.Type -eq "FortiRadius")
 			{
 				Line 4 "Connection"
-				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.TypeName
-				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Server
-				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.DuoRadiusSettings.BackupServer
-				If($RAS2FASettings.DuoRadiusSettings.HAMode -eq "Parallel")
+				Line 5 "Type Name`t`t`t`t: " $RASMFASettings.FortiRadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RASMFASettings.FortiRadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RASMFASettings.FortiRadiusSettings.BackupServer
+				If($RASMFASettings.FortiRadiusSettings.HAMode -eq "Parallel")
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
@@ -31769,16 +31798,16 @@ Function Output2FASetting
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Port
-				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Timeout
-				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.DuoRadiusSettings.Retries
-				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.DuoRadiusSettings.PasswordEncoding
-				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RASMFASettings.FortiRadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RASMFASettings.FortiRadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RASMFASettings.FortiRadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RASMFASettings.FortiRadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RASMFASettings.FortiRadiusSettings.UsernameOnly.ToString()
 				Line 5 "Forward the first password to "
-				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Windows authentication provider`t`t: " $RASMFASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString()
 				Line 4 "Attributes"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.FortiRadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					Line 5 "Attribute $cnt"
@@ -31790,7 +31819,7 @@ Function Output2FASetting
 				}
 				Line 4 "Automation"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.FortiRadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					Line 5 "" "Automation $cnt"
@@ -31803,13 +31832,13 @@ Function Output2FASetting
 				}
 				Line 0 ""
 			}
-			ElseIf($RAS2FASettings.Provider -eq "FortiRadius")
+			ElseIf($RASMFASettings.Type -eq "TekRadius")
 			{
 				Line 4 "Connection"
-				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.TypeName
-				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Server
-				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.FortiRadiusSettings.BackupServer
-				If($RAS2FASettings.FortiRadiusSettings.HAMode -eq "Parallel")
+				Line 5 "Type Name`t`t`t`t: " $RASMFASettings.TekRadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RASMFASettings.TekRadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RASMFASettings.TekRadiusSettings.BackupServer
+				If($RASMFASettings.TekRadiusSettings.HAMode -eq "Parallel")
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
@@ -31817,16 +31846,16 @@ Function Output2FASetting
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Port
-				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Timeout
-				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.FortiRadiusSettings.Retries
-				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.FortiRadiusSettings.PasswordEncoding
-				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RASMFASettings.TekRadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RASMFASettings.TekRadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RASMFASettings.TekRadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RASMFASettings.TekRadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RASMFASettings.TekRadiusSettings.UsernameOnly.ToString()
 				Line 5 "Forward the first password to "
-				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Windows authentication provider`t`t: " $RASMFASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString()
 				Line 4 "Attributes"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.TekRadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					Line 5 "Attribute $cnt"
@@ -31838,7 +31867,7 @@ Function Output2FASetting
 				}
 				Line 4 "Automation"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.TekRadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					Line 5 "" "Automation $cnt"
@@ -31851,13 +31880,13 @@ Function Output2FASetting
 				}
 				Line 0 ""
 			}
-			ElseIf($RAS2FASettings.Provider -eq "TekRadius")
+			ElseIf($RASMFASettings.Type -eq "Radius")
 			{
 				Line 4 "Connection"
-				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.TypeName
-				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Server
-				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.TekRadiusSettings.BackupServer
-				If($RAS2FASettings.TekRadiusSettings.HAMode -eq "Parallel")
+				Line 5 "Type Name`t`t`t`t: " $RASMFASettings.RadiusSettings.TypeName
+				Line 5 "Primary Server`t`t`t`t: " $RASMFASettings.RadiusSettings.Server
+				Line 5 "Secondary server`t`t`t: " $RASMFASettings.RadiusSettings.BackupServer
+				If($RASMFASettings.RadiusSettings.HAMode -eq "Parallel")
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
 				}
@@ -31865,16 +31894,16 @@ Function Output2FASetting
 				{
 					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
 				}
-				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Port
-				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Timeout
-				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.TekRadiusSettings.Retries
-				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.TekRadiusSettings.PasswordEncoding
-				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString()
+				Line 5 "Port`t`t`t`t`t: " $RASMFASettings.RadiusSettings.Port
+				Line 5 "Timeout`t`t`t`t`t: " $RASMFASettings.RadiusSettings.Timeout
+				Line 5 "Retries`t`t`t`t`t: " $RASMFASettings.RadiusSettings.Retries
+				Line 5 "Password Encoding`t`t`t: " $RASMFASettings.RadiusSettings.PasswordEncoding
+				Line 5 "Forward username only to Radius Server`t: " $RASMFASettings.RadiusSettings.UsernameOnly.ToString()
 				Line 5 "Forward the first password to "
-				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString()
+				Line 5 "Windows authentication provider`t`t: " $RASMFASettings.RadiusSettings.ForwardFirstPwdToAD.ToString()
 				Line 4 "Attributes"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.RadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					Line 5 "Attribute $cnt"
@@ -31886,7 +31915,7 @@ Function Output2FASetting
 				}
 				Line 4 "Automation"
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.RadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					Line 5 "" "Automation $cnt"
@@ -31899,99 +31928,51 @@ Function Output2FASetting
 				}
 				Line 0 ""
 			}
-			ElseIf($RAS2FASettings.Provider -eq "Radius")
+			ElseIf($RASMFASettings.Type -eq "Deepnet")
 			{
 				Line 4 "Connection"
-				Line 5 "Type Name`t`t`t`t: " $RAS2FASettings.RadiusSettings.TypeName
-				Line 5 "Primary Server`t`t`t`t: " $RAS2FASettings.RadiusSettings.Server
-				Line 5 "Secondary server`t`t`t: " $RAS2FASettings.RadiusSettings.BackupServer
-				If($RAS2FASettings.RadiusSettings.HAMode -eq "Parallel")
-				{
-					Line 5 "HA mode`t`t`t`t`t: " "Active - active (parallel)"
-				}
-				Else
-				{
-					Line 5 "HA mode`t`t`t`t`t: " "Active - passive (failover)"
-				}
-				Line 5 "Port`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Port
-				Line 5 "Timeout`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Timeout
-				Line 5 "Retries`t`t`t`t`t: " $RAS2FASettings.RadiusSettings.Retries
-				Line 5 "Password Encoding`t`t`t: " $RAS2FASettings.RadiusSettings.PasswordEncoding
-				Line 5 "Forward username only to Radius Server`t: " $RAS2FASettings.RadiusSettings.UsernameOnly.ToString()
-				Line 5 "Forward the first password to "
-				Line 5 "Windows authentication provider`t`t: " $RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString()
-				Line 4 "Attributes"
-				$cnt=0
-				ForEach($Item in $RAS2FASettings.RadiusSettings.AttributeInfoList)
-				{
-					$cnt++
-					Line 5 "Attribute $cnt"
-					Line 6 "Name  : $($Item.Name)"
-					Line 6 "Vendor: $($Item.Vendor)"
-					Line 6 "Type  : $($Item.AttributeType)"
-					Line 6 "Value : $($Item.Value)"
-					Line 5 "" #blank separator line
-				}
-				Line 4 "Automation"
-				$cnt=0
-				ForEach($Item in $RAS2FASettings.RadiusSettings.AutomationInfoList)
-				{
-					$cnt++
-					Line 5 "" "Automation $cnt"
-					Line 6 "Enabled : $($Item.Enabled.ToString())"
-					Line 6 "Title   : $($Item.Title)"
-					Line 6 "Command : $($Item.Command)"
-					Line 6 "Image   : $($Item.Image)"
-					Line 6 "Autosend: $($Item.AutoSend.ToString())"
-					Line 5 "" "" #blank separator line
-				}
-				Line 0 ""
-			}
-			ElseIf($RAS2FASettings.Provider -eq "Deepnet")
-			{
-				Line 4 "Connection"
-				Line 5 "Type`t`t: " $RAS2FASettings.DeepnetSettings.DeepnetType
-				Line 5 "Server`t`t: " $RAS2FASettings.DeepnetSettings.Server
-				Line 5 "Port`t`t: " $RAS2FASettings.DeepnetSettings.Port.ToString()
-				Line 5 "Enable SSL`t: " $RAS2FASettings.DeepnetSettings.SSL.ToString()
-				Line 5 "Agent`t`t: " $RAS2FASettings.DeepnetSettings.DeepnetAgent
+				Line 5 "Type`t`t: " $RASMFASettings.DeepnetSettings.DeepnetType
+				Line 5 "Server`t`t: " $RASMFASettings.DeepnetSettings.Server
+				Line 5 "Port`t`t: " $RASMFASettings.DeepnetSettings.Port.ToString()
+				Line 5 "Enable SSL`t: " $RASMFASettings.DeepnetSettings.SSL.ToString()
+				Line 5 "Agent`t`t: " $RASMFASettings.DeepnetSettings.DeepnetAgent
 				Line 4 "Application"
-				Line 5 "          Application`t: " $RAS2FASettings.DeepnetSettings.App
-				Line 5 "          Domain`t: " $RAS2FASettings.DeepnetSettings.DefaultDomain
+				Line 5 "          Application`t: " $RASMFASettings.DeepnetSettings.App
+				Line 5 "          Domain`t: " $RASMFASettings.DeepnetSettings.DefaultDomain
 				Line 4 "Authentication"
 				Line 5 "          Mode`t`t: " $DeepNetAuthMode
-				Line 5 "          Token Type`t: " $RAS2FASettings.DeepnetSettings.TokenType.ToString()
-				Line 5 "          Allow Channels: " "Email: $($RAS2FASettings.DeepnetSettings.ActivateEmail.ToString())"
-				Line 5 "                          " "SMS: $($RAS2FASettings.DeepnetSettings.ActivateSMS.ToString())"
+				Line 5 "          Token Type`t: " $RASMFASettings.DeepnetSettings.TokenType.ToString()
+				Line 5 "          Allow Channels: " "Email: $($RASMFASettings.DeepnetSettings.ActivateEmail.ToString())"
+				Line 5 "                          " "SMS: $($RASMFASettings.DeepnetSettings.ActivateSMS.ToString())"
 			}
-			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
+			ElseIf($RASMFASettings.Type -eq "SafeNet")
 			{
-				Switch($RAS2FASettings.SafeNetSettings.AuthMode)
+				Switch($RASMFASettings.SafeNetSettings.AuthMode)
 				{
 					"MandatoryForAllUsers"						{$SafeNetAuthMode = "Mandatory for all users"; Break}
 					"CreateTokenForDomainAuthenticatedUsers"	{$SafeNetAuthMode = "Create token for Domain Authenticated users"; Break}
 					"UsersWithSafeNetAcc"						{$SafeNetAuthMode = "Use only for users with a safe account"; Break}
-					Default										{$SafeNetAuthMode = "Safenet mode not found: $($RAS2FASettings.SafeNetSettings.AuthMode)"; Break}
+					Default										{$SafeNetAuthMode = "Safenet mode not found: $($RASMFASettings.SafeNetSettings.AuthMode)"; Break}
 				}
 
 				Line 4 "Connection"
-				Line 5 "OTP Service URL : " $RAS2FASettings.SafeNetSettings.DeepnetType
+				Line 5 "OTP Service URL : " $RASMFASettings.SafeNetSettings.DeepnetType
 				Line 4 "Authentication"
 				Line 5 "Mode`t`t`t: " $SafeNetAuthMode
-				Line 5 "TMS Web API URL`t`t: " $RAS2FASettings.SafeNetSettings.TMSWebApiURL
-				Line 5 "User Repository`t`t: " $RAS2FASettings.SafeNetSettings.UserRepository
+				Line 5 "TMS Web API URL`t`t: " $RASMFASettings.SafeNetSettings.TMSWebApiURL
+				Line 5 "User Repository`t`t: " $RASMFASettings.SafeNetSettings.UserRepository
 			}
-			ElseIf($RAS2FASettings.Provider -eq "GAuthTOTP")
+			ElseIf($RASMFASettings.Type -eq "GAuthTOTP")
 			{
-				Switch($RAS2FASettings.GAuthTOTPSettings.UserEnrollment)
+				Switch($RASMFASettings.GAuthTOTPSettings.UserEnrollment)
 				{
 					"Allow"			{$GAuthAllow = "Allow"; Break}
 					"AllowUntil"	{$GAuthAllow = "Allow until"; Break}
 					"DoNotAllow"	{$GAuthAllow = "Do not allow"; Break}
-					Default			{$GAuthAllow = "Google Authenticator Allow status not found: $($RAS2FASettings.GAuthTOTPSettings.UserEnrollment)"; Break}
+					Default			{$GAuthAllow = "Google Authenticator Allow status not found: $($RASMFASettings.GAuthTOTPSettings.UserEnrollment)"; Break}
 				}
 				
-				Switch($RAS2FASettings.GAuthTOTPSettings.Tolerance)
+				Switch($RASMFASettings.GAuthTOTPSettings.Tolerance)
 				{
 					0		{$TOTPTolerance = "None"; Break}
 					30		{$TOTPTolerance = "+/- 30 seconds"; Break}
@@ -32001,12 +31982,12 @@ Function Output2FASetting
 					Default	{$TOTPTolerance = "TOTP tolerence not found: $()"; Break}
 				}
 				
-				Line 4 "Type Name: " $RAS2FASettings.GAuthTOTPSettings.Type
+				Line 4 "Type Name: " $RASMFASettings.GAuthTOTPSettings.Type
 				Line 4 "User Enrollment"
 				Line 5 $GAuthAllow
 				If($GAuthAllow -eq "Allow until")
 				{
-					$GAuthFullDate = $RAS2FASettings.GAuthTOTPSettings.UntilDateTime
+					$GAuthFullDate = $RASMFASettings.GAuthTOTPSettings.UntilDateTime
 					$GAuthDate     = ($GAuthFullDate.ToUniversalTime()).ToShortDateString()
 					$GAuthTime     = ($GAuthFullDate.ToUniversalTime()).ToLongTimeString()
 					Line 6 "Date: " $GAuthDate
@@ -32016,23 +31997,23 @@ Function Output2FASetting
 				Line 5 "TOTP tolerence: " $TOTPTolerance
 			}
 
-			If($RAS2FASettings.RestrictionMode -eq "Exclusion")
+			<#If($RASMFASettings.RestrictionMode -eq "Exclusion")
 			{
 				Line 3 "Enable MFA for all users except"
 			}
 			Else
 			{
 				Line 3 "Disable MFA for all users except"
-			}
+			}#>
 			Line 0 ""
 
-			Line 2 "Restriction"
-			Line 3 "User or group list`t`t`t: " $RAS2FASettings.ExcludeUserGroup.ToString()
-			If($RAS2FASettings.ExcludeUserGroup)
+			<#Line 2 "Restriction"
+			Line 3 "User or group list`t`t`t: " $RASMFASettings.ExcludeUserGroup.ToString()
+			If($RASMFASettings.ExcludeUserGroup)
 			{
-				If($RAS2FASettings.ExcludeUserGroupList.Count -gt 0)
+				If($RASMFASettings.ExcludeUserGroupList.Count -gt 0)
 				{
-					ForEach($Item in $RAS2FASettings.ExcludeUserGroupList)
+					ForEach($Item in $RASMFASettings.ExcludeUserGroupList)
 					{
 						Line 8 "  " "User: $($Item.Account)"
 						Line 8 "  " "Type: $($Item.Type)"
@@ -32041,16 +32022,16 @@ Function Output2FASetting
 				}
 			}
 				
-			Line 3 "Client IP list`t`t`t`t: " $RAS2FASettings.ExcludeClientIPs.ToString()
-			If($RAS2FASettings.ExcludeClientIPs)
+			Line 3 "Client IP list`t`t`t`t: " $RASMFASettings.ExcludeClientIPs.ToString()
+			If($RASMFASettings.ExcludeClientIPs)
 			{
-				If($RAS2FASettings.ExcludeClientIPList.Count -gt 0)
+				If($RASMFASettings.ExcludeClientIPList.Count -gt 0)
 				{
 					$cnt     = -1
-					$MaxFrom = (($RAS2FASettings.ExcludeClientIPList.From | Measure-Object -Property length -maximum).Maximum * -1)
-					$MaxTo   = (($RAS2FASettings.ExcludeClientIPList.To | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxFrom = (($RASMFASettings.ExcludeClientIPList.From | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxTo   = (($RASMFASettings.ExcludeClientIPList.To | Measure-Object -Property length -maximum).Maximum * -1)
 
-					ForEach($Item in $RAS2FASettings.ExcludeClientIPList)
+					ForEach($Item in $RASMFASettings.ExcludeClientIPList)
 					{
 						$cnt++
 						$tmp = ("From: {0,$($MaxFrom)} To: {1,$($MaxTo)}" -f $Item.From, $Item.To)
@@ -32066,13 +32047,13 @@ Function Output2FASetting
 					}
 				}
 				
-				If($RAS2FASettings.ExcludeClientIPv6List.Count -gt 0)
+				If($RASMFASettings.ExcludeClientIPv6List.Count -gt 0)
 				{
 					$cnt     = -1
-					$MaxFrom = (($RAS2FASettings.ExcludeClientIPv6List.From | Measure-Object -Property length -maximum).Maximum * -1)
-					$MaxTo   = (($RAS2FASettings.ExcludeClientIPv6List.To | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxFrom = (($RASMFASettings.ExcludeClientIPv6List.From | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxTo   = (($RASMFASettings.ExcludeClientIPv6List.To | Measure-Object -Property length -maximum).Maximum * -1)
 
-					ForEach($Item in $RAS2FASettings.ExcludeClientIPv6List)
+					ForEach($Item in $RASMFASettings.ExcludeClientIPv6List)
 					{
 						$cnt++
 						$tmp = ("From: {0,$($MaxFrom)} To: {1,$($MaxTo)}" -f $Item.From, $Item.To)
@@ -32088,11 +32069,11 @@ Function Output2FASetting
 					}
 				}
 			}
-			Line 3 "Client MAC list`t`t`t`t: " $RAS2FASettings.ExcludeClientMAC.ToString()
-			If($RAS2FASettings.ExcludeClientMAC)
+			Line 3 "Client MAC list`t`t`t`t: " $RASMFASettings.ExcludeClientMAC.ToString()
+			If($RASMFASettings.ExcludeClientMAC)
 			{
 				$cnt = -1
-				ForEach($MAC in $RAS2FASettings.ExcludeClientMACList)
+				ForEach($MAC in $RASMFASettings.ExcludeClientMACList)
 				{
 					$cnt++
 					
@@ -32106,11 +32087,11 @@ Function Output2FASetting
 					}
 				}
 			}
-			Line 3 "Connection to the following Gateway IPs`t: " $RAS2FASettings.ExcludeClientGWIPs.ToString()
-			If($RAS2FASettings.ExcludeClientGWIPs)
+			Line 3 "Connection to the following Gateway IPs`t: " $RASMFASettings.ExcludeClientGWIPs.ToString()
+			If($RASMFASettings.ExcludeClientGWIPs)
 			{
 				$cnt = -1
-				ForEach($Server in $RAS2FASettings.ExcludeClientGWIPList)
+				ForEach($Server in $RASMFASettings.ExcludeClientGWIPList)
 				{
 					$cnt++
 					
@@ -32123,25 +32104,28 @@ Function Output2FASetting
 						Line 8 "  " $Server
 					}
 				}
-			}
+			}#>
 		}
-		Line 0 ""
-		Line 2 "Settings are replicated to all Sites`t`t: " $RAS2FASettings.ReplicateSettings.ToString()
 		Line 0 ""
 	}
 	If($HTML)
 	{
 		$rowdata = @()
-		$columnHeaders = @("Provider",($Script:htmlsb),$RAS2FASettingsProvider,$htmlwhite)
-		If($RAS2FASettingsProvider -ne "None")
+		$columnHeaders = @("Provider",($Script:htmlsb),$RASMFASettingsProvider,$htmlwhite)
+		If($RASMFASettingsProvider -ne "None")
 		{
-			If($RAS2FASettings.Provider -eq "AzureRadius")
+			If($RASMFASettings.Type -eq "AzureRadius")
 			{
+				$rowdata += @(,( "     General",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("          Enable MFA provider in site",($Script:htmlsb),$RASMFASettings.Enabled.ToString(),$htmlwhite))
+				$rowdata += @(,("          Name",($Script:htmlsb),$RASMFASettings.Name,$htmlwhite))
+				$rowdata += @(,("          Description",($Script:htmlsb), $RASMFASettings.Description,$htmlwhite))
+				$rowdata += @(,("          Type",($Script:htmlsb), $RASMFASettings.DisplayName,$htmlwhite))
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,("          Secondary server",($Script:htmlsb), $RAS2FASettings.AzureRadiusSettings.BackupServer,$htmlwhite))
-				If($RAS2FASettings.AzureRadiusSettings.HAMode -eq "Parallel")
+				$rowdata += @(,("          Display Name",($Script:htmlsb),$RASMFASettings.DisplayName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RASMFASettings.Server,$htmlwhite))
+				$rowdata += @(,("          Secondary server",($Script:htmlsb), $RASMFASettings.BackupServer,$htmlwhite))
+				If($RASMFASettings.HAMode -eq "Parallel")
 				{
 					$rowdata += @(,("          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
@@ -32149,45 +32133,47 @@ Function Output2FASetting
 				{
 					$rowdata += @(,("          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.AzureRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RASMFASettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RASMFASettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RASMFASettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RASMFASettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RASMFASettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RASMFASettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
 				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.AttributeInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
-					$rowdata += @(,( "",($Script:htmlsb), "     Name: $($Item.Name)",$htmlwhite))
-					$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Name: $($Item.RadiusAttrName)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.VendorID)",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
 				}
 				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.AzureRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.AutomationInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
-					$rowdata += @(,( "",($Script:htmlsb), "     Enabled: $($Item.Enabled.ToString())",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Enabled Action: $($Item.Enabled.ToString())",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "     Title: $($Item.Title)",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Description: $($Item.Description)",$htmlwhite))
+					$rowdata += @(,( "",($Script:htmlsb), "     Action message: $($Item.ActionMessage)",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
 					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "DuoRadius")
+			ElseIf($RASMFASettings.Type -eq "DuoRadius")
 			{
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.DuoRadiusSettings.BackupServer,$htmlwhite))
-				If($RAS2FASettings.DuoRadiusSettings.HAMode -eq "Parallel")
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RASMFASettings.DuoRadiusSettings.BackupServer,$htmlwhite))
+				If($RASMFASettings.DuoRadiusSettings.HAMode -eq "Parallel")
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
@@ -32195,15 +32181,15 @@ Function Output2FASetting
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RASMFASettings.DuoRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
 				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.DuoRadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
@@ -32215,7 +32201,7 @@ Function Output2FASetting
 				}
 				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.DuoRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.DuoRadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
@@ -32227,13 +32213,13 @@ Function Output2FASetting
 					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "FortiRadius")
+			ElseIf($RASMFASettings.Type -eq "FortiRadius")
 			{
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.FortiRadiusSettings.BackupServer,$htmlwhite))
-				If($RAS2FASettings.FortiRadiusSettings.HAMode -eq "Parallel")
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RASMFASettings.FortiRadiusSettings.BackupServer,$htmlwhite))
+				If($RASMFASettings.FortiRadiusSettings.HAMode -eq "Parallel")
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
@@ -32241,15 +32227,15 @@ Function Output2FASetting
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RASMFASettings.FortiRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
 				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.FortiRadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
@@ -32261,7 +32247,7 @@ Function Output2FASetting
 				}
 				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.FortiRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.FortiRadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
@@ -32273,13 +32259,13 @@ Function Output2FASetting
 					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "TekRadius")
+			ElseIf($RASMFASettings.Type -eq "TekRadius")
 			{
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.TekRadiusSettings.BackupServer,$htmlwhite))
-				If($RAS2FASettings.TekRadiusSettings.HAMode -eq "Parallel")
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RASMFASettings.TekRadiusSettings.BackupServer,$htmlwhite))
+				If($RASMFASettings.TekRadiusSettings.HAMode -eq "Parallel")
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
@@ -32287,15 +32273,15 @@ Function Output2FASetting
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RASMFASettings.TekRadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
 				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.TekRadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
@@ -32307,7 +32293,7 @@ Function Output2FASetting
 				}
 				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.TekRadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.TekRadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
@@ -32319,13 +32305,13 @@ Function Output2FASetting
 					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "Radius")
+			ElseIf($RASMFASettings.Type -eq "Radius")
 			{
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("          Type Name",($Script:htmlsb),$RAS2FASettings.RadiusSettings.TypeName,$htmlwhite))
-				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Server,$htmlwhite))
-				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RAS2FASettings.RadiusSettings.BackupServer,$htmlwhite))
-				If($RAS2FASettings.RadiusSettings.HAMode -eq "Parallel")
+				$rowdata += @(,("          Type Name",($Script:htmlsb),$RASMFASettings.RadiusSettings.TypeName,$htmlwhite))
+				$rowdata += @(,("          Primary Server",($Script:htmlsb),$RASMFASettings.RadiusSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Secondary server",($Script:htmlsb), $RASMFASettings.RadiusSettings.BackupServer,$htmlwhite))
+				If($RASMFASettings.RadiusSettings.HAMode -eq "Parallel")
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - active (parallel)",$htmlwhite))
 				}
@@ -32333,15 +32319,15 @@ Function Output2FASetting
 				{
 					$rowdata += @(,( "          HA mode",($Script:htmlsb), "Active - passive (failover)",$htmlwhite))
 				}
-				$rowdata += @(,("          Port",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Port,$htmlwhite))
-				$rowdata += @(,("          Timeout",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Timeout,$htmlwhite))
-				$rowdata += @(,("          Retries",($Script:htmlsb),$RAS2FASettings.RadiusSettings.Retries,$htmlwhite))
-				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RAS2FASettings.RadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RAS2FASettings.RadiusSettings.UsernameOnly.ToString(),$htmlwhite))
-				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RAS2FASettings.RadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
+				$rowdata += @(,("          Port",($Script:htmlsb),$RASMFASettings.RadiusSettings.Port,$htmlwhite))
+				$rowdata += @(,("          Timeout",($Script:htmlsb),$RASMFASettings.RadiusSettings.Timeout,$htmlwhite))
+				$rowdata += @(,("          Retries",($Script:htmlsb),$RASMFASettings.RadiusSettings.Retries,$htmlwhite))
+				$rowdata += @(,("          Password Encoding",($Script:htmlsb),$RASMFASettings.RadiusSettings.PasswordEncoding.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward username only to Radius Server",($Script:htmlsb),$RASMFASettings.RadiusSettings.UsernameOnly.ToString(),$htmlwhite))
+				$rowdata += @(,("          Forward the first password to Windows authentication provider",($Script:htmlsb),$RASMFASettings.RadiusSettings.ForwardFirstPwdToAD.ToString(),$htmlwhite))
 				$rowdata += @(,( "     Attributes",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.RadiusSettings.AttributeInfoList)
+				ForEach($Item in $RASMFASettings.RadiusSettings.AttributeInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Attribute $cnt",$htmlwhite))
@@ -32353,7 +32339,7 @@ Function Output2FASetting
 				}
 				$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 				$cnt=0
-				ForEach($Item in $RAS2FASettings.RadiusSettings.AutomationInfoList)
+				ForEach($Item in $RASMFASettings.RadiusSettings.AutomationInfoList)
 				{
 					$cnt++
 					$rowdata += @(,( "",($Script:htmlsb), "Automation $cnt",$htmlwhite))
@@ -32365,51 +32351,51 @@ Function Output2FASetting
 					$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
 				}
 			}
-			ElseIf($RAS2FASettings.Provider -eq "Deepnet")
+			ElseIf($RASMFASettings.Type -eq "Deepnet")
 			{
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,( "          Type",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.DeepnetType,$htmlwhite))
-				$rowdata += @(,( "          Server",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.Server,$htmlwhite))
-				$rowdata += @(,( "          Port",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.Port.ToString(),$htmlwhite))
-				$rowdata += @(,( "          Enable SSL",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.SSL.ToString(),$htmlwhite))
-				$rowdata += @(,( "          Agent",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.DeepnetAgent,$htmlwhite))
+				$rowdata += @(,( "          Type",($Script:htmlsb), $RASMFASettings.DeepnetSettings.DeepnetType,$htmlwhite))
+				$rowdata += @(,( "          Server",($Script:htmlsb), $RASMFASettings.DeepnetSettings.Server,$htmlwhite))
+				$rowdata += @(,( "          Port",($Script:htmlsb), $RASMFASettings.DeepnetSettings.Port.ToString(),$htmlwhite))
+				$rowdata += @(,( "          Enable SSL",($Script:htmlsb), $RASMFASettings.DeepnetSettings.SSL.ToString(),$htmlwhite))
+				$rowdata += @(,( "          Agent",($Script:htmlsb), $RASMFASettings.DeepnetSettings.DeepnetAgent,$htmlwhite))
 				$rowdata += @(,( "     Application",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,( "          Application",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.App,$htmlwhite))
-				$rowdata += @(,( "          Domain",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.DefaultDomain,$htmlwhite))
+				$rowdata += @(,( "          Application",($Script:htmlsb), $RASMFASettings.DeepnetSettings.App,$htmlwhite))
+				$rowdata += @(,( "          Domain",($Script:htmlsb), $RASMFASettings.DeepnetSettings.DefaultDomain,$htmlwhite))
 				$rowdata += @(,( "     Authentication",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,( "          Mode",($Script:htmlsb), $DeepNetAuthMode,$htmlwhite))
-				$rowdata += @(,( "          Token Type",($Script:htmlsb), $RAS2FASettings.DeepnetSettings.TokenType.ToString(),$htmlwhite))
-				$rowdata += @(,( "          Allow Channels",($Script:htmlsb), "Email: $($RAS2FASettings.DeepnetSettings.ActivateEmail.ToString())",$htmlwhite))
-				$rowdata += @(,( "                        ",($Script:htmlsb), "SMS: $($RAS2FASettings.DeepnetSettings.ActivateSMS.ToString())",$htmlwhite))
+				$rowdata += @(,( "          Token Type",($Script:htmlsb), $RASMFASettings.DeepnetSettings.TokenType.ToString(),$htmlwhite))
+				$rowdata += @(,( "          Allow Channels",($Script:htmlsb), "Email: $($RASMFASettings.DeepnetSettings.ActivateEmail.ToString())",$htmlwhite))
+				$rowdata += @(,( "                        ",($Script:htmlsb), "SMS: $($RASMFASettings.DeepnetSettings.ActivateSMS.ToString())",$htmlwhite))
 			}
-			ElseIf($RAS2FASettings.Provider -eq "SafeNet")
+			ElseIf($RASMFASettings.Type -eq "SafeNet")
 			{
-				Switch($RAS2FASettings.SafeNetSettings.AuthMode)
+				Switch($RASMFASettings.SafeNetSettings.AuthMode)
 				{
 					"MandatoryForAllUsers"						{$SafeNetAuthMode = "Mandatory for all users"; Break}
 					"CreateTokenForDomainAuthenticatedUsers"	{$SafeNetAuthMode = "Create token for Domain Authenticated users"; Break}
 					"UsersWithSafeNetAcc"						{$SafeNetAuthMode = "Use only for users with a safe account"; Break}
-					Default										{$SafeNetAuthMode = "Safenet mode not found: $($RAS2FASettings.SafeNetSettings.AuthMode)"; Break}
+					Default										{$SafeNetAuthMode = "Safenet mode not found: $($RASMFASettings.SafeNetSettings.AuthMode)"; Break}
 				}
 
 				$rowdata += @(,( "     Connection",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,( "          OTP Service URL",($Script:htmlsb),$RAS2FASettings.SafeNetSettings.OTPServiceURL,$htmlwhite))
+				$rowdata += @(,( "          OTP Service URL",($Script:htmlsb),$RASMFASettings.SafeNetSettings.OTPServiceURL,$htmlwhite))
 				$rowdata += @(,( "     Authentication",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,( "          Mode",($Script:htmlsb), $SafeNetAuthMode,$htmlwhite))
-				$rowdata += @(,( "          TMS Web API URL",($Script:htmlsb), $RAS2FASettings.SafeNetSettings.TMSWebApiURL,$htmlwhite))
-				$rowdata += @(,( "          User Repository",($Script:htmlsb), $RAS2FASettings.SafeNetSettings.UserRepository,$htmlwhite))
+				$rowdata += @(,( "          TMS Web API URL",($Script:htmlsb), $RASMFASettings.SafeNetSettings.TMSWebApiURL,$htmlwhite))
+				$rowdata += @(,( "          User Repository",($Script:htmlsb), $RASMFASettings.SafeNetSettings.UserRepository,$htmlwhite))
 			}
-			ElseIf($RAS2FASettings.Provider -eq "GAuthTOTP")
+			ElseIf($RASMFASettings.Type -eq "GAuthTOTP")
 			{
-				Switch($RAS2FASettings.GAuthTOTPSettings.UserEnrollment)
+				Switch($RASMFASettings.GAuthTOTPSettings.UserEnrollment)
 				{
 					"Allow"			{$GAuthAllow = "Allow"; Break}
 					"AllowUntil"	{$GAuthAllow = "Allow until"; Break}
 					"DoNotAllow"	{$GAuthAllow = "Do not allow"; Break}
-					Default			{$GAuthAllow = "Google Authenticator Allow status not found: $($RAS2FASettings.GAuthTOTPSettings.UserEnrollment)"; Break}
+					Default			{$GAuthAllow = "Google Authenticator Allow status not found: $($RASMFASettings.GAuthTOTPSettings.UserEnrollment)"; Break}
 				}
 				
-				Switch($RAS2FASettings.GAuthTOTPSettings.Tolerance)
+				Switch($RASMFASettings.GAuthTOTPSettings.Tolerance)
 				{
 					0		{$TOTPTolerance = "None"; Break}
 					30		{$TOTPTolerance = "+/- 30 seconds"; Break}
@@ -32419,11 +32405,11 @@ Function Output2FASetting
 					Default	{$TOTPTolerance = "TOTP tolerence not found: $()"; Break}
 				}
 				
-				$rowdata += @(,( "     Type Name",($Script:htmlsb),$RAS2FASettings.GAuthTOTPSettings.Type,$htmlwhite))
+				$rowdata += @(,( "     Type Name",($Script:htmlsb),$RASMFASettings.GAuthTOTPSettings.Type,$htmlwhite))
 				$rowdata += @(,( "     User Enrollment",($Script:htmlsb),"",$htmlwhite))
 				If($GAuthAllow -eq "Allow until")
 				{
-					$GAuthFullDate = $RAS2FASettings.GAuthTOTPSettings.UntilDateTime
+					$GAuthFullDate = $RASMFASettings.GAuthTOTPSettings.UntilDateTime
 					$GAuthDate     = ($GAuthFullDate.ToUniversalTime()).ToShortDateString()
 					$GAuthTime     = ($GAuthFullDate.ToUniversalTime()).ToLongTimeString()
 					$rowdata += @(,( "          $GAuthAllow",($Script:htmlsb),"Date: $GAuthDate",$htmlwhite))
@@ -32437,27 +32423,28 @@ Function Output2FASetting
 				$rowdata += @(,( "          TOTP tolerence",($Script:htmlsb), $TOTPTolerance,$htmlwhite))
 			}
 
-			If($RAS2FASettings.RestrictionMode -eq "Exclusion")
+			<#If($RASMFASettings.RestrictionMode -eq "Exclusion")
 			{
 				$rowdata += @(,("Enable MFA for all users except",($Script:htmlsb),"",$htmlwhite))
 			}
 			Else
 			{
 				$rowdata += @(,("Disable MFA for all users except",($Script:htmlsb),"",$htmlwhite))
-			}
+			}#>
 
 			$msg = "Provider settings"
 			$columnWidths = @("300","175")
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
 
+			<#
 			$rowdata = @()
-			$columnHeaders = @("User or group list",($Script:htmlsb),$RAS2FASettings.ExcludeUserGroup.ToString(),$htmlwhite)
-			If($RAS2FASettings.ExcludeUserGroup)
+			$columnHeaders = @("User or group list",($Script:htmlsb),$RASMFASettings.ExcludeUserGroup.ToString(),$htmlwhite)
+			If($RASMFASettings.ExcludeUserGroup)
 			{
-				If($RAS2FASettings.ExcludeUserGroupList.Count -gt 0)
+				If($RASMFASettings.ExcludeUserGroupList.Count -gt 0)
 				{
-					ForEach($Item in $RAS2FASettings.ExcludeUserGroupList)
+					ForEach($Item in $RASMFASettings.ExcludeUserGroupList)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User: $($Item.Account)",$htmlwhite))
 						$rowdata += @(,("",($Script:htmlsb),"Type: $($Item.Type)",$htmlwhite))
@@ -32466,16 +32453,16 @@ Function Output2FASetting
 				}
 			}
 			
-			$rowdata += @(,("Client IP list",($Script:htmlsb),$RAS2FASettings.ExcludeClientIPs.ToString(),$htmlwhite))
-			If($RAS2FASettings.ExcludeClientIPs)
+			$rowdata += @(,("Client IP list",($Script:htmlsb),$RASMFASettings.ExcludeClientIPs.ToString(),$htmlwhite))
+			If($RASMFASettings.ExcludeClientIPs)
 			{
-				If($RAS2FASettings.ExcludeClientIPList.Count -gt 0)
+				If($RASMFASettings.ExcludeClientIPList.Count -gt 0)
 				{
 					$cnt     = -1
-					$MaxFrom = (($RAS2FASettings.ExcludeClientIPList.From | Measure-Object -Property length -maximum).Maximum * -1)
-					$MaxTo   = (($RAS2FASettings.ExcludeClientIPList.To | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxFrom = (($RASMFASettings.ExcludeClientIPList.From | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxTo   = (($RASMFASettings.ExcludeClientIPList.To | Measure-Object -Property length -maximum).Maximum * -1)
 
-					ForEach($Item in $RAS2FASettings.ExcludeClientIPList)
+					ForEach($Item in $RASMFASettings.ExcludeClientIPList)
 					{
 						$cnt++
 						$tmp = ("From: {0,$($MaxFrom)} To: {1,$($MaxTo)}" -f $Item.From, $Item.To)
@@ -32491,13 +32478,13 @@ Function Output2FASetting
 					}
 				}
 				
-				If($RAS2FASettings.ExcludeClientIPv6List.Count -gt 0)
+				If($RASMFASettings.ExcludeClientIPv6List.Count -gt 0)
 				{
 					$cnt     = -1
-					$MaxFrom = (($RAS2FASettings.ExcludeClientIPv6List.From | Measure-Object -Property length -maximum).Maximum * -1)
-					$MaxTo   = (($RAS2FASettings.ExcludeClientIPv6List.To | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxFrom = (($RASMFASettings.ExcludeClientIPv6List.From | Measure-Object -Property length -maximum).Maximum * -1)
+					$MaxTo   = (($RASMFASettings.ExcludeClientIPv6List.To | Measure-Object -Property length -maximum).Maximum * -1)
 
-					ForEach($Item in $RAS2FASettings.ExcludeClientIPv6List)
+					ForEach($Item in $RASMFASettings.ExcludeClientIPv6List)
 					{
 						$cnt++
 						$tmp = ("From: {0,$($MaxFrom)} To: {1,$($MaxTo)}" -f $Item.From, $Item.To)
@@ -32513,11 +32500,11 @@ Function Output2FASetting
 					}
 				}
 			}
-			$rowdata += @(,("Client MAC list",($Script:htmlsb),$RAS2FASettings.ExcludeClientMAC.ToString(),$htmlwhite))
-			If($RAS2FASettings.ExcludeClientMAC)
+			$rowdata += @(,("Client MAC list",($Script:htmlsb),$RASMFASettings.ExcludeClientMAC.ToString(),$htmlwhite))
+			If($RASMFASettings.ExcludeClientMAC)
 			{
 				$cnt = -1
-				ForEach($MAC in $RAS2FASettings.ExcludeClientMACList)
+				ForEach($MAC in $RASMFASettings.ExcludeClientMACList)
 				{
 					$cnt++
 					
@@ -32531,11 +32518,11 @@ Function Output2FASetting
 					}
 				}
 			}
-			$rowdata += @(,("Connection to the following Gateway IPs",($Script:htmlsb),$RAS2FASettings.ExcludeClientGWIPs.ToString(),$htmlwhite))
-			If($RAS2FASettings.ExcludeClientGWIPs)
+			$rowdata += @(,("Connection to the following Gateway IPs",($Script:htmlsb),$RASMFASettings.ExcludeClientGWIPs.ToString(),$htmlwhite))
+			If($RASMFASettings.ExcludeClientGWIPs)
 			{
 				$cnt = -1
-				ForEach($Server in $RAS2FASettings.ExcludeClientGWIPList)
+				ForEach($Server in $RASMFASettings.ExcludeClientGWIPList)
 				{
 					$cnt++
 					
@@ -32549,19 +32536,13 @@ Function Output2FASetting
 					}
 				}
 			}
+			
+			$msg = "Restriction"
+			$columnWidths = @("300","175")
+			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+			WriteHTMLLine 0 0 ""
+			#>
 		}
-		$msg = "Restriction"
-		$columnWidths = @("300","175")
-		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-		WriteHTMLLine 0 0 ""
-
-		$rowdata = @()
-		$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$RAS2FASettings.ReplicateSettings.ToString(),$htmlwhite)
-
-		$msg = ""
-		$columnWidths = @("300","175")
-		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-		WriteHTMLLine 0 0 ""
 	}
 }
 
@@ -32613,15 +32594,21 @@ Function OutputRASAllowedDevicesSetting
 		$AllowedDevicesWordTable = @()
 		
 		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientWindows
-			ClientName         = "Windows client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildWindows
+			ClientStatus       = $RASAllowedDevices.AllowClientAndroid
+			ClientName         = "Android client"
+			ClientMinimumBuild = $RASAllowedDevices.MinBuildAndroid
 		}
 		
 		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientMAC
-			ClientName         = "macOS client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildMAC
+			ClientStatus       = $RASAllowedDevices.AllowClientChromeApp
+			ClientName         = "Chrome OS client"
+			ClientMinimumBuild = $RASAllowedDevices.MinBuildChromeApp
+		}
+		
+		$AllowedDevicesWordTable += @{
+			ClientStatus       = $RASAllowedDevices.AllowClientIOS
+			ClientName         = "iOS/iPadOS client"
+			ClientMinimumBuild = $RASAllowedDevices.MinBuildIOS
 		}
 		
 		$AllowedDevicesWordTable += @{
@@ -32631,33 +32618,21 @@ Function OutputRASAllowedDevicesSetting
 		}
 		
 		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientIOS
-			ClientName         = "iOS client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildIOS
+			ClientStatus       = $RASAllowedDevices.AllowClientMAC
+			ClientName         = "macOS client"
+			ClientMinimumBuild = $RASAllowedDevices.MinBuildMAC
 		}
 		
 		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientAndroid
-			ClientName         = "Android client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildAndroid
+			ClientStatus       = $RASAllowedDevices.AllowClientWeb
+			ClientName         = "User Portal (Web client)"
+			ClientMinimumBuild = $RASAllowedDevices.MinBuildWeb
 		}
 		
 		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientHTML5
-			ClientName         = "HTML5 client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildHTML5
-		}
-		
-		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientChromeApp
-			ClientName         = "Chrome client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildChromeApp
-		}
-		
-		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientWebPortal
-			ClientName         = "RAS Web Portal"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildWebPortal
+			ClientStatus       = $RASAllowedDevices.AllowClientWindows
+			ClientName         = "Windows client"
+			ClientMinimumBuild = $RASAllowedDevices.MinBuildWindows
 		}
 		
 		$AllowedDevicesWordTable += @{
@@ -32666,30 +32641,6 @@ Function OutputRASAllowedDevicesSetting
 			ClientMinimumBuild = $RASAllowedDevices.MinBuildWyse
 		}
 		
-		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientJava
-			ClientName         = "Java client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildJava
-		}
-		
-		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientWinPhone
-			ClientName         = "Windows Phone client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildWinPhone
-		}
-		
-		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClientBlackberry
-			ClientName         = "Blackberry client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuildBlackberry
-		}
-		
-		$AllowedDevicesWordTable += @{
-			ClientStatus       = $RASAllowedDevices.AllowClient2XOS
-			ClientName         = "2X OS client"
-			ClientMinimumBuild = $RASAllowedDevices.MinBuild2XOS
-		}
-
 		If($AllowedDevicesWordTable.Count -gt 0)
 		{
 			$Table = AddWordTable -Hashtable $AllowedDevicesWordTable `
@@ -32746,18 +32697,13 @@ Function OutputRASAllowedDevicesSetting
 		#		1234567S12345678901234567890S1234
 		#       False   WIndows Phone client 9999
 		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWindows, "Windows client", $RASAllowedDevices.MinBuildWindows)
+		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWeb, "User Portal (Web client)", $RASAllowedDevices.MinBuildWeb)
 		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientMAC, "macOS client", $RASAllowedDevices.MinBuildMAC)
 		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientLinux, "Linux client", $RASAllowedDevices.MinBuildLinux)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientIOS, "iOS client", $RASAllowedDevices.MinBuildIOS)
+		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientIOS, "iOS/iPadOS client", $RASAllowedDevices.MinBuildIOS)
 		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientAndroid, "Android client", $RASAllowedDevices.MinBuildAndroid)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientHTML5, "HTML5 client", $RASAllowedDevices.MinBuildHTML5)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientChromeApp, "Chrome client", $RASAllowedDevices.MinBuildChromeApp)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWebPortal, "RAS Web Portal", $RASAllowedDevices.MinBuildWebPortal)
+		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientChromeApp, "Chrome OS client", $RASAllowedDevices.MinBuildChromeApp)
 		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWyse, "Wyse client", $RASAllowedDevices.MinBuildWyse)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientJava, "Java client", $RASAllowedDevices.MinBuildJava)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWinPhone, "Windows Phone client", $RASAllowedDevices.MinBuildWinPhone)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientBlackberry, "Blackberry client", $RASAllowedDevices.MinBuildBlackberry)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClient2XOS, "2X OS client", $RASAllowedDevices.MinBuild2XOS)
 		Line 0 ""
 		Line 2 "Settings are replicated to all Sites: " $RASAllowedDevices.ReplicateSettings.ToString()
 		Line 0 ""
@@ -32785,18 +32731,13 @@ Function OutputRASAllowedDevicesSetting
 		$rowdata = @()
 
 		$rowdata += @(,($RASAllowedDevices.AllowClientWindows,$htmlwhite,"Windows client",$htmlwhite,$RASAllowedDevices.MinBuildWindows,$htmlwhite))
+		$rowdata += @(,($RASAllowedDevices.AllowClientWeb,$htmlwhite,"User Portal (Web client)",$htmlwhite,$RASAllowedDevices.MinBuildWeb,$htmlwhite))
 		$rowdata += @(,($RASAllowedDevices.AllowClientMAC,$htmlwhite,"macOS client",$htmlwhite,$RASAllowedDevices.MinBuildMAC,$htmlwhite))
 		$rowdata += @(,($RASAllowedDevices.AllowClientLinux,$htmlwhite,"Linux client",$htmlwhite,$RASAllowedDevices.MinBuildLinux,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClientIOS,$htmlwhite,"iOS client",$htmlwhite,$RASAllowedDevices.MinBuildIOS,$htmlwhite))
+		$rowdata += @(,($RASAllowedDevices.AllowClientIOS,$htmlwhite,"iOS/iPadOS client",$htmlwhite,$RASAllowedDevices.MinBuildIOS,$htmlwhite))
 		$rowdata += @(,($RASAllowedDevices.AllowClientAndroid,$htmlwhite,"Android client",$htmlwhite,$RASAllowedDevices.MinBuildAndroid,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClientHTML5,$htmlwhite,"HTML5 client",$htmlwhite,$RASAllowedDevices.MinBuildHTML5,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClientChromeApp,$htmlwhite,"Chrome client",$htmlwhite,$RASAllowedDevices.MinBuildChromeApp,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClientWebPortal,$htmlwhite,"RAS Web Portal",$htmlwhite,$RASAllowedDevices.MinBuildWebPortal,$htmlwhite))
+		$rowdata += @(,($RASAllowedDevices.AllowClientChromeApp,$htmlwhite,"Chrome OS client",$htmlwhite,$RASAllowedDevices.MinBuildChromeApp,$htmlwhite))
 		$rowdata += @(,($RASAllowedDevices.AllowClientWyse,$htmlwhite,"Wyse client",$htmlwhite,$RASAllowedDevices.MinBuildWyse,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClientJava,$htmlwhite,"Java client",$htmlwhite,$RASAllowedDevices.MinBuildJava,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClientWinPhone,$htmlwhite,"Windows Phone client",$htmlwhite,$RASAllowedDevices.MinBuildWinPhone,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClientBlackberry,$htmlwhite,"Blackberry client",$htmlwhite,$RASAllowedDevices.MinBuildBlackberry,$htmlwhite))
-		$rowdata += @(,($RASAllowedDevices.AllowClient2XOS,$htmlwhite,"2X OS client",$htmlwhite,$RASAllowedDevices.MinBuild2XOS,$htmlwhite))
 		
 		$columnHeaders = @(
 		"Enabled",($Script:htmlsb),
@@ -33155,10 +33096,10 @@ Function OutputPoliciesDetails
 	{
 		Write-Verbose "$(Get-Date -Format G): `t`t`tProcessing Policy $($Policy.Name)"
 		
-		$ClientOptions   = $Policy.ClientPolicy.ClientOptions
+		<#$ClientOptions   = $Policy.ClientPolicy.ClientOptions
 		$ControlSettings = $Policy.ClientPolicy.ControlSettings
 		$Redirection     = $Policy.ClientPolicy.Redirection
-		$Session         = $Policy.ClientPolicy.Session
+		$Session         = $Policy.ClientPolicy.Session#>
 
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tPolicy"
 		If($MSWord -or $PDF)
@@ -33279,13 +33220,13 @@ Function OutputPoliciesDetails
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tPolicy/Criteria"
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tPolicy/Criteria/Gateway criteria"
 
-		$GWType = ""
-		Switch($Policy.GWRule)
+		$GatewayType = ""
+		Switch($Policy.GatewayRule)
 		{
-			"AnyGW"				{$GWType = "if Client is connected to any gateway"; Break}
-			"ConnectedToGWs"	{$GWType = "if Client is connected to one of the following gateways"; Break}
-			"NotConnectedToGWs"	{$GWType = "if Client is not connecteed to one of the following gateways"; Break}
-			Default				{$GWType = "Policy/Criteria/Gateway criteria type not found: $($Policy.GWRule)"; Break}
+			"AnyGW"				{$GatewayType = "if Client is connected to any gateway"; Break}
+			"ConnectedToGWs"	{$GatewayType = "if Client is connected to one of the following gateways"; Break}
+			"NotConnectedToGWs"	{$GatewayType = "if Client is not connecteed to one of the following gateways"; Break}
+			Default				{$GatewayType = "Policy/Criteria/Gateway criteria type not found: $($Policy.GatewayRule)"; Break}
 		}
 
 		$MACType = ""
@@ -33301,12 +33242,12 @@ Function OutputPoliciesDetails
 		{
 			WriteWordLine 4 0 "Criteria"
 			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Gateway criteria/Apply policy"; Value = $GWType; }) > $Null
-			If($Policy.GWRule -ne "AnyGW")
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Gateway criteria/Apply policy"; Value = $GatewayType; }) > $Null
+			If($Policy.GatewayRule -ne "AnyGW")
 			{
-				ForEach($GW in $Policy.GWList)
+				ForEach($Gateway in $Policy.GatewayList)
 				{
-					$ScriptInformation.Add(@{Data = ""; Value = $GW; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = $Gateway; }) > $Null
 				}
 			}
 			
@@ -33321,11 +33262,11 @@ Function OutputPoliciesDetails
 
 			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Windows"; Value = $Policy.AllowedOSes.Windows.ToString(); }) > $Null
 			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/iOS"; Value = $Policy.AllowedOSes.iOS.ToString(); }) > $Null
-			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/HTML5"; Value = $Policy.AllowedOSes.HTML5.ToString(); }) > $Null
 			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/macOS"; Value = $Policy.AllowedOSes.Mac.ToString(); }) > $Null
 			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Android"; Value = $Policy.AllowedOSes.Android.ToString(); }) > $Null
 			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Chrome"; Value = $Policy.AllowedOSes.Chrome.ToString(); }) > $Null
 			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/Linux"; Value = $Policy.AllowedOSes.Linux.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Policy/Criteria/Parallels client criteria/WebClient"; Value = $Policy.AllowedOSes.WebClient.ToString(); }) > $Null
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
@@ -33349,12 +33290,12 @@ Function OutputPoliciesDetails
 		{
 			Line 2 "Criteria"
 			Line 0 ""
-			Line 3 "Policy/Criteria/Gateway criteria/Apply policy: " $GWType
-			If($Policy.GWRule -ne "AnyGW")
+			Line 3 "Policy/Criteria/Gateway criteria/Apply policy: " $GatewayType
+			If($Policy.GatewayRule -ne "AnyGW")
 			{
-				ForEach($GW in $Policy.GWList)
+				ForEach($Gateway in $Policy.GatewayList)
 				{
-					Line 7 "  " $GW
+					Line 7 "  " $Gateway
 				}
 			}
 			
@@ -33369,7 +33310,7 @@ Function OutputPoliciesDetails
 
 			Line 3 "Policy/Criteria/Parallels client criteria/Windows: " $Policy.AllowedOSes.Windows.ToString()
 			Line 3 "Policy/Criteria/Parallels client criteria/iOS: " $Policy.AllowedOSes.iOS.ToString()
-			Line 3 "Policy/Criteria/Parallels client criteria/HTML5: " $Policy.AllowedOSes.HTML5.ToString()
+			Line 3 "Policy/Criteria/Parallels client criteria/WebClient: " $Policy.AllowedOSes.WebClient.ToString()
 			Line 3 "Policy/Criteria/Parallels client criteria/macOS: " $Policy.AllowedOSes.Mac.ToString()
 			Line 3 "Policy/Criteria/Parallels client criteria/Android: " $Policy.AllowedOSes.Android.ToString()
 			Line 3 "Policy/Criteria/Parallels client criteria/Chrome: " $Policy.AllowedOSes.Chrome.ToString()
@@ -33380,12 +33321,12 @@ Function OutputPoliciesDetails
 		{
 			$rowdata = @()
 
-			$columnHeaders = @("Policy/Criteria/Gateway criteria/Apply policy",($Script:htmlsb),$GWType,$htmlwhite)
-			If($Policy.GWRule -ne "AnyGW")
+			$columnHeaders = @("Policy/Criteria/Gateway criteria/Apply policy",($Script:htmlsb),$GatewayType,$htmlwhite)
+			If($Policy.GatewayRule -ne "AnyGW")
 			{
-				ForEach($GW in $Policy.GWList)
+				ForEach($Gateway in $Policy.GatewayList)
 				{
-					$rowdata += @(,("",($Script:htmlsb),$GW,$htmlwhite))
+					$rowdata += @(,("",($Script:htmlsb),$Gateway,$htmlwhite))
 				}
 			}
 			
@@ -33400,7 +33341,7 @@ Function OutputPoliciesDetails
 
 			$rowdata += @(,("Policy/Criteria/Parallels client criteria/Windows",($Script:htmlsb),$Policy.AllowedOSes.Windows.ToString(),$htmlwhite))
 			$rowdata += @(,("Policy/Criteria/Parallels client criteria/iOS",($Script:htmlsb),$Policy.AllowedOSes.iOS.ToString(),$htmlwhite))
-			$rowdata += @(,("Policy/Criteria/Parallels client criteria/HTML5",($Script:htmlsb),$Policy.AllowedOSes.HTML5.ToString(),$htmlwhite))
+			$rowdata += @(,("Policy/Criteria/Parallels client criteria/WebClient",($Script:htmlsb),$Policy.AllowedOSes.WebClient.ToString(),$htmlwhite))
 			$rowdata += @(,("Policy/Criteria/Parallels client criteria/macOS",($Script:htmlsb),$Policy.AllowedOSes.Mac.ToString(),$htmlwhite))
 			$rowdata += @(,("Policy/Criteria/Parallels client criteria/Android",($Script:htmlsb),$Policy.AllowedOSes.Android.ToString(),$htmlwhite))
 			$rowdata += @(,("Policy/Criteria/Parallels client criteria/Chrome",($Script:htmlsb),$Policy.AllowedOSes.Chrome.ToString(),$htmlwhite))
@@ -33544,14 +33485,14 @@ Function OutputPoliciesDetails
 			ForEach($Item in $Policy.ClientPolicy.Session.SecondaryConnections.ConnectionList)
 			{
 				$cnt++
-				$GWMode = ""
+				$GatewayMode = ""
 				Switch($Item.Mode)
 				{
-					"DirectMode"		{$GWMode = "Direct Mode"; Break}
-					"DirectSSLMode"		{$GWMode = "Direct SSL Mode"; Break}
-					"GatewayMode"		{$GWMode = "Gateway Mode"; Break}
-					"GatewaySSLMode"	{$GWMode = "Gateway SSL Mode"; Break}
-					Default				{$GWMode = "Secondary connections/Secondary connections/Mode not found: $($Item.Mode)"; Break}
+					"DirectMode"		{$GatewayMode = "Direct Mode"; Break}
+					"DirectSSLMode"		{$GatewayMode = "Direct SSL Mode"; Break}
+					"GatewayMode"		{$GatewayMode = "Gateway Mode"; Break}
+					"GatewaySSLMode"	{$GatewayMode = "Gateway SSL Mode"; Break}
+					Default				{$GatewayMode = "Secondary connections/Secondary connections/Mode not found: $($Item.Mode)"; Break}
 				}
 		
 				If($cnt -eq 1)
@@ -33560,18 +33501,18 @@ Function OutputPoliciesDetails
 					{
 						$SettingsWordTable += @{
 						Text = $txt;
-						Value = "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())";
+						Value = "Connection: $($Item.Server)   Mode: $GatewayMode   Port: $($Item.ServerPort.ToString())";
 						}
 					}
 					If($HTML)
 					{
 						$rowdata += @(,(
 						$txt,$htmlbold,
-						"Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())",$htmlwhite))
+						"Connection: $($Item.Server)   Mode: $GatewayMode   Port: $($Item.ServerPort.ToString())",$htmlwhite))
 					}
 					If($Text)
 					{
-						OutputPolicySetting $txt "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())"
+						OutputPolicySetting $txt "Connection: $($Item.Server)   Mode: $GatewayMode   Port: $($Item.ServerPort.ToString())"
 					}
 				}
 				Else
@@ -33580,18 +33521,18 @@ Function OutputPoliciesDetails
 					{
 						$SettingsWordTable += @{
 						Text = "";
-						Value = "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())";
+						Value = "Connection: $($Item.Server)   Mode: $GatewayMode   Port: $($Item.ServerPort.ToString())";
 						}
 					}
 					If($HTML)
 					{
 						$rowdata += @(,(
 						"",$htmlbold,
-						"Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())",$htmlwhite))
+						"Connection: $($Item.Server)   Mode: $GatewayMode   Port: $($Item.ServerPort.ToString())",$htmlwhite))
 					}
 					If($Text)
 					{
-						OutputPolicySetting "`t`t`t`t`t`t`t      " "Connection: $($Item.Server)   Mode: $GWMode   Port: $($Item.ServerPort.ToString())"
+						OutputPolicySetting "`t`t`t`t`t`t`t      " "Connection: $($Item.Server)   Mode: $GatewayMode   Port: $($Item.ServerPort.ToString())"
 					}
 				}
 			}
@@ -36220,7 +36161,7 @@ Function OutputPoliciesDetails
 				OutputPolicySetting $txt $Policy.ClientPolicy.ClientOptions.Printing.PrintInstallFonts.ToString()
 			}
 
-			$txt = "Client options/Advanced/Printing/Redirect custom paper sizes when server preferences are selected"
+			<#$txt = "Client options/Advanced/Printing/Redirect custom paper sizes when server preferences are selected"
 			If($MSWord -or $PDF)
 			{
 				$SettingsWordTable += @{
@@ -36237,7 +36178,7 @@ Function OutputPoliciesDetails
 			If($Text)
 			{
 				OutputPolicySetting $txt $Policy.ClientPolicy.ClientOptions.Printing.PrintAddCustomPapers.ToString()
-			}
+			}#>
 
 			$txt = "Client options/Advanced/Printing/Raw printing support"
 			If($MSWord -or $PDF)
@@ -36721,7 +36662,7 @@ Function ProcessAdministration
 
 	Write-Verbose "$(Get-Date -Format G): `tProcessing Features"
 	
-	$RASFeatures = Get-RASSystemSettings -EA 0 4>$Null
+	$RASFeatures = Get-RASHelpdeskEmailSettings -EA 0 4>$Null
 	
 	If(!($?))
 	{
@@ -36763,9 +36704,105 @@ Function ProcessAdministration
 	Else
 	{
 		OutputRASFeatures $RASFeatures
-		OutputRASSettings $RASFeatures
 	}
 
+	Write-Verbose "$(Get-Date -Format G): `tProcessing Settings"
+	
+	$GotRASSettings = $False
+	$RASSettings = Get-RASSystemSettings -EA 0 4>$Null
+	
+	If(!($?))
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve settings information
+		"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "Unable to retrieve settings information"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve settings information"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve settings information"
+		}
+	}
+	ElseIf($? -and $null -eq $RASsettings)
+	{
+		Write-Host "
+		No settings information was found
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No settings information was found"
+		}
+		If($Text)
+		{
+			Line 0 "No settings information was found"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No settings information was found"
+		}
+	}
+	Else
+	{
+		$GotRASSettings = $True
+		OutputRASSettings $RASSettings
+	}
+
+	$RASProxySettings = Get-RASProxySettings -EA 0 4>$Null
+	
+	If(!($?))
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve Proxy settings information
+		"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "Unable to retrieve Proxy settings information"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve Proxy settings information"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve Proxy settings information"
+		}
+	}
+	ElseIf($? -and $null -eq $RASProxySettings)
+	{
+		Write-Host "
+		No Proxy settings information was found
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No Proxy settings information was found"
+		}
+		If($Text)
+		{
+			Line 0 "No Proxy settings information was found"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No Proxy settings information was found"
+		}
+	}
+	Else
+	{
+		OutputRASProxySettings $RASProxySettings
+	}
+
+	If($GotRASSettings)
+	{
+		OutputRASMiscSettings $RASSettings
+	}
+	
 	$RASMailboxSettings = Get-RASMailboxSettings -EA 0 4>$Null
 	
 	If(!($?))
@@ -37101,7 +37138,7 @@ Function OutputRASFeatures
 
 Function OutputRASSettings
 {
-	Param([object] $RASFeatures)
+	Param([object] $RASSettings)
 	
 	Write-Verbose "$(Get-Date -Format G): `t`tOutput Settings"
 	
@@ -37124,7 +37161,7 @@ Function OutputRASSettings
 	If($MSWord -or $PDF)
 	{
 		$ScriptInformation = New-Object System.Collections.ArrayList
-		$ScriptInformation.Add(@{Data = "Participate in the Customer Experience Program"; Value = $RASFeatures.CEPEnabled.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Participate in the Customer Experience Program"; Value = $RASSettings.CEPEnabled.ToString(); }) > $Null
 
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
@@ -37146,20 +37183,27 @@ Function OutputRASSettings
 	}
 	If($Text)
 	{
-		Line 3 "Participate in the Customer Experience Program`t`t: " $RASFeatures.CEPEnabled.ToString()
+		Line 3 "Participate in the Customer Experience Program`t`t: " $RASSettings.CEPEnabled.ToString()
 		Line 0 ""
 	}
 	If($HTML)
 	{
 		$rowdata = @()
-		$columnHeaders = @("Participate in the Customer Experience Program",($Script:htmlsb),$RASFeatures.CEPEnabled.ToString(),$htmlwhite)
+		$columnHeaders = @("Participate in the Customer Experience Program",($Script:htmlsb),$RASSettings.CEPEnabled.ToString(),$htmlwhite)
 
 		$msg = ""
 		$columnWidths = @("200","175")
 		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 		WriteHTMLLine 0 0 ""
 	}
+}
 
+Function OutputRASProxySettings
+{
+	Param([object] $RASProxySettings)
+	
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput HTTP Proxy Settings"
+	
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 3 0 "HTTP proxy settings"
@@ -37175,7 +37219,7 @@ Function OutputRASSettings
 	
 	If($MSWord -or $PDF)
 	{
-		If($RASFeatures.HttpProxyMode -eq "NoProxy")
+		If($RASProxySettings.HttpProxyMode -eq "NoProxy")
 		{
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "No proxy server"; Value = ""; }) > $Null
@@ -37202,10 +37246,10 @@ Function OutputRASSettings
 		{
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Manual HTTP proxy configuration"; Value = ""; }) > $Null
-			$ScriptInformation.Add(@{Data = "Address"; Value = $RASFeatures.HttpProxyAddress; }) > $Null
-			$ScriptInformation.Add(@{Data = "Port"; Value = $RASFeatures.HttpProxyPort; }) > $Null
-			$ScriptInformation.Add(@{Data = "User name"; Value = $RASFeatures.HttpProxyUser; }) > $Null
-			$ScriptInformation.Add(@{Data = "Password"; Value = $RASFeatures.HttpProxyPwd; }) > $Null
+			$ScriptInformation.Add(@{Data = "Address"; Value = $RASProxySettings.HttpProxyAddress; }) > $Null
+			$ScriptInformation.Add(@{Data = "Port"; Value = $RASProxySettings.HttpProxyPort; }) > $Null
+			$ScriptInformation.Add(@{Data = "User name"; Value = $RASProxySettings.HttpProxyUser; }) > $Null
+			$ScriptInformation.Add(@{Data = "Password"; Value = $RASProxySettings.HttpProxyPwd; }) > $Null
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
@@ -37228,7 +37272,7 @@ Function OutputRASSettings
 	}
 	If($Text)
 	{
-		If($RASFeatures.HttpProxyMode -eq "NoProxy")
+		If($RASProxySettings.HttpProxyMode -eq "NoProxy")
 		{
 			Line 3 "No proxy server" 
 			Line 0 ""
@@ -37236,16 +37280,16 @@ Function OutputRASSettings
 		Else
 		{
 			Line 3 "Manual HTTP proxy configuration" 
-			Line 3 "Address`t`t: " $RASFeatures.HttpProxyAddress
-			Line 3 "Port`t`t: " $RASFeatures.HttpProxyPort
-			Line 3 "User name`t: " $RASFeatures.HttpProxyUser
-			Line 3 "Password`t: " $RASFeatures.HttpProxyPwd
+			Line 3 "Address`t`t: " $RASProxySettings.HttpProxyAddress
+			Line 3 "Port`t`t: " $RASProxySettings.HttpProxyPort
+			Line 3 "User name`t: " $RASProxySettings.HttpProxyUser
+			Line 3 "Password`t: " $RASProxySettings.HttpProxyPwd
 			Line 0 ""
 		}
 	}
 	If($HTML)
 	{
-		If($RASFeatures.HttpProxyMode -eq "NoProxy")
+		If($RASProxySettings.HttpProxyMode -eq "NoProxy")
 		{
 			$rowdata = @()
 			$columnHeaders = @("No proxy server",($Script:htmlsb),"",$htmlwhite)
@@ -37259,10 +37303,10 @@ Function OutputRASSettings
 		{
 			$rowdata = @()
 			$columnHeaders = @("Manual HTTP proxy configuration",($Script:htmlsb),"",$htmlwhite)
-			$rowdata += @(,("Address",($Script:htmlsb),$RASFeatures.HttpProxyAddress,$htmlwhite))
-			$rowdata += @(,("Port",($Script:htmlsb),$RASFeatures.HttpProxyPort.ToString(),$htmlwhite))
-			$rowdata += @(,("User name",($Script:htmlsb),$RASFeatures.HttpProxyUser,$htmlwhite))
-			$rowdata += @(,("Password",($Script:htmlsb),$RASFeatures.HttpProxyPwd,$htmlwhite))
+			$rowdata += @(,("Address",($Script:htmlsb),$RASProxySettings.HttpProxyAddress,$htmlwhite))
+			$rowdata += @(,("Port",($Script:htmlsb),$RASProxySettings.HttpProxyPort.ToString(),$htmlwhite))
+			$rowdata += @(,("User name",($Script:htmlsb),$RASProxySettings.HttpProxyUser,$htmlwhite))
+			$rowdata += @(,("Password",($Script:htmlsb),$RASProxySettings.HttpProxyPwd,$htmlwhite))
 
 			$msg = ""
 			$columnWidths = @("200","175")
@@ -37270,7 +37314,14 @@ Function OutputRASSettings
 			WriteHTMLLine 0 0 ""
 		}
 	}
+}
 
+Function OutputRASMiscSettings
+{
+	Param([object] $RASSettings)
+	
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput Miscellaneous Settings"
+	
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 3 0 "Miscellaneous"
@@ -37284,23 +37335,23 @@ Function OutputRASSettings
 		WriteHTMLLine 3 0 "Miscellaneous"
 	}
 	
-	Switch ($RASFeatures.ResetIdleSessionAfterMins)
+	Switch ($RASSettings.ResetIdleSessionAfterMins)
 	{
-		0		{$RASFeaturesResetIdleSessionAfterMins = "Never"; Break}
-		15		{$RASFeaturesResetIdleSessionAfterMins = "15 minutes"; Break}
-		30		{$RASFeaturesResetIdleSessionAfterMins = "30 minutes"; Break}
-		60		{$RASFeaturesResetIdleSessionAfterMins = "1 hour"; Break}
-		180		{$RASFeaturesResetIdleSessionAfterMins = "3 hours"; Break}
-		360		{$RASFeaturesResetIdleSessionAfterMins = "6 hours"; Break}
-		720		{$RASFeaturesResetIdleSessionAfterMins = "12 hours"; Break}
-		1440	{$RASFeaturesResetIdleSessionAfterMins = "1 day"; Break}
-		Default	{$RASFeaturesResetIdleSessionAfterMins = "Unable to determine Console idle time: $($RASFeatures.ResetIdleSessionAfterMins)"; Break}
+		0		{$RASSettingsResetIdleSessionAfterMins = "Never"; Break}
+		15		{$RASSettingsResetIdleSessionAfterMins = "15 minutes"; Break}
+		30		{$RASSettingsResetIdleSessionAfterMins = "30 minutes"; Break}
+		60		{$RASSettingsResetIdleSessionAfterMins = "1 hour"; Break}
+		180		{$RASSettingsResetIdleSessionAfterMins = "3 hours"; Break}
+		360		{$RASSettingsResetIdleSessionAfterMins = "6 hours"; Break}
+		720		{$RASSettingsResetIdleSessionAfterMins = "12 hours"; Break}
+		1440	{$RASSettingsResetIdleSessionAfterMins = "1 day"; Break}
+		Default	{$RASSettingsResetIdleSessionAfterMins = "Unable to determine Console idle time: $($RASSettings.ResetIdleSessionAfterMins)"; Break}
 	}
 	
 	If($MSWord -or $PDF)
 	{
 		$ScriptInformation = New-Object System.Collections.ArrayList
-		$ScriptInformation.Add(@{Data = "Reset idle RAS Console session after"; Value = $RASFeaturesResetIdleSessionAfterMins; }) > $Null
+		$ScriptInformation.Add(@{Data = "Reset idle RAS Console session after"; Value = $RASSettingsResetIdleSessionAfterMins; }) > $Null
 
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
@@ -37322,13 +37373,13 @@ Function OutputRASSettings
 	}
 	If($Text)
 	{
-		Line 3 "Reset idle RAS Console session after`t`t`t: " $RASFeaturesResetIdleSessionAfterMins
+		Line 3 "Reset idle RAS Console session after`t`t`t: " $RASSettingsResetIdleSessionAfterMins
 		Line 0 ""
 	}
 	If($HTML)
 	{
 		$rowdata = @()
-		$columnHeaders = @("Reset idle RAS Console session after",($Script:htmlsb),$RASFeaturesResetIdleSessionAfterMins,$htmlwhite)
+		$columnHeaders = @("Reset idle RAS Console session after",($Script:htmlsb),$RASSettingsResetIdleSessionAfterMins,$htmlwhite)
 
 		$msg = ""
 		$columnWidths = @("200","175")
@@ -38090,6 +38141,108 @@ Function OutputRASNotificationScripts
 		}
 	}
 }
+
+Function OutputRASClientSettings
+{
+	Param([object] $RASClientSettings)
+
+	<#
+	ExcludeDirectRDP         :
+	ExcludeDirectRDPForVDI   :
+	SendHDIcons              : True
+	ReplicateSendHDIcons     : True
+	EnableOverlayIcons       : True
+	ShowPasswordExpiry       : False
+	TokenValidationExpireMin : 60
+	#>
+
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 3 0 "Client settings"
+		$ScriptInformation = New-Object System.Collections.ArrayList
+		$ScriptInformation.Add(@{Data = "Published application icons"; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = "     Resolution:"; Value = ""; }) > $Null
+		If($RASClientSettings.SendHDIcons)
+		{
+			$ScriptInformation.Add(@{Data = "          High resolution icons (uses more network bandwidth)"; Value = ""; }) > $Null
+		}
+		Else
+		{
+			$ScriptInformation.Add(@{Data = "          Standard resolution icons"; Value = ""; }) > $Null
+		}
+		$ScriptInformation.Add(@{Data = "     Overlay:"; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = "          $($RASClientSettings.EnableOverlayIcons.ToString())"; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = "Password notifications"; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = "     Show password expiration reminder"; Value = $RASClientSettings.ShowPasswordExpiry.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $RASClientSettings.ReplicateSendHDIcons.ToString(); }) > $Null
+
+		$Table = AddWordTable -Hashtable $ScriptInformation `
+		-Columns Data,Value `
+		-List `
+		-Format $wdTableGrid `
+		-AutoFit $wdAutoFitFixed;
+
+		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+		$Table.Columns.Item(1).Width = 200;
+		$Table.Columns.Item(2).Width = 250;
+
+		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+		FindWordDocumentEnd
+		$Table = $Null
+
+		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 2 "Client settings"
+		Line 3 "Published application icons"
+		Line 4 "Resolution:"
+		If($RASClientSettings.SendHDIcons)
+		{
+			Line 5 "High resolution (uses more network bandwidth)"
+		}
+		Else
+		{
+			Line 5 "Standard resolution"
+		}
+		Line 4 "Overlay:"
+		Line 5 "Enable overlay icon`t`t`t: " $RASClientSettings.EnableOverlayIcons.ToString()
+		LIne 3 "Password notifications"
+		Line 4 "Show password expiration reminder`t: " $RASClientSettings.ShowPasswordExpiry.ToString()
+		Line 3 "Settings are replicated to all Sites`t: " $RASClientSettings.ReplicateSendHDIcons.ToString()
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 3 0 "Client settings"
+		$rowdata = @()
+		$columnHeaders = @("Published application icons",($Script:htmlsb),"S",$htmlwhite)
+		$rowdata += @(,("     Resolution:",($Script:htmlsb),"",$htmlwhite))
+		If($RASClientSettings.SendHDIcons)
+		{
+			$rowdata += @(,("          High resolution (uses more network bandwidth)",($Script:htmlsb),"",$htmlwhite))
+		}
+		Else
+		{
+			$rowdata += @(,("          Standard resolution",($Script:htmlsb),"",$htmlwhite))
+		}
+		$rowdata += @(,("     Overlay:",($Script:htmlsb),"",$htmlwhite))
+		$rowdata += @(,("          $($RASClientSettings.EnableOverlayIcons.ToString())",($Script:htmlsb),"",$htmlwhite))
+		$rowdata += @(,("Password notifications",($Script:htmlsb),"",$htmlwhite))
+		$rowdata += @(,("     Show password expiration reminder",($Script:htmlsb),$RASClientSettings.ShowPasswordExpiry.ToString(),$htmlwhite))
+		$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$RASClientSettings.ReplicateSendHDIcons.ToString(),$htmlwhite))
+
+		$msg = ""
+		$columnWidths = @("200","275")
+		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+
+		WriteHTMLLine 0 0 ""
+	}
+
+}
 #endregion
 
 #region process licensing
@@ -38335,7 +38488,7 @@ ForEach($Site in $Script:Sites)
 	ProcessConnection $Site
 }
 
-ProcessPolicies #new in 18.1
+ProcessPolicies
 
 ProcessAdministration
 
