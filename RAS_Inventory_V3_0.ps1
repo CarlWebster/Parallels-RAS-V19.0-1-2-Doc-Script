@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.005'
+$script:MyVersion         = '3.00.006'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "11/25/2022"
+$tmpdate                  = [datetime] "11/27/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -788,12 +788,12 @@ If($MSWord -or $PDF)
 	[int]$wdSeekMainDocument      = 0
 	[int]$wdSeekPrimaryFooter     = 4
 	[int]$wdStory                 = 6
-	[int]$wdColorBlack            = 0
-	[int]$wdColorGray05           = 15987699 
+	#[int]$wdColorBlack            = 0
+	#[int]$wdColorGray05           = 15987699 
 	[int]$wdColorGray15           = 14277081
-	[int]$wdColorRed              = 255
+	#[int]$wdColorRed              = 255
 	[int]$wdColorWhite            = 16777215
-	[int]$wdColorYellow           = 65535
+	#[int]$wdColorYellow           = 65535
 	[int]$wdWord2007              = 12
 	[int]$wdWord2010              = 14
 	[int]$wdWord2013              = 15
@@ -802,38 +802,39 @@ If($MSWord -or $PDF)
 	[int]$wdFormatPDF             = 17
 	#http://blogs.technet.com/b/heyscriptingguy/archive/2006/03/01/how-can-i-right-align-a-single-column-in-a-word-table.aspx
 	#http://msdn.microsoft.com/en-us/library/office/ff835817%28v=office.15%29.aspx
-	[int]$wdAlignParagraphLeft = 0
-	[int]$wdAlignParagraphCenter = 1
-	[int]$wdAlignParagraphRight = 2
+	#[int]$wdAlignParagraphLeft = 0
+	#[int]$wdAlignParagraphCenter = 1
+	#[int]$wdAlignParagraphRight = 2
 	#http://msdn.microsoft.com/en-us/library/office/ff193345%28v=office.15%29.aspx
-	[int]$wdCellAlignVerticalTop = 0
-	[int]$wdCellAlignVerticalCenter = 1
-	[int]$wdCellAlignVerticalBottom = 2
+	#[int]$wdCellAlignVerticalTop = 0
+	#[int]$wdCellAlignVerticalCenter = 1
+	#[int]$wdCellAlignVerticalBottom = 2
 	#http://msdn.microsoft.com/en-us/library/office/ff844856%28v=office.15%29.aspx
 	[int]$wdAutoFitFixed = 0
 	[int]$wdAutoFitContent = 1
-	[int]$wdAutoFitWindow = 2
+	#[int]$wdAutoFitWindow = 2
 	#http://msdn.microsoft.com/en-us/library/office/ff821928%28v=office.15%29.aspx
-	[int]$wdAdjustNone = 0
+	#[int]$wdAdjustNone = 0
 	[int]$wdAdjustProportional = 1
-	[int]$wdAdjustFirstColumn = 2
-	[int]$wdAdjustSameWidth = 3
+	#[int]$wdAdjustFirstColumn = 2
+	#[int]$wdAdjustSameWidth = 3
 
 	[int]$PointsPerTabStop = 36
 	[int]$Indent0TabStops = 0 * $PointsPerTabStop
-	[int]$Indent1TabStops = 1 * $PointsPerTabStop
-	[int]$Indent2TabStops = 2 * $PointsPerTabStop
-	[int]$Indent3TabStops = 3 * $PointsPerTabStop
-	[int]$Indent4TabStops = 4 * $PointsPerTabStop
+	#[int]$Indent1TabStops = 1 * $PointsPerTabStop
+	#[int]$Indent2TabStops = 2 * $PointsPerTabStop
+	#[int]$Indent3TabStops = 3 * $PointsPerTabStop
+	#[int]$Indent4TabStops = 4 * $PointsPerTabStop
 
 	# http://www.thedoctools.com/index.php?show=wt_style_names_english_danish_german_french
 	[int]$wdStyleHeading1 = -2
 	[int]$wdStyleHeading2 = -3
 	[int]$wdStyleHeading3 = -4
 	[int]$wdStyleHeading4 = -5
+	[int]$wdStyleHeading5 = -6
 	[int]$wdStyleNoSpacing = -158
 	[int]$wdTableGrid = -155
-	[int]$wdTableLightListAccent3 = -206
+	#[int]$wdTableLightListAccent3 = -206
 
 	#http://groovy.codehaus.org/modules/scriptom/1.6.0/scriptom-office-2K3-tlb/apidocs/org/codehaus/groovy/scriptom/tlb/office/word/WdLineStyle.html
 	[int]$wdLineStyleNone = 0
@@ -963,6 +964,7 @@ Function SetWordHashTable
 	$Script:myHash.Word_Heading2        = $wdStyleheading2
 	$Script:myHash.Word_Heading3        = $wdStyleheading3
 	$Script:myHash.Word_Heading4        = $wdStyleheading4
+	$Script:myHash.Word_Heading5        = $wdStyleheading5
 	$Script:myHash.Word_TableGrid       = $wdTableGrid
 }
 
@@ -2080,6 +2082,7 @@ Function WriteWordLine
 		2 {$Script:Selection.Style = $Script:MyHash.Word_Heading2; Break}
 		3 {$Script:Selection.Style = $Script:MyHash.Word_Heading3; Break}
 		4 {$Script:Selection.Style = $Script:MyHash.Word_Heading4; Break}
+		5 {$Script:Selection.Style = $Script:MyHash.Word_Heading5; Break}
 		Default {$Script:Selection.Style = $Script:MyHash.Word_NoSpacing; Break}
 	}
 	
@@ -4124,7 +4127,7 @@ Function OutputFarmSite
 	{
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ScriptInformation.Add(@{Data = "Site"; Value = $Site.Name; }) > $Null
-		$ScriptInformation.Add(@{Data = "Primary Publishing Agent"; Value = $PrimaryPublishingAgent; }) > $Null
+		$ScriptInformation.Add(@{Data = "Primary Connection Broker"; Value = $PrimaryPublishingAgent; }) > $Null
 		$ScriptInformation.Add(@{Data = "Type"; Value = $Type; }) > $Null
 		$ScriptInformation.Add(@{Data = "State"; Value = $State; }) > $Null
 		$ScriptInformation.Add(@{Data = "Description"; Value = $Description; }) > $Null
@@ -4154,23 +4157,23 @@ Function OutputFarmSite
 	}
 	If($Text)
 	{
-		Line 1 "Site`t`t`t: " $Site.Name
-		Line 1 "Primary Publishing Agent: " $PrimaryPublishingAgent
-		Line 1 "Type`t`t`t: " $Type
-		Line 1 "State`t`t`t: " $State
-		Line 1 "Description`t`t: " $Description
-		Line 1 "ID`t`t`t: " $ID
-		Line 1 "Last modification by`t: " $Site.AdminLastMod
-		Line 1 "Modified on`t`t: " $Site.TimeLastMod.ToString()
-		Line 1 "Created by`t`t: " $Site.AdminCreate
-		Line 1 "Created on`t`t: " $Site.TimeCreate.ToString()
+		Line 1 "Site`t`t`t : " $Site.Name
+		Line 1 "Primary Connection Broker: " $PrimaryPublishingAgent
+		Line 1 "Type`t`t`t : " $Type
+		Line 1 "State`t`t`t : " $State
+		Line 1 "Description`t`t : " $Description
+		Line 1 "ID`t`t`t : " $ID
+		Line 1 "Last modification by`t : " $Site.AdminLastMod
+		Line 1 "Modified on`t`t : " $Site.TimeLastMod.ToString()
+		Line 1 "Created by`t`t : " $Site.AdminCreate
+		Line 1 "Created on`t`t : " $Site.TimeCreate.ToString()
 		Line 0 ""
 	}
 	If($HTML)
 	{
 		$rowdata = @()
 		$columnHeaders = @("Site",($Script:htmlsb),$Site.Name,$htmlwhite)
-		$rowdata += @(,("Primary Publishing Agent",($Script:htmlsb),$PrimaryPublishingAgent,$htmlwhite))
+		$rowdata += @(,("Primary Connection Broker",($Script:htmlsb),$PrimaryPublishingAgent,$htmlwhite))
 		$rowdata += @(,("Type",($Script:htmlsb),$Type,$htmlwhite))
 		$rowdata += @(,("State",($Script:htmlsb),$State.ToString(),$htmlwhite))
 		$rowdata += @(,("Description",($Script:htmlsb),$Description,$htmlwhite))
@@ -4491,7 +4494,7 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($RDSStatus.DiskRead)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($RDSStatus.DiskWrite)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Sessions"; Value = $Sessions; }) > $Null
-					$ScriptInformation.Add(@{Data = "Preferred Broker"; Value = $RDSStatus.PreferredBroker; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preferred Connection Broker"; Value = $RDSStatus.PreferredBroker; }) > $Null
 					$ScriptInformation.Add(@{Data = "Operating system"; Value = $RDSStatus.ServerOS; }) > $Null
 					$ScriptInformation.Add(@{Data = "Agent version"; Value = $RDSStatus.AgentVer; }) > $Null
 
@@ -4515,16 +4518,16 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t: " $RDSHost.Server
-					Line 2 "Status`t`t: " $RDSStatusAgentState
-					Line 2 "CPU`t`t: " "$($RDSStatus.CPULoad)%"
-					Line 2 "RAM`t`t: " "$($RDSStatus.MemLoad)%"
-					Line 2 "Disk read time`t: " "$($RDSStatus.DiskRead)%"
-					Line 2 "Disk write time`t: " "$($RDSStatus.DiskWrite)%"
-					Line 2 "Sessions`t: " $Sessions
-					Line 2 "Preferred Broker: " $RDSStatus.PreferredBroker
-					Line 2 "Operating system: " $RDSStatus.ServerOS
-					Line 2 "Agent version`t: " $RDSStatus.AgentVer
+					Line 2 "Address`t`t`t`t: " $RDSHost.Server
+					Line 2 "Status`t`t`t`t: " $RDSStatusAgentState
+					Line 2 "CPU`t`t`t`t: " "$($RDSStatus.CPULoad)%"
+					Line 2 "RAM`t`t`t`t: " "$($RDSStatus.MemLoad)%"
+					Line 2 "Disk read time`t`t`t: " "$($RDSStatus.DiskRead)%"
+					Line 2 "Disk write time`t`t`t: " "$($RDSStatus.DiskWrite)%"
+					Line 2 "Sessions`t`t`t: " $Sessions
+					Line 2 "Preferred Connection Broker`t: " $RDSStatus.PreferredBroker
+					Line 2 "Operating system`t`t: " $RDSStatus.ServerOS
+					Line 2 "Agent version`t`t`t: " $RDSStatus.AgentVer
 					Line 0 ""
 				}
 				If($HTML)
@@ -4537,7 +4540,7 @@ Function OutputSite
 					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($RDSStatus.DiskRead)%",$htmlwhite))
 					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($RDSStatus.DiskWrite)%",$htmlwhite))
 					$rowdata += @(,("Sessions",($Script:htmlsb),$Sessions,$htmlwhite))
-					$rowdata += @(,("Preferred Broker",($Script:htmlsb),$RDSStatus.PreferredBroker,$htmlwhite))
+					$rowdata += @(,("Preferred Connection Broker",($Script:htmlsb),$RDSStatus.PreferredBroker,$htmlwhite))
 					$rowdata += @(,("Operating system",($Script:htmlsb),$RDSStatus.ServerOS,$htmlwhite))
 					$rowdata += @(,("Agent version",($Script:htmlsb),$RDSStatus.AgentVer,$htmlwhite))
 
@@ -4550,118 +4553,118 @@ Function OutputSite
 		}
 	}
 
-	$VDIHosts = Get-RASProvider -SiteId $Site.Id -EA 0 4>$Null
+	$Providers = Get-RASProvider -SiteId $Site.Id -EA 0 4>$Null
 	
 	If(!$?)
 	{
 		Write-Warning "
 		`n
-		Unable to retrieve VDI for Site $($Site.Name)`
+		Unable to retrieve Providers for Site $($Site.Name)`
 		"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "Unable to retrieve VDI for Site $($Site.Name)"
+			WriteWordLine 0 0 "Unable to retrieve Providers for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "Unable to retrieve VDI for Site $($Site.Name)"
+			Line 0 "Unable to retrieve Providers for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "Unable to retrieve VDI for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "Unable to retrieve Providers for Site $($Site.Name)"
 		}
 	}
-	ElseIf($? -and $Null -eq $VDIHosts)
+	ElseIf($? -and $Null -eq $Providers)
 	{
 		Write-Host "
-		No VDI retrieved for Site $($Site.Name).`
+		No Providers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "No VDI retrieved for Site $($Site.Name)"
+			WriteWordLine 0 0 "No Providers retrieved for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "No VDI retrieved for Site $($Site.Name)"
+			Line 0 "No Providers retrieved for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "No VDI retrieved for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "No Providers retrieved for Site $($Site.Name)"
 		}
 	}
 	Else
 	{
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 2 0 "VDI Providers"
+			WriteWordLine 2 0 "Providers"
 		}
 		If($Text)
 		{
-			Line 1 "VDI Providers"
+			Line 1 "Providers"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 2 0 "VDI Providers"
+			WriteHTMLLine 2 0 "Providers"
 		}
 
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput VDI Providers"
-		ForEach($VDIHost in $VDIHosts)
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput Providers"
+		ForEach($Provider in $Providers)
 		{
-			$VDIHostStatus = Get-RASProviderStatus -Id $VDIHost.Id -EA 0 4>$Null
+			$Providerstatus = Get-RASProviderStatus -Id $Provider.Id -EA 0 4>$Null
 			
 			If(!$?)
 			{
 				Write-Warning "
 				`n
-				Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)`
+				Unable to retrieve VDI Host Status for VDI Host $($Provider.Id)`
 				"
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)"
+					WriteWordLine 0 0 "Unable to retrieve VDI Host Status for VDI Host $($Provider.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)"
+					Line 0 "Unable to retrieve VDI Host Status for VDI Host $($Provider.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)"
+					WriteHTMLLine 0 0 "Unable to retrieve VDI Host Status for VDI Host $($Provider.Id)"
 				}
 			}
-			ElseIf($? -and $Null -eq $VDIHostStatus)
+			ElseIf($? -and $Null -eq $Providerstatus)
 			{
 				Write-Host "
-				No VDI Host Status retrieved for VDI Host $($VDIHost.Id)`
+				No VDI Host Status retrieved for VDI Host $($Provider.Id)`
 				" -ForegroundColor White
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "No VDI Host Status retrieved for VDI Host $($VDIHost.Id)"
+					WriteWordLine 0 0 "No VDI Host Status retrieved for VDI Host $($Provider.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "No VDI Host Status retrieved for VDI Host $($VDIHost.Id)"
+					Line 0 "No VDI Host Status retrieved for VDI Host $($Provider.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "No VDI Host Status retrieved for VDI Host $($VDIHost.Id)"
+					WriteHTMLLine 0 0 "No VDI Host Status retrieved for VDI Host $($Provider.Id)"
 				}
 			}
 			Else
 			{
-				$FullProviderStatus = GetRASStatus $VDIHostStatus.AgentState
+				$FullProviderStatus = GetRASStatus $Providerstatus.AgentState
 				
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $VDIHost.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Address"; Value = $Provider.Server; }) > $Null
 					$ScriptInformation.Add(@{Data = "Status"; Value = $FullProviderStatus; }) > $Null
-					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($VDIHostStatus.CPULoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($VDIHostStatus.MemLoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($VDIHostStatus.DiskRead)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($VDIHostStatus.DiskWrite)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Preferred Broker"; Value = $VDIHostStatus.PreferredBroker; }) > $Null
-					$ScriptInformation.Add(@{Data = "Operating system"; Value = $VDIHostStatus.ServerOS; }) > $Null
-					$ScriptInformation.Add(@{Data = "Agent version"; Value = $VDIHostStatus.AgentVer; }) > $Null
+					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($Providerstatus.CPULoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($Providerstatus.MemLoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($Providerstatus.DiskRead)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($Providerstatus.DiskWrite)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preferred COnnection Broker"; Value = $Providerstatus.PreferredBroker; }) > $Null
+					$ScriptInformation.Add(@{Data = "Operating system"; Value = $Providerstatus.ServerOS; }) > $Null
+					$ScriptInformation.Add(@{Data = "Agent version"; Value = $Providerstatus.AgentVer; }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
 					-Columns Data,Value `
@@ -4683,29 +4686,29 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t: " $VDIHost.Server
-					Line 2 "Status`t`t: " $FullProviderStatus
-					Line 2 "CPU`t`t: " "$($VDIHostStatus.CPULoad)%"
-					Line 2 "RAM`t`t: " "$($VDIHostStatus.MemLoad)%"
-					Line 2 "Disk read time`t: " "$($VDIHostStatus.DiskRead)%"
-					Line 2 "Disk write time`t: " "$($VDIHostStatus.DiskWrite)%"
-					Line 2 "Preferred Broker: " $VDIHostStatus.PreferredBroker
-					Line 2 "Operating system: " $VDIHostStatus.ServerOS
-					Line 2 "Agent version`t: " $VDIHostStatus.AgentVer
+					Line 2 "Address`t`t`t`t: " $Provider.Server
+					Line 2 "Status`t`t`t`t: " $FullProviderStatus
+					Line 2 "CPU`t`t`t`t: " "$($Providerstatus.CPULoad)%"
+					Line 2 "RAM`t`t`t`t: " "$($Providerstatus.MemLoad)%"
+					Line 2 "Disk read time`t`t`t: " "$($Providerstatus.DiskRead)%"
+					Line 2 "Disk write time`t`t`t: " "$($Providerstatus.DiskWrite)%"
+					Line 2 "Preferred Connection Broker`t: " $Providerstatus.PreferredBroker
+					Line 2 "Operating system`t`t: " $Providerstatus.ServerOS
+					Line 2 "Agent version`t`t`t: " $Providerstatus.AgentVer
 					Line 0 ""
 				}
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$VDIHost.Server,$htmlwhite)
+					$columnHeaders = @("Address",($Script:htmlsb),$Provider.Server,$htmlwhite)
 					$rowdata += @(,("Status",($Script:htmlsb),$FullProviderStatus,$htmlwhite))
-					$rowdata += @(,("CPU",($Script:htmlsb),"$($VDIHostStatus.CPULoad)%",$htmlwhite))
-					$rowdata += @(,("RAM",($Script:htmlsb),"$($VDIHostStatus.MemLoad)%",$htmlwhite))
-					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($VDIHostStatus.DiskRead)%",$htmlwhite))
-					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($VDIHostStatus.DiskWrite)%",$htmlwhite))
-					$rowdata += @(,("Preferred Broker",($Script:htmlsb),$VDIHostStatus.PreferredBroker,$htmlwhite))
-					$rowdata += @(,("Operating system",($Script:htmlsb),$VDIHostStatus.ServerOS,$htmlwhite))
-					$rowdata += @(,("Agent version",($Script:htmlsb),$VDIHostStatus.AgentVer,$htmlwhite))
+					$rowdata += @(,("CPU",($Script:htmlsb),"$($Providerstatus.CPULoad)%",$htmlwhite))
+					$rowdata += @(,("RAM",($Script:htmlsb),"$($Providerstatus.MemLoad)%",$htmlwhite))
+					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($Providerstatus.DiskRead)%",$htmlwhite))
+					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($Providerstatus.DiskWrite)%",$htmlwhite))
+					$rowdata += @(,("Preferred Connection Broker",($Script:htmlsb),$Providerstatus.PreferredBroker,$htmlwhite))
+					$rowdata += @(,("Operating system",($Script:htmlsb),$Providerstatus.ServerOS,$htmlwhite))
+					$rowdata += @(,("Agent version",($Script:htmlsb),$Providerstatus.AgentVer,$htmlwhite))
 
 					$msg = ""
 					$columnWidths = @("200","275")
@@ -4716,120 +4719,120 @@ Function OutputSite
 		}
 	}
 	
-	$Gateways = Get-RASGateway -Siteid $Site.Id -EA 0 4> $Null
+	$SecureGateways = Get-RASGateway -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
 	{
 		Write-Warning "
 		`n
-		Unable to retrieve Gateways for Site $($Site.Name)`
+		Unable to retrieve Secure Gateways for Site $($Site.Name)`
 		"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "Unable to retrieve Gateways for Site $($Site.Name)"
+			WriteWordLine 0 0 "Unable to retrieve Secure Gateways for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "Unable to retrieve Gateways for Site $($Site.Name)"
+			Line 0 "Unable to retrieve Secure Gateways for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "Unable to retrieve Gateways for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "Unable to retrieve Secure Gateways for Site $($Site.Name)"
 		}
 	}
-	ElseIf($? -and $Null -eq $Gateways)
+	ElseIf($? -and $Null -eq $SecureGateways)
 	{
 		Write-Host "
-		No Gateways retrieved for Site $($Site.Name).`
+		No Secure Gateways retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "No Gateways retrieved for Site $($Site.Name)"
+			WriteWordLine 0 0 "No Secure Gateways retrieved for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "No Gateways retrieved for Site $($Site.Name)"
+			Line 0 "No Secure Gateways retrieved for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "No Gateways retrieved for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "No Secure Gateways retrieved for Site $($Site.Name)"
 		}
 	}
 	Else
 	{
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 2 0 "Gateways"
+			WriteWordLine 2 0 "Secure Gateways"
 		}
 		If($Text)
 		{
-			Line 1 "Gateways"
+			Line 1 "Secure Gateways"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 2 0 "Gateways"
+			WriteHTMLLine 2 0 "Secure Gateways"
 		}
 
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Site Gateways"
-		ForEach($Gateway in $Gateways)
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput Site Secure Gateways"
+		ForEach($SecureGateway in $SecureGateways)
 		{
-			$GatewayStatus = Get-RASGatewayStatus -Id $Gateway.Id -EA 0 4>$Null
+			$SecureGatewayStatus = Get-RASGatewayStatus -Id $SecureGateway.Id -EA 0 4>$Null
 			
 			If(!$?)
 			{
 				Write-Warning "
 				`n
-				Unable to retrieve Gateway Status for Gateway $($Gateway.Id)`
+				Unable to retrieve Gateway Status for Secure Gateway $($SecureGateway.Id)`
 				"
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
+					WriteWordLine 0 0 "Unable to retrieve Gateway Status for Secure Gateway $($SecureGateway.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
+					Line 0 "Unable to retrieve Gateway Status for Secure Gateway $($SecureGateway.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "Unable to retrieve Gateway Status for Gateway $($Gateway.Id)"
+					WriteHTMLLine 0 0 "Unable to retrieve Gateway Status for Secure Gateway $($SecureGateway.Id)"
 				}
 			}
-			ElseIf($? -and $Null -eq $GatewayStatus)
+			ElseIf($? -and $Null -eq $SecureGatewayStatus)
 			{
 				Write-Host "
-				No Gateway Status retrieved for Gateway $($Gateway.Id)`
+				No Gateway Status retrieved for Secure Gateway $($SecureGateway.Id)`
 				" -ForegroundColor White
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "No Gateway Status retrieved for Gateway $($Gateway.Id)"
+					WriteWordLine 0 0 "No Gateway Status retrieved for Secure Gateway $($SecureGateway.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "No Gateway Status retrieved for Gateway $($Gateway.Id)"
+					Line 0 "No Gateway Status retrieved for Secure Gateway $($SecureGateway.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "No Gateway Status retrieved for Gateway $($Gateway.Id)"
+					WriteHTMLLine 0 0 "No Gateway Status retrieved for Secure Gateway $($SecureGateway.Id)"
 				}
 			}
 			Else
 			{
-				$Sessions = ($GatewayStatus.ActiveRDPSessions + $GatewayStatus.ActiveRDPSSLSessions)
-				$GatewayStatusAgentState = GetRASStatus $GatewayStatus.AgentState
+				$Sessions = ($SecureGatewayStatus.ActiveRDPSessions + $SecureGatewayStatus.ActiveRDPSSLSessions)
+				$SecureGatewayStatusAgentState = GetRASStatus $SecureGatewayStatus.AgentState
 				
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $Gateway.Server; }) > $Null
-					$ScriptInformation.Add(@{Data = "Status"; Value = $GatewayStatusAgentState; }) > $Null
-					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($GatewayStatus.CPULoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($GatewayStatus.MemLoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($GatewayStatus.DiskRead)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($GatewayStatus.DiskWrite)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Address"; Value = $SecureGateway.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Status"; Value = $SecureGatewayStatusAgentState; }) > $Null
+					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($SecureGatewayStatus.CPULoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($SecureGatewayStatus.MemLoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($SecureGatewayStatus.DiskRead)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($SecureGatewayStatus.DiskWrite)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "Sessions"; Value = $Sessions.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Preferred Broker"; Value = $GatewayStatus.PreferredBroker; }) > $Null
-					$ScriptInformation.Add(@{Data = "Operating system"; Value = $GatewayStatus.ServerOS; }) > $Null
-					$ScriptInformation.Add(@{Data = "Agent version"; Value = $GatewayStatus.AgentVer; }) > $Null
+					$ScriptInformation.Add(@{Data = "Preferred Connection Broker"; Value = $SecureGatewayStatus.PreferredBroker; }) > $Null
+					$ScriptInformation.Add(@{Data = "Operating system"; Value = $SecureGatewayStatus.ServerOS; }) > $Null
+					$ScriptInformation.Add(@{Data = "Agent version"; Value = $SecureGatewayStatus.AgentVer; }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
 					-Columns Data,Value `
@@ -4851,31 +4854,31 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t: " $Gateway.Server
-					Line 2 "Status`t`t: " $GatewayStatusAgentState
-					Line 2 "CPU`t`t: " "$($GatewayStatus.CPULoad)%"
-					Line 2 "RAM`t`t: " "$($GatewayStatus.MemLoad)%"
-					Line 2 "Disk read time`t: " "$($GatewayStatus.DiskRead)%"
-					Line 2 "Disk write time`t: " "$($GatewayStatus.DiskWrite)%"
-					Line 2 "Sessions`t: " $Sessions.ToString()
-					Line 2 "Preferred Broker: " $GatewayStatus.PreferredBroker
-					Line 2 "Operating system: " $GatewayStatus.ServerOS
-					Line 2 "Agent version`t: " $GatewayStatus.AgentVer
+					Line 2 "Address`t`t`t`t: " $SecureGateway.Server
+					Line 2 "Status`t`t`t`t: " $SecureGatewayStatusAgentState
+					Line 2 "CPU`t`t`t`t: " "$($SecureGatewayStatus.CPULoad)%"
+					Line 2 "RAM`t`t`t`t: " "$($SecureGatewayStatus.MemLoad)%"
+					Line 2 "Disk read time`t`t`t: " "$($SecureGatewayStatus.DiskRead)%"
+					Line 2 "Disk write time`t`t`t: " "$($SecureGatewayStatus.DiskWrite)%"
+					Line 2 "Sessions`t`t`t: " $Sessions.ToString()
+					Line 2 "Preferred Connection Broker`t: " $SecureGatewayStatus.PreferredBroker
+					Line 2 "Operating system`t`t: " $SecureGatewayStatus.ServerOS
+					Line 2 "Agent version`t`t`t: " $SecureGatewayStatus.AgentVer
 					Line 0 ""
 				}
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$Gateway.Server,$htmlwhite)
-					$rowdata += @(,("Status",($Script:htmlsb),$GatewayStatusAgentState.ToString(),$htmlwhite))
-					$rowdata += @(,("CPU",($Script:htmlsb),"$($GatewayStatus.CPULoad)%",$htmlwhite))
-					$rowdata += @(,("RAM",($Script:htmlsb),"$($GatewayStatus.MemLoad)%",$htmlwhite))
-					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($GatewayStatus.DiskRead)%",$htmlwhite))
-					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($GatewayStatus.DiskWrite)%",$htmlwhite))
+					$columnHeaders = @("Address",($Script:htmlsb),$SecureGateway.Server,$htmlwhite)
+					$rowdata += @(,("Status",($Script:htmlsb),$SecureGatewayStatusAgentState.ToString(),$htmlwhite))
+					$rowdata += @(,("CPU",($Script:htmlsb),"$($SecureGatewayStatus.CPULoad)%",$htmlwhite))
+					$rowdata += @(,("RAM",($Script:htmlsb),"$($SecureGatewayStatus.MemLoad)%",$htmlwhite))
+					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($SecureGatewayStatus.DiskRead)%",$htmlwhite))
+					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($SecureGatewayStatus.DiskWrite)%",$htmlwhite))
 					$rowdata += @(,("Sessions",($Script:htmlsb),$Sessions.ToString(),$htmlwhite))
-					$rowdata += @(,("Preferred Broker",($Script:htmlsb),$GatewayStatus.PreferredBroker,$htmlwhite))
-					$rowdata += @(,("Operating system",($Script:htmlsb),$GatewayStatus.ServerOS,$htmlwhite))
-					$rowdata += @(,("Agent version",($Script:htmlsb),$GatewayStatus.AgentVer,$htmlwhite))
+					$rowdata += @(,("Preferred Connection Broker",($Script:htmlsb),$SecureGatewayStatus.PreferredBroker,$htmlwhite))
+					$rowdata += @(,("Operating system",($Script:htmlsb),$SecureGatewayStatus.ServerOS,$htmlwhite))
+					$rowdata += @(,("Agent version",($Script:htmlsb),$SecureGatewayStatus.AgentVer,$htmlwhite))
 
 					$msg = ""
 					$columnWidths = @("200","275")
@@ -4886,7 +4889,7 @@ Function OutputSite
 		}
 	}
 	
-	$PAs = Get-RASBroker -Siteid $Site.Id -EA 0 4> $Null
+	$ConnectionBrokers = Get-RASBroker -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
 	{
@@ -4907,7 +4910,7 @@ Function OutputSite
 			WriteHTMLLine 0 0 "Unable to retrieve Connection Brokers for Site $($Site.Name)"
 		}
 	}
-	ElseIf($? -and $Null -eq $PAs)
+	ElseIf($? -and $Null -eq $ConnectionBrokers)
 	{
 		Write-Host "
 		No Connection Brokers retrieved for Site $($Site.Name).`
@@ -4941,62 +4944,62 @@ Function OutputSite
 		}
 
 		Write-Verbose "$(Get-Date -Format G): `t`tOutput Connection Brokers"
-		ForEach($PA in $PAs)
+		ForEach($ConnectionBroker in $ConnectionBrokers)
 		{
-			$PAStatus = Get-RASBrokerStatus -Id $PA.Id -EA 0 4>$Null
+			$ConnectionBrokerStatus = Get-RASBrokerStatus -Id $ConnectionBroker.Id -EA 0 4>$Null
 			
 			If(!$?)
 			{
 				Write-Warning "
 				`n
-				Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)`
+				Unable to retrieve Connection Brokers Status for Connection Brokers $($ConnectionBroker.Id)`
 				"
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)"
+					WriteWordLine 0 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($ConnectionBroker.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)"
+					Line 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($ConnectionBroker.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($PA.Id)"
+					WriteHTMLLine 0 0 "Unable to retrieve Connection Brokers Status for Connection Brokers $($ConnectionBroker.Id)"
 				}
 			}
-			ElseIf($? -and $Null -eq $PAStatus)
+			ElseIf($? -and $Null -eq $ConnectionBrokerStatus)
 			{
 				Write-Host "
-				No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)`
+				No Connection Brokers Status retrieved for Connection Brokers $($ConnectionBroker.Id)`
 				" -ForegroundColor White
 				If($MSWord -or $PDF)
 				{
-					WriteWordLine 0 0 "No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)"
+					WriteWordLine 0 0 "No Connection Brokers Status retrieved for Connection Brokers $($ConnectionBroker.Id)"
 				}
 				If($Text)
 				{
-					Line 0 "No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)"
+					Line 0 "No Connection Brokers Status retrieved for Connection Brokers $($ConnectionBroker.Id)"
 				}
 				If($HTML)
 				{
-					WriteHTMLLine 0 0 "No Connection Brokers Status retrieved for Connection Brokers $($PA.Id)"
+					WriteHTMLLine 0 0 "No Connection Brokers Status retrieved for Connection Brokers $($ConnectionBroker.Id)"
 				}
 			}
 			Else
 			{
-				$PAStatusAgentState = GetRASStatus $PAStatus.AgentState
+				$ConnectionBrokerStatusAgentState = GetRASStatus $ConnectionBrokerStatus.AgentState
 				
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $PA.Server; }) > $Null
-					$ScriptInformation.Add(@{Data = "Status"; Value = $PAStatusAgentState; }) > $Null
-					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($PAStatus.CPULoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($PAStatus.MemLoad)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($PAStatus.DiskRead)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($PAStatus.DiskWrite)%"; }) > $Null
-					$ScriptInformation.Add(@{Data = "Operating system"; Value = $PAStatus.ServerOS; }) > $Null
-					$ScriptInformation.Add(@{Data = "Agent version"; Value = $PAStatus.AgentVer; }) > $Null
+					$ScriptInformation.Add(@{Data = "Address"; Value = $ConnectionBroker.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Status"; Value = $ConnectionBrokerStatusAgentState; }) > $Null
+					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($ConnectionBrokerStatus.CPULoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($ConnectionBrokerStatus.MemLoad)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk read time"; Value = "$($ConnectionBrokerStatus.DiskRead)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disk write time"; Value = "$($ConnectionBrokerStatus.DiskWrite)%"; }) > $Null
+					$ScriptInformation.Add(@{Data = "Operating system"; Value = $ConnectionBrokerStatus.ServerOS; }) > $Null
+					$ScriptInformation.Add(@{Data = "Agent version"; Value = $ConnectionBrokerStatus.AgentVer; }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
 					-Columns Data,Value `
@@ -5018,27 +5021,27 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t: " $PA.Server
-					Line 2 "Status`t`t: " $PAStatusAgentState
-					Line 2 "CPU`t`t: " "$($PAStatus.CPULoad)%"
-					Line 2 "RAM`t`t: " "$($PAStatus.MemLoad)%"
-					Line 2 "Disk read time`t: " "$($PAStatus.DiskRead)%"
-					Line 2 "Disk write time`t: " "$($PAStatus.DiskWrite)%"
-					Line 2 "Operating system: " $PAStatus.ServerOS
-					Line 2 "Agent version`t: " $PAStatus.AgentVer
+					Line 2 "Address`t`t: " $ConnectionBroker.Server
+					Line 2 "Status`t`t: " $ConnectionBrokerStatusAgentState
+					Line 2 "CPU`t`t: " "$($ConnectionBrokerStatus.CPULoad)%"
+					Line 2 "RAM`t`t: " "$($ConnectionBrokerStatus.MemLoad)%"
+					Line 2 "Disk read time`t: " "$($ConnectionBrokerStatus.DiskRead)%"
+					Line 2 "Disk write time`t: " "$($ConnectionBrokerStatus.DiskWrite)%"
+					Line 2 "Operating system: " $ConnectionBrokerStatus.ServerOS
+					Line 2 "Agent version`t: " $ConnectionBrokerStatus.AgentVer
 					Line 0 ""
 				}
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$PA.Server,$htmlwhite)
-					$rowdata += @(,("Status",($Script:htmlsb),$PAStatusAgentState.ToString(),$htmlwhite))
-					$rowdata += @(,("CPU",($Script:htmlsb),"$($PAStatus.CPULoad)%",$htmlwhite))
-					$rowdata += @(,("RAM",($Script:htmlsb),"$($PAStatus.MemLoad)%",$htmlwhite))
-					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($PAStatus.DiskRead)%",$htmlwhite))
-					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($PAStatus.DiskWrite)%",$htmlwhite))
-					$rowdata += @(,("Operating system",($Script:htmlsb),$PAStatus.ServerOS,$htmlwhite))
-					$rowdata += @(,("Agent version",($Script:htmlsb),$PAStatus.AgentVer,$htmlwhite))
+					$columnHeaders = @("Address",($Script:htmlsb),$ConnectionBroker.Server,$htmlwhite)
+					$rowdata += @(,("Status",($Script:htmlsb),$ConnectionBrokerStatusAgentState.ToString(),$htmlwhite))
+					$rowdata += @(,("CPU",($Script:htmlsb),"$($ConnectionBrokerStatus.CPULoad)%",$htmlwhite))
+					$rowdata += @(,("RAM",($Script:htmlsb),"$($ConnectionBrokerStatus.MemLoad)%",$htmlwhite))
+					$rowdata += @(,("Disk read time",($Script:htmlsb),"$($ConnectionBrokerStatus.DiskRead)%",$htmlwhite))
+					$rowdata += @(,("Disk write time",($Script:htmlsb),"$($ConnectionBrokerStatus.DiskWrite)%",$htmlwhite))
+					$rowdata += @(,("Operating system",($Script:htmlsb),$ConnectionBrokerStatus.ServerOS,$htmlwhite))
+					$rowdata += @(,("Agent version",($Script:htmlsb),$ConnectionBrokerStatus.AgentVer,$htmlwhite))
 
 					$msg = ""
 					$columnWidths = @("200","275")
@@ -5421,7 +5424,7 @@ Function OutputSite
 								"Enabled"						{$RDSAllowClientURLMailRedirection = "Enabled"; 
 																 $ReplaceRegisteredApplication = "False";
 																 Break}
-								"Disbaled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
+								"Disabled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
 																 $ReplaceRegisteredApplication = "False";
 																 Break}
 								"EnabledWithAppRegistration"	{$RDSAllowClientURLMailRedirection = "Enabled";
@@ -5525,7 +5528,7 @@ Function OutputSite
 									"Enabled"						{$RDSAllowClientURLMailRedirection = "Enabled"; 
 																	 $ReplaceRegisteredApplication = "False";
 																	 Break}
-									"Disbaled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
+									"Disabled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
 																	 $ReplaceRegisteredApplication = "False";
 																	 Break}
 									"EnabledWithAppRegistration"	{$RDSAllowClientURLMailRedirection = "Enabled";
@@ -5647,7 +5650,7 @@ Function OutputSite
 						"Enabled"						{$RDSAllowClientURLMailRedirection = "Enabled"; 
 														 $ReplaceRegisteredApplication = "False";
 														 Break}
-						"Disbaled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
+						"Disabled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
 														 $ReplaceRegisteredApplication = "False";
 														 Break}
 						"EnabledWithAppRegistration"	{$RDSAllowClientURLMailRedirection = "Enabled";
@@ -5745,7 +5748,7 @@ Function OutputSite
 					"Enabled"						{$RDSAllowClientURLMailRedirection = "Enabled"; 
 													 $ReplaceRegisteredApplication = "False";
 													 Break}
-					"Disbaled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
+					"Disabled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
 													 $ReplaceRegisteredApplication = "False";
 													 Break}
 					"EnabledWithAppRegistration"	{$RDSAllowClientURLMailRedirection = "Enabled";
@@ -7916,6 +7919,1998 @@ Function OutputSite
 				WriteHTMLLine 0 0 ""
 			}
 
+			#Optimization
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Optimization"
+			}
+			If($Text)
+			{
+				Line 3 "Optimization"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+
+			<#
+			Get-RASImageOptimization -Id 1 -ObjType RDS
+
+			EnableOptimization            : True
+			OptimizationType              : Automatic
+			WindowsDefenderATP            : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.WindowsDefenderATP
+			WindowsComponents             : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.WindowsComponents
+			WindowsDefenderATPEnabled     : True
+			WindowsComponentsEnabled      : True
+			WindowsServicesEnabled        : True
+			WindowsScheduledTasksEnabled  : True
+			WindowsAdvancedOptionsEnabled : True
+			NetworkPerformanceEnabled     : True
+			RegistryEnabled               : True
+			VisualEffectsEnabled          : True
+			DiskCleanupEnabled            : True
+			CustomScriptEnabled           : False
+			WindowsServices               : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.WindowsServices
+			WindowsAdvancedOptions        : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.WindowsAdvancedOptions
+			NetworkPerformance            : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.NetworkPerformance
+			CustomScript                  : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.CustomScript
+			DiskCleanup                   : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.DiskCleanup
+			VisualEffects                 : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.VisualEffects
+			WindowsScheduledTasks         : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.WindowsScheduledTasks
+			Registry                      : RASAdminEngine.Core.OutputModels.ImagesOptimization.Categories.Registries
+			#>
+
+			If($RDSHost.InheritDefaultOptimizationSettings)
+			{
+				#do we inherit group or site defaults?
+				#is this RDS host in a group?
+				#http://woshub.com/hot-to-convert-sid-to-username-and-vice-versa/
+				#for translating the User SID to the AD user name
+				$RDSGroup = Get-RASRDSGroup -SiteId $Site.Id -EA 0 4>$Null
+				
+				If($? -and $Null -ne $RDSGroup)
+				{
+					If($RDSGroup.RDSIds -Contains $RDSHost.Id )
+					{
+						#does this group inherit default settings?
+						If($RDSGroup.InheritDefaultOptimizationSettings -eq $False)
+						{
+							#no we don't, so get the default settings for the group
+							$OPTEnableOptimization            = $RDSGroup.Optimization.EnableOptimization.ToString()
+							$OPTOptimizationType              = $RDSGroup.Optimization.OptimizationType.ToString()
+							$OPTWindowsDefenderATPEnabled     = $RDSGroup.Optimization.WindowsDefenderATPEnabled.ToString()    
+							$OPTWindowsComponentsEnabled      = $RDSGroup.Optimization.WindowsComponentsEnabled.ToString()
+							$OPTWindowsServicesEnabled        = $RDSGroup.Optimization.WindowsServicesEnabled.ToString()
+							$OPTWinodwsScheduledTasksEnabled  = $RDSGroup.Optimization.WindowsScheduledTasksEnabled.ToString()
+							$OPTWindowsAdvancedOptionsEnabled = $RDSGroup.Optimization.WindowsAdvancedOptionsEnabled.ToString()
+							$OPTNetworkPerformanceEnabled     = $RDSGroup.Optimization.NetworkPerformanceEnabled.ToString()
+							$OPTRegistryEnabled               = $RDSGroup.Optimization.RegistryEnabled.ToString()
+							$OPTVisualEffectsEnabled          = $RDSGroup.Optimization.VisualEffectsEnabled.ToString()   
+							$OPTDiskCleanupEnabled            = $RDSGroup.Optimization.DiskCleanupEnabled.ToString()
+							$OPTCustomScriptEnabled           = $RDSGroup.Optimization.CustomScriptEnabled.ToString()
+						}
+						Else
+						{
+							#yes we do, get the default settings for the Site
+							#use the Site default settings
+							$RDSDefaults = Get-RASRDSDefaultSettings -SiteId $Site.Id -EA 0 4>$Null
+							
+							If($? -and $Null -ne $RDSDefaults)
+							{
+								$OPTEnableOptimization            = $RDSDefaults.Optimization.EnableOptimization.ToString()
+								$OPTOptimizationType              = $RDSDefaults.Optimization.OptimizationType.ToString()
+								$OPTWindowsDefenderATPEnabled     = $RDSDefaults.Optimization.WindowsDefenderATPEnabled.ToString()    
+								$OPTWindowsComponentsEnabled      = $RDSDefaults.Optimization.WindowsComponentsEnabled.ToString()
+								$OPTWindowsServicesEnabled        = $RDSDefaults.Optimization.WindowsServicesEnabled.ToString()
+								$OPTWinodwsScheduledTasksEnabled  = $RDSDefaults.Optimization.WindowsScheduledTasksEnabled.ToString()
+								$OPTWindowsAdvancedOptionsEnabled = $RDSDefaults.Optimization.WindowsAdvancedOptionsEnabled.ToString()
+								$OPTNetworkPerformanceEnabled     = $RDSDefaults.Optimization.NetworkPerformanceEnabled.ToString()
+								$OPTRegistryEnabled               = $RDSDefaults.Optimization.RegistryEnabled.ToString()
+								$OPTVisualEffectsEnabled          = $RDSDefaults.Optimization.VisualEffectsEnabled.ToString()   
+								$OPTDiskCleanupEnabled            = $RDSDefaults.Optimization.DiskCleanupEnabled.ToString()
+								$OPTCustomScriptEnabled           = $RDSDefaults.Optimization.CustomScriptEnabled.ToString()
+							}
+							Else
+							{
+								#unable to retrieve default, use built-in default values
+								$OPTEnableOptimization            = "False"
+								$OPTOptimizationType              = ""
+								$OPTWindowsDefenderATPEnabled     = "False"
+								$OPTWindowsComponentsEnabled      = "False"
+								$OPTWindowsServicesEnabled        = "False"
+								$OPTWinodwsScheduledTasksEnabled  = "False"
+								$OPTWindowsAdvancedOptionsEnabled = "False"
+								$OPTNetworkPerformanceEnabled     = "False"
+								$OPTRegistryEnabled               = "False"
+								$OPTVisualEffectsEnabled          = "False"
+								$OPTDiskCleanupEnabled            = "False"
+								$OPTCustomScriptEnabled           = "False"
+							}
+						}
+					}
+				}
+				Else
+				{
+					#RDS Host is not in a group
+					#get the settings for the host
+					
+					$OPTEnableOptimization            = $RDSHost.Optimization.EnableOptimization.ToString()
+					$OPTOptimizationType              = $RDSHost.Optimization.OptimizationType.ToString()
+					$OPTWindowsDefenderATPEnabled     = $RDSHost.Optimization.WindowsDefenderATPEnabled.ToString()    
+					$OPTWindowsComponentsEnabled      = $RDSHost.Optimization.WindowsComponentsEnabled.ToString()
+					$OPTWindowsServicesEnabled        = $RDSHost.Optimization.WindowsServicesEnabled.ToString()
+					$OPTWinodwsScheduledTasksEnabled  = $RDSHost.Optimization.WindowsScheduledTasksEnabled.ToString()
+					$OPTWindowsAdvancedOptionsEnabled = $RDSHost.Optimization.WindowsAdvancedOptionsEnabled.ToString()
+					$OPTNetworkPerformanceEnabled     = $RDSHost.Optimization.NetworkPerformanceEnabled.ToString()
+					$OPTRegistryEnabled               = $RDSHost.Optimization.RegistryEnabled.ToString()
+					$OPTVisualEffectsEnabled          = $RDSHost.Optimization.VisualEffectsEnabled.ToString()   
+					$OPTDiskCleanupEnabled            = $RDSHost.Optimization.DiskCleanupEnabled.ToString()
+					$OPTCustomScriptEnabled           = $RDSHost.Optimization.CustomScriptEnabled.ToString()
+				}
+			}
+			Else
+			{
+				#we don't inherit
+				#get the settings for the host
+				
+				$OPTEnableOptimization            = $RDSHost.Optimization.EnableOptimization.ToString()
+				$OPTOptimizationType              = $RDSHost.Optimization.OptimizationType.ToString()
+				$OPTWindowsDefenderATPEnabled     = $RDSHost.Optimization.WindowsDefenderATPEnabled.ToString()    
+				$OPTWindowsComponentsEnabled      = $RDSHost.Optimization.WindowsComponentsEnabled.ToString()
+				$OPTWindowsServicesEnabled        = $RDSHost.Optimization.WindowsServicesEnabled.ToString()
+				$OPTWinodwsScheduledTasksEnabled  = $RDSHost.Optimization.WindowsScheduledTasksEnabled.ToString()
+				$OPTWindowsAdvancedOptionsEnabled = $RDSHost.Optimization.WindowsAdvancedOptionsEnabled.ToString()
+				$OPTNetworkPerformanceEnabled     = $RDSHost.Optimization.NetworkPerformanceEnabled.ToString()
+				$OPTRegistryEnabled               = $RDSHost.Optimization.RegistryEnabled.ToString()
+				$OPTVisualEffectsEnabled          = $RDSHost.Optimization.VisualEffectsEnabled.ToString()   
+				$OPTDiskCleanupEnabled            = $RDSHost.Optimization.DiskCleanupEnabled.ToString()
+				$OPTCustomScriptEnabled           = $RDSHost.Optimization.CustomScriptEnabled.ToString()
+			}
+
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $RDSHost.InheritDefaultUserProfileSettings.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable optimization:"; Value = $OPTEnableOptimization; }) > $Null
+				$ScriptInformation.Add(@{Data = "Optimization type:"; Value = $OPTOptimizationType; }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 250;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+
+				WriteWordLine 5 0 "Windows Defender ATP:" $OPTWindowsDefenderATPEnabled
+				If($OPTWindowsDefenderATPEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Windows Defender ATP Optimizations"; Value = ""; }) > $Null
+
+					If($RDSHost.Optimization.WindowsDefenderATP.WinDefATPTurnOffOn.ToString() -eq "TurnOffWindowsDefenderATP")
+					{
+						$ScriptInformation.Add(@{Data = "     Turn off Windows Defender ATP (I use my own ATP solution)"; Value = ""; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = "     Turn on Windows Defender ATP and set process and folder exclusions"; Value = ""; }) > $Null
+						$ScriptInformation.Add(@{Data = "     Disable real-time protection"; Value = $RDSHost.Optimization.WindowsDefenderATP.DisableRealTimeProtection.ToString(); }) > $Null
+						$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						
+						$cnt = -1
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeFolders)
+						{
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "     Exclude files and folders"; Value = $item; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = $item; }) > $Null
+							}
+						}
+
+						$cnt = -1
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeProcesses)
+						{
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "     Exclude processes"; Value = $item; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = $item; }) > $Null
+							}
+						}
+						
+						$cnt = -1
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeExtension)
+						{
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "     Exclude extensions"; Value = $item; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = $item; }) > $Null
+							}
+						}
+					}
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 250;
+					$Table.Columns.Item(2).Width = 250;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+
+				WriteWordLine 5 0 "Windows Components:" $OPTWindowsComponentsEnabled
+				If($OPTWindowsComponentsEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Windows Components Optimizations"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disable (remove) components:"; Value = ""; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 15;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$OptimizationTable = @()
+		
+					ForEach($item in $RDSHost.Optimization.WindowsComponents.WindowsComponentsList)
+					{
+							If($Null -eq $item.DisplayName)
+							{
+								$DisplayName = ""
+							}
+							Else
+							{
+								$DisplayName = $item.DisplayName
+							}
+							If($Null -eq $item.ComponentName)
+							{
+								$ComponentName = ""
+							}
+							Else
+							{
+								$ComponentName = $item.ComponentName
+							}
+						$OptimizationTable += @{
+							DisplayName = $DisplayName
+							ComponentName = $ComponentName
+						}
+					}
+
+					If($OptimizationTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $OptimizationTable `
+						-Columns DisplayName, ComponentName `
+						-Headers "Display name", "Component" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 200;
+						$Table.Columns.Item(2).Width = 200;
+						
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
+				}
+
+				WriteWordLine 5 0 "Windows Services: " $OPTWindowsServicesEnabled       
+				If($OPTWindowsServicesEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Windows Services Optimizations"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disable services:"; Value = ""; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 15;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$OptimizationTable = @()
+		
+					ForEach($item in $RDSHost.Optimization.WindowsServices.WindowsServicesList)
+					{
+							If($Null -eq $item.DisplayName)
+							{
+								$DisplayName = ""
+							}
+							Else
+							{
+								$DisplayName = $item.DisplayName
+							}
+							If($Null -eq $item.ServiceName)
+							{
+								$Service = ""
+							}
+							Else
+							{
+								$Service = $item.ServiceName
+							}
+							If($Null -eq $item.Aliases)
+							{
+								$Aliases = ""
+							}
+							Else
+							{
+								$Aliases = $item.Aliases
+							}
+						$OptimizationTable += @{
+							DisplayName = $DisplayName
+							Service     = $Service
+							Aliases     = $Aliases
+						}
+					}
+
+					If($OptimizationTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $OptimizationTable `
+						-Columns DisplayName, Service, Aliases `
+						-Headers "Display name", "Service", "Aliases" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 200;
+						$Table.Columns.Item(2).Width = 100;
+						$Table.Columns.Item(3).Width = 50;
+						
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
+				}
+				
+				WriteWordLine 5 0 "Windows Scheduled Tasks: " $OPTWinodwsScheduledTasksEnabled 
+				If($OPTWinodwsScheduledTasksEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Windows Scheduled Tasks Optimizations"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "Disable tasks:"; Value = ""; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 15;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$OptimizationTable = @()
+		
+					ForEach($item in $RDSHost.Optimization.WindowsScheduledTasks.WindowsScheduledTasksList)
+					{
+							If($Null -eq $item.Task)
+							{
+								$Task = ""
+							}
+							Else
+							{
+								$Task = $item.Task
+							}
+							If($Null -eq $item.Type)
+							{
+								$Type = ""
+							}
+							Else
+							{
+								$Type = $item.Type.ToString()
+							}
+							If($Null -eq $item.Location)
+							{
+								$Location = ""
+							}
+							Else
+							{
+								$Location = $item.Location
+							}
+						$OptimizationTable += @{
+							Task     = $Task
+							Type     = $Type
+							Location = $Location
+						}
+					}
+
+					If($OptimizationTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $OptimizationTable `
+						-Columns Task, Type, Location `
+						-Headers "Task", "Type", "Location" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 200;
+						$Table.Columns.Item(2).Width = 50;
+						$Table.Columns.Item(3).Width = 250;
+						
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
+				}
+				
+				WriteWordLine 5 0 "Windows advanced options: " $OPTWindowsAdvancedOptionsEnabled
+				If($OPTWindowsAdvancedOptionsEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Windows Advanced Options"; Value = ""; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 15;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$OptimizationTable = @()
+		
+					$OptimizationTable += @{
+						Setting = "Disable Hibernate"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.Hibernate.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable Telemetry collection"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.TeleCollection.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable System Restore"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.SystemRestore.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable error reporting to send additional data"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.AdditionalErrorReport.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable Tiles"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.Tiles.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable Cortana digital assistant"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.Cortana.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Turn off Microsoft consumer experience"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.MicrosoftConsumerExperience.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Do not show Windows tips"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.WindowsTips.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Remove Common program groups from the Start Menu"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.CommonProgramGroups.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Partial Start Menu layout"
+						Enabled = $RDSHost.Optimization.WindowsAdvancedOptions.PartialStartMenu.ToString()
+						Value   = $RDSHost.Optimization.WindowsAdvancedOptions.PartialStartLayoutContent
+					}
+
+					If($OptimizationTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $OptimizationTable `
+						-Columns Setting, Enabled, Value `
+						-Headers "Setting", "Enabled", "Value" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 275;
+						$Table.Columns.Item(2).Width = 50;
+						$Table.Columns.Item(3).Width = 175;
+						
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
+				}
+				
+				WriteWordLine 5 0 "Network performance: " $OPTNetworkPerformanceEnabled
+				If($OPTNetworkPerformanceEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Network Performance Optimizations"; Value = ""; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 15;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$OptimizationTable = @()
+		
+					$OptimizationTable += @{
+						Setting = "FileInfoCacheEntriesMax"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.FileInfoCacheEnable.ToString()
+						Value   = $RDSHost.Optimization.NetworkPerformance.FileInfoCache
+					}
+
+					$OptimizationTable += @{
+						Setting = "DirectoryCacheEntriesMax"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.DirectoryCacheEnable.ToString()
+						Value   = $RDSHost.Optimization.NetworkPerformance.DirCacheMax
+					}
+
+					$OptimizationTable += @{
+						Setting = "FileNotFoundCacheEntriesMax"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.FileNotFoundCacheEnable.ToString()
+						Value   = $RDSHost.Optimization.NetworkPerformance.FileNotFoundCache
+					}
+
+					$OptimizationTable += @{
+						Setting = "DormantFileLimit"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.DormantFileLimitEnable.ToString()
+						Value   = $RDSHost.Optimization.NetworkPerformance.DormantFileLimit
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable TCP/IP Task Offload"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.DisableTCP.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable IPv6 Components"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.DisableIPv6CompEnable.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disable IPv6 to IPv4"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.DisableIPv6ToIPv4.ToString()
+						Value   = ""
+					}
+
+					$OptimizationTable += @{
+						Setting = "Disables isatap for IPv6"
+						Enabled = $RDSHost.Optimization.NetworkPerformance.DisableIsaTap.ToString()
+						Value   = ""
+					}
+
+					If($OptimizationTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $OptimizationTable `
+						-Columns Setting, Enabled, Value `
+						-Headers "Setting", "Enabled", "Value" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 150;
+						$Table.Columns.Item(2).Width = 50;
+						$Table.Columns.Item(3).Width = 50;
+						
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
+				}
+
+				WriteWordLine 5 0 "Registry: " $OPTRegistryEnabled
+				If($OPTRegistryEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Registry Optimizations"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+
+					ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
+					{
+						$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+						$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+						$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+						$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType; }) > $Null
+						$ScriptInformation.Add(@{Data = "Data"; Value = $item.DWORDValue; }) > $Null
+						$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+						$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+					}
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 125;
+					$Table.Columns.Item(2).Width = 375;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+				
+				WriteWordLine 5 0 "Visual Effects: " $OPTVisualEffectsEnabled
+				If($OPTVisualEffectsEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Visual Effects Optimizations"; Value = ""; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 15;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$OptimizationTable = @()
+		
+					$OptimizationTable += @{
+						Setting = "Animate controls and elements inside windows"
+						Enabled = $RDSHost.Optimization.VisualEffects.AnimateControlSelectElements.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Animate windows when minimizing and maximizing"
+						Enabled = $RDSHost.Optimization.VisualEffects.AnimateWindowsWhenMinimizingMaximizing.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Animations in the taskbar"
+						Enabled = $RDSHost.Optimization.VisualEffects.AnimateTaskbar.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Enable Peek"
+						Enabled = $RDSHost.Optimization.VisualEffects.EnablePeek.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Fade or slide menus into view"
+						Enabled = $RDSHost.Optimization.VisualEffects.FadeSlideMenus.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Fade or slide Tooltips into view"
+						Enabled = $RDSHost.Optimization.VisualEffects.FadeSlideToolTips.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Fade out menu items after clicking"
+						Enabled = $RDSHost.Optimization.VisualEffects.FadeOutMenuItems.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Save taskbar thumbnail previews"
+						Enabled = $RDSHost.Optimization.VisualEffects.SaveTaskbarThumbnail.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Show shadows under mouse pointer"
+						Enabled = $RDSHost.Optimization.VisualEffects.ShowShadowUnderMouse.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Show shadows under windows"
+						Enabled = $RDSHost.Optimization.VisualEffects.ShadowUnderWindows.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Show thumbnails instead of icons"
+						Enabled = $RDSHost.Optimization.VisualEffects.ThumbnailsInsteadOfIcons.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Show translucent selection rectangle"
+						Enabled = $RDSHost.Optimization.VisualEffects.ShowTranslucentSelection.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Show window contents while dragging"
+						Enabled = $RDSHost.Optimization.VisualEffects.ShowWindowsContentWhilstDragging.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Slide open combo boxes"
+						Enabled = $RDSHost.Optimization.VisualEffects.SlideOpenComboBoxes.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Smooth edges of screen fonts"
+						Enabled = $RDSHost.Optimization.VisualEffects.SmoothEdgesScreenFonts.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Smooth-scroll list boxes"
+						Enabled = $RDSHost.Optimization.VisualEffects.SmoothScrollListBoxes.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Use drop shadows for icon labels on the desktop"
+						Enabled = $RDSHost.Optimization.VisualEffects.DropShadowsIcon.ToString()
+					}
+
+					If($OptimizationTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $OptimizationTable `
+						-Columns Setting, Enabled `
+						-Headers "Setting", "Enabled" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 250;
+						$Table.Columns.Item(2).Width = 50;
+						
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
+				}
+				
+				WriteWordLine 5 0 "Disk cleanup: " $OPTDiskCleanupEnabled
+				If($OPTDiskCleanupEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Disk Cleanup Optimizations"; Value = ""; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 15;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$OptimizationTable = @()
+		
+					$OptimizationTable += @{
+						Setting = "Clean up redundant system files"
+						Enabled = $RDSHost.Optimization.DiskCleanup.CleanupSystemFiles.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Clean up the WinSxS Folder"
+						Enabled = $RDSHost.Optimization.DiskCleanup.CleanupWinSxSFolder.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Clean up temporary files and logs"
+						Enabled = $RDSHost.Optimization.DiskCleanup.CleanupTemporaryFileLogs.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Remove OneDrive"
+						Enabled = $RDSHost.Optimization.DiskCleanup.RemoveOneDrive.ToString()
+					}
+
+					$OptimizationTable += @{
+						Setting = "Delete users' profiles"
+						Enabled = $RDSHost.Optimization.DiskCleanup.DeleteUserProfiles.ToString()
+					}
+
+					If($OptimizationTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $OptimizationTable `
+						-Columns Setting, Enabled `
+						-Headers "Setting", "Enabled" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 175;
+						$Table.Columns.Item(2).Width = 50;
+						
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
+					}
+				}
+
+				WriteWordLine 5 0 "Custom script: " $OPTCustomScriptEnabled
+				If($OPTCustomScriptEnabled -eq "True")
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Custom Script"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Command"; Value = $RDSHost.Optimization.CustomScript.Command; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Arguments"; Value = $RDSHost.Optimization.CustomScript.Arguments; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Initial directory"; Value = $RDSHost.Optimization.CustomScript.InitDir; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Username"; Value = $RDSHost.Optimization.CustomScript.User; }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					#SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 100;
+					$Table.Columns.Item(2).Width = 200;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+			}
+			If($Text)
+			{
+				Line 4 "Inherit default settings`t`t`t`t: " $RDSHost.InheritDefaultOptimizationSettings.ToString()
+				Line 4 "Enable optimization: " $OPTEnableOptimization
+				Line 4 "Optimization type: " $OPTOptimizationType
+				Line 4 "Category"
+				
+				Line 5 "Windows Defender ATP: " $OPTWindowsDefenderATPEnabled
+				If($OPTWindowsDefenderATPEnabled -eq "True")
+				{
+					Line 6 "Windows Defender ATP Optimizations"
+					<#
+						WinDefATPTurnOffOn        : TurnOnWindowsDefenderATP
+						DisableRealTimeProtection : False
+						ExcludeFolders            : {%ProgramData%\Parallels\RASLogs\, %ProgramFiles(x86)%\Parallels\,
+													%ProgramFiles%\Parallels\, %WINDOWS%\system32\config\...}
+						ExcludeProcesses          : {csrss.exe, winlogon.exe, rdpclip.exe, rdpinit.exe...}
+						ExcludeExtension          : {.vhd, .vhdx}					
+					#>
+					If($RDSHost.Optimization.WindowsDefenderATP.WinDefATPTurnOffOn.ToString() -eq "TurnOffWindowsDefenderATP")
+					{
+						Line 7 "Turn off Windows Defender ATP (I use my own ATP solution)"
+					}
+					Else
+					{
+						Line 7 "Turn on Windows Defender ATP and set process and folder exclusions"
+						Line 7 "Disable real-time protection: " $RDSHost.Optimization.WindowsDefenderATP.DisableRealTimeProtection.ToString()
+						Line 0 ""
+						Line 7 "Exclude files and folders:"
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeFolders)
+						{
+							Line 8 $item
+						}
+
+						Line 7 "Exclude processes:"
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeProcesses)
+						{
+							Line 8 $item
+						}
+						
+						Line 7 "Exclude extensions:"
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeExtension)
+						{
+							Line 8 $item
+						}
+					}
+					
+					Line 0 ""
+				}
+				
+				Line 5 "Windows Components: " $OPTWindowsComponentsEnabled
+				If($OPTWindowsComponentsEnabled -eq "True")
+				{
+					Line 6 "Windows Components Optimizations"
+					Line 7 "Disable (remove) components:"
+					Line 0 ""
+					Line 7 "Display name                                        Component                                         "
+					Line 7 "======================================================================================================"
+					#		12345678901234567890123456789012345678901234567890SS12345678901234567890123456789012345678901234567890
+					#		Printing-XPSServices-Features                       SMB 1.0/CIFS File sharing support component
+					<#
+							  Type ComponentName                 DisplayName Aliases
+							  ---- -------------                 ----------- -------
+						Predefined MSRDC-Infrastructure
+						Predefined MediaPlayback
+						Predefined WindowsMediaPlayer
+						Predefined Printing-XPSServices-Features
+						Predefined SMB1Protocol
+						Predefined SearchEngine-Client-Package
+						Predefined Xps-Foundation-Xps-Viewer					
+					#>
+					ForEach($item in $RDSHost.Optimization.WindowsComponents.WindowsComponentsList)
+					{
+						Line 7 ( "{0,-50}  {1,-50}" -f $item.DisplayName, $item.ComponentName)
+					}
+					Line 0 ""
+				}
+				
+				Line 5 "Windows Services: " $OPTWindowsServicesEnabled       
+				If($OPTWindowsServicesEnabled -eq "True")
+				{
+					Line 6 "Windows Services Optimizations"
+					Line 7 "Disable services:"
+					Line 0 ""
+					Line 7 "Display name                                        Service                         Aliases             "
+					Line 7 "========================================================================================================"
+					#		12345678901234567890123456789012345678901234567890SS123456789012345678901234567890SS12345678901234567890
+					#		Windows Media Player Network Sharing Service        TabletInputService              Superfecth
+					<#
+							  Type ServiceName        DisplayName Aliases
+							  ---- -----------        ----------- -------
+						Predefined AJRouter
+						Predefined ALG
+						Predefined BTAGService
+						Predefined BthAvctpSvc
+						Predefined CscService
+						Predefined DOT3SVC
+						Predefined DPS
+						Predefined DiagTrack
+						Predefined EFS
+						Predefined FDResPub
+						Predefined MapsBroker
+						Predefined SSDPSRV
+						Predefined SensrSvc
+						Predefined SharedAccess
+						Predefined ShellHWDetection
+						Predefined StorSvc
+						Predefined Sysmain
+						Predefined Superfetch
+						Predefined TabletInputService
+						Predefined TapiSrv
+						Predefined Themes
+						Predefined WMPNetworkSvc
+						Predefined WbioSrvc
+						Predefined WdiSystemHost
+						Predefined WerSvc
+						Predefined bthserv
+						Predefined fdPHost
+						Predefined lfsvc
+						Predefined upnphost
+						Predefined wbengine
+						Predefined wisvc
+						Predefined wlidsvc					
+					#>
+					ForEach($item in $RDSHost.Optimization.WindowsServices.WindowsServicesList)
+					{
+						Line 7 ( "{0,-50}  {1,-30}  {2,-20}" -f $item.DisplayName, $item.ServiceName, $item.Aliases)
+					}
+					Line 0 ""
+				}
+				
+				Line 5 "Windows Scheduled Tasks: " $OPTWinodwsScheduledTasksEnabled 
+				If($OPTWinodwsScheduledTasksEnabled -eq "True")
+				{
+					Line 6 "Windows Scheduled Tasks Optimizations"
+					Line 7 "Disable tasks:"
+					Line 0 ""
+					Line 7 "Task                                                Type    Location                                          "
+					Line 7 "=============================================================================================================="
+					#		12345678901234567890123456789012345678901234567890SS123456SS12345678901234567890123456789012345678901234567890
+					#		MNO Metadata Parser                                 Folder  \Microsoft\Windows\Mobile Broadband Accounts\
+					<#
+						Task                Location                                        Type
+						----                --------                                        ----
+						*                   \Microsoft\Windows\Application Experience     Folder
+						*                   \Microsoft\Windows\BitLocker                  Folder
+						CDSSync             \Microsoft\Windows\WlanSvc\                     Task
+						*                   \Microsoft\OneCore\DirectX                    Folder
+						GatherNetworkInfo   \Microsoft\Windows\NetTrace\                    Task
+						MNO Metadata Parser \Microsoft\Windows\Mobile Broadband Accounts\   Task
+						NotificationTask    \Microsoft\Windows\WwanSvc\                     Task
+						*                   \Microsoft\Office                             Folder
+						QueueReporting      \Microsoft\Windows\Windows Error Reporting\     Task
+						SR                  \Microsoft\Windows\SystemRestore\               Task
+						ScheduledDefrag     \Microsoft\Windows\Defrag\                      Task
+						Scheduled Start     \Microsoft\Windows\WindowsUpdate\               Task
+						*                   \Microsoft\Windows\Sysmain                    Folder
+						Tpm-HASCertRetr     \Microsoft\Windows\TPM\                         Task
+						Tpm-Maintenance     \Microsoft\Windows\TPM\                         Task
+						UninstallDeviceTask \Microsoft\Windows\Bluetooth\                   Task
+						UpdateLibrary       \Microsoft\Windows\Windows Media Sharing\       Task
+						*                   \Microsoft\Windows\Windows Defender           Folder
+						XblGameSaveTask     \Microsoft\XblGameSave\                         Task
+						sihpostreboot       \Microsoft\Windows\WindowsUpdate\               Task					
+					#>
+					ForEach($item in $RDSHost.Optimization.WindowsScheduledTasks.WindowsScheduledTasksList)
+					{
+						Line 7 ( "{0,-50}  {1,-6}  {2,-50}" -f $item.Task, $item.Type.ToString(), $item.Location)
+					}
+					Line 0 ""
+				}
+
+				Line 5 "Windows advanced options: " $OPTWindowsAdvancedOptionsEnabled
+				If($OPTWindowsAdvancedOptionsEnabled -eq "True")
+				{
+					Line 6 "Windows Advanced Options"
+					Line 0 ""
+					Line 7 "Setting                                           Enabled  Value                                             "
+					Line 7 "============================================================================================================="
+					#		123456789012345678901234567890123456789012345678SS1234567SS12345678901234567890123456789012345678901234567890
+					#		Remove Common program groups from the start menu  False    SomeConfigFile.xml
+					<#
+						PartialStartLayoutContent   : Configuration.xml
+						Hibernate                   : True
+						TeleCollection              : True
+						SystemRestore               : True
+						AdditionalErrorReport       : True
+						Tiles                       : True
+						Cortana                     : True
+						MicrosoftConsumerExperience : True
+						WindowsTips                 : True
+						CommonProgramGroups         : True
+						PartialStartMenu            : True
+					#>
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Disable Hibernate", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.Hibernate.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Disable Telemetry collection", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.TeleCollection.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Disable System Restore", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.SystemRestore.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Disable error reporting to send additional data", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.AdditionalErrorReport.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Disable Tiles", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.Tiles.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Disable Cortana digital assistant", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.Cortana.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Turn off Microsoft consumer experience", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.MicrosoftConsumerExperience.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Do not show Windows tips", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.WindowsTips.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Remove Common program groups from the Start Menu", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.CommonProgramGroups.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-48}  {1,-7}  {2,-50}" -f `
+					"Partial Start Menu layout", `
+					$RDSHost.Optimization.WindowsAdvancedOptions.PartialStartMenu.ToString(), `
+					$RDSHost.Optimization.WindowsAdvancedOptions.PartialStartLayoutContent)
+					
+					Line 0 ""
+				}
+
+				Line 5 "Network performance: " $OPTNetworkPerformanceEnabled
+				If($OPTNetworkPerformanceEnabled -eq "True")
+				{
+					Line 6 "Network Performance Optimizations"
+					Line 0 ""
+					Line 7 "Setting                      Enabled  Value"
+					Line 7 "==========================================="
+					#		123456789012345678901234567SS1234567SS12345
+					#		FileNotFoundCacheEntriesMax  False    32768
+					<#
+						DirCacheMax             : 4096
+						DormantFileLimit        : 256
+						FileNotFoundCache       : 32768
+						FileInfoCache           : 32768
+						FileInfoCacheEnable     : True
+						DirectoryCacheEnable    : True
+						FileNotFoundCacheEnable : True
+						DormantFileLimitEnable  : True
+						DisableTCP              : True
+						DisableIPv6CompEnable   : True
+						DisableIPv6ToIPv4       : True
+						DisableIsaTap           : True
+					#>
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"FileInfoCacheEntriesMax", `
+					$RDSHost.Optimization.NetworkPerformance.FileInfoCacheEnable.ToString(), `
+					$RDSHost.Optimization.NetworkPerformance.FileInfoCache)
+					
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"DirectoryCacheEntriesMax", `
+					$RDSHost.Optimization.NetworkPerformance.DirectoryCacheEnable.ToString(), `
+					$RDSHost.Optimization.NetworkPerformance.DirCacheMax)
+					
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"FileNotFoundCacheEntriesMax", `
+					$RDSHost.Optimization.NetworkPerformance.FileNotFoundCacheEnable.ToString(), `
+					$RDSHost.Optimization.NetworkPerformance.FileNotFoundCache)
+					
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"DormantFileLimit", `
+					$RDSHost.Optimization.NetworkPerformance.DormantFileLimitEnable.ToString(), `
+					$RDSHost.Optimization.NetworkPerformance.DormantFileLimit)
+					
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"Disable TCP/IP Task Offload", `
+					$RDSHost.Optimization.NetworkPerformance.DisableTCP.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"Disable IPv6 Components", `
+					$RDSHost.Optimization.NetworkPerformance.DisableIPv6CompEnable.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"Disable IPv6 to IPv4", `
+					$RDSHost.Optimization.NetworkPerformance.DisableIPv6ToIPv4.ToString(), `
+					"")
+					
+					Line 7 ( "{0,-27}  {1,-7}  {2,-5}" -f `
+					"Disables isatap for IPv6", `
+					$RDSHost.Optimization.NetworkPerformance.DisableIsaTap.ToString(), `
+					"")
+					
+					Line 0 ""
+				}
+
+				Line 5 "Registry: " $OPTRegistryEnabled
+				If($OPTRegistryEnabled -eq "True")
+				{
+					Line 6 "Registry Optimizations"
+					Line 0 ""
+					#		123456789012345678901234567SS1234567SS12345
+					#		FileNotFoundCacheEntriesMax  False    32768
+					<#
+						Id           : 1
+						Action       : Modify
+						RegistryName : ServicesPipeTimeout
+						DWORDValue   : 18000
+						DisplayName  : Increase service startup timeouts
+						HiveType     : HKEY_LOCAL_MACHINE
+						Path         : System\CurrentControlSet\Control
+						RegType      : REG_DWORD
+
+						Id           : 2
+						Action       : Modify
+						RegistryName : TimeOutValue
+						DWORDValue   : 200
+						DisplayName  : Increase Disk I/O Timeout
+						HiveType     : HKEY_LOCAL_MACHINE
+						Path         : System\CurrentControlSet\Services\Disk
+						RegType      : REG_DWORD
+					#>
+					Line 7 "Registry                                  Action  Value                 Type           Data                  Path                                                        "
+					Line 7 "========================================================================================================================================================================="
+					#		1234567890123456789012345678901234567890SS123456SS12345678901234567890SS1234567890123SS12345678901234567890SS123456789012345678901234567890123456789012345678901234567890
+					#		Increase service startup timeouts         Modify  99999999999999999999  REG_EXPAND_SZ  99999999999999999999  HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Disk
+					ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
+					{
+						Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+						$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType, $item.DWORDValue, "$($item.HiveType)\$($item.Path)")
+					}
+					Line 0 ""
+				}
+
+				Line 5 "Visual Effects: " $OPTVisualEffectsEnabled
+				If($OPTVisualEffectsEnabled -eq "True")
+				{
+					Line 6 "Visual Effects Optimizations"
+					Line 0 ""
+					
+					Switch ($RDSHost.Optimization.VisualEffects.VisualEffectsTypes)
+					{
+						"LetWindowsChooseWhatsBest"	{$VisualEffectsType = "Let Windows choose what's best"; Break}
+						"AdjustForBestAppearnce"	{$VisualEffectsType = "Adjust for best appearance"; Break} #misspelled in the PoSH output and the docs
+						"AdjustForBestPerformance"	{$VisualEffectsType = "Adjust for best performance"; Break}
+						"Custom"					{$VisualEffectsType = "Custom"; Break}
+						Default						{$VisualEffectsType = "Unable to determine Visual Effects Optimization type: $($RDSHost.Optimization.VisualEffects.VisualEffectsTypes)"; Break}
+					}
+					Line 7 $VisualEffectsType
+					Line 0 ""
+					Line 7 "Setting                                             Enabled"
+					Line 7 "==========================================================="
+					#		12345678901234567890123456789012345678901234567890SS1234567
+					#		Use drop shadows for icon labels on the desktop     False  
+					<#
+						VisualEffectsTypes                     : Custom
+						AnimateControlSelectElements           : False
+						AnimateWindowsWhenMinimizingMaximizing : False
+						AnimateTaskbar                         : False
+						EnablePeek                             : False
+						FadeSlideMenus                         : False
+						FadeSlideToolTips                      : False
+						FadeOutMenuItems                       : False
+						SaveTaskbarThumbnail                   : False
+						ShowShadowUnderMouse                   : False
+						ShadowUnderWindows                     : False
+						ThumbnailsInsteadOfIcons               : False
+						ShowTranslucentSelection               : False
+						ShowWindowsContentWhilstDragging       : False
+						SlideOpenComboBoxes                    : False
+						SmoothEdgesScreenFonts                 : True
+						SmoothScrollListBoxes                  : False
+						DropShadowsIcon                        : False
+					#>
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Animate controls and elements inside windows", `
+					$RDSHost.Optimization.VisualEffects.AnimateControlSelectElements.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Animate windows when minimizing and maximizing", `
+					$RDSHost.Optimization.VisualEffects.AnimateWindowsWhenMinimizingMaximizing.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Animations in the taskbar", `
+					$RDSHost.Optimization.VisualEffects.AnimateTaskbar.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Enable Peek", `
+					$RDSHost.Optimization.VisualEffects.EnablePeek.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Fade or slide menus into view", `
+					$RDSHost.Optimization.VisualEffects.FadeSlideMenus.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Fade or slide Tooltips into view", `
+					$RDSHost.Optimization.VisualEffects.FadeSlideToolTips.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Fade out menu items after clicking", `
+					$RDSHost.Optimization.VisualEffects.FadeOutMenuItems.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Save taskbar thumbnail previews", `
+					$RDSHost.Optimization.VisualEffects.SaveTaskbarThumbnail.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Show shadows under mouse pointer", `
+					$RDSHost.Optimization.VisualEffects.ShowShadowUnderMouse.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Show shadows under windows", `
+					$RDSHost.Optimization.VisualEffects.ShadowUnderWindows.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Show thumbnails instead of icons", `
+					$RDSHost.Optimization.VisualEffects.ThumbnailsInsteadOfIcons.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Show translucent selection rectangle", `
+					$RDSHost.Optimization.VisualEffects.ShowTranslucentSelection.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Show window contents while dragging", `
+					$RDSHost.Optimization.VisualEffects.ShowWindowsContentWhilstDragging.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Slide open combo boxes", `
+					$RDSHost.Optimization.VisualEffects.SlideOpenComboBoxes.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Smooth edges of screen fonts", `
+					$RDSHost.Optimization.VisualEffects.SmoothEdgesScreenFonts.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Smooth-scroll list boxes", `
+					$RDSHost.Optimization.VisualEffects.SmoothScrollListBoxes.ToString())
+					
+					Line 7 ( "{0,-50}  {1,-7}" -f `
+					"Use drop shadows for icon labels on the desktop", `
+					$RDSHost.Optimization.VisualEffects.DropShadowsIcon.ToString())
+					
+					Line 0 ""
+				}
+
+				Line 5 "Disk cleanup: " $OPTDiskCleanupEnabled
+				If($OPTDiskCleanupEnabled -eq "True")
+				{
+					Line 6 "Disk Cleanup Optimizations"
+					Line 0 ""
+					
+					Line 7 "Setting                            Enabled"
+					Line 7 "=========================================="
+					#		123456789012345678901234567890123SS1234567
+					#		Clean up temporary files and logs  False  
+					<#
+						CleanupWinSxSFolder      : False
+						CleanupSystemFiles       : False
+						CleanupTemporaryFileLogs : True
+						RemoveOneDrive           : False
+						DeleteUserProfiles       : False
+					#>
+					Line 7 ( "{0,-33}  {1,-7}" -f `
+					"Clean up redundant system files", `
+					$RDSHost.Optimization.DiskCleanup.CleanupSystemFiles.ToString())
+					
+					Line 7 ( "{0,-33}  {1,-7}" -f `
+					"Clean up the WinSxS Folder", `
+					$RDSHost.Optimization.DiskCleanup.CleanupWinSxSFolder.ToString())
+					
+					Line 7 ( "{0,-33}  {1,-7}" -f `
+					"Clean up temporary files and logs", `
+					$RDSHost.Optimization.DiskCleanup.CleanupTemporaryFileLogs.ToString())
+					
+					Line 7 ( "{0,-33}  {1,-7}" -f `
+					"Remove OneDrive", `
+					$RDSHost.Optimization.DiskCleanup.RemoveOneDrive.ToString())
+					
+					Line 7 ( "{0,-33}  {1,-7}" -f `
+					"Delete users' profiles", `
+					$RDSHost.Optimization.DiskCleanup.DeleteUserProfiles.ToString())
+					
+					Line 0 ""
+				}
+
+				Line 5 "Custom script: " $OPTCustomScriptEnabled
+				If($OPTCustomScriptEnabled  -eq "True")
+				{
+					Line 6 "Custom Script"
+					Line 0 ""
+					
+					<#
+						Arguments : CustomScriptArguments
+						Command   : CustomScriptCommand
+						InitDir   : CustomScriptInitialDirectory
+						User      : CustomScriptUsername
+					#>
+					Line 7 "Command`t`t : " $RDSHost.Optimization.CustomScript.Command
+					Line 7 "Arguments`t : " $RDSHost.Optimization.CustomScript.Arguments
+					Line 7 "Initial directory: " $RDSHost.Optimization.CustomScript.InitDir
+					Line 7 "Username`t : " $RDSHost.Optimization.CustomScript.User
+					Line 0 ""
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Inherit default settings:",($Script:htmlsb),$RDSHost.InheritDefaultOptimizationSettings.ToString(),$htmlwhite)
+				$rowdata += @(,("Enable optimization:",($Script:htmlsb), $OPTEnableOptimization,$htmlwhite))
+				$rowdata += @(,("Optimization type:",($Script:htmlsb), $OPTOptimizationType,$htmlwhite))
+
+				$msg = "Optimization"
+				$columnWidths = @("300","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+
+				WriteHTMLLine 4 0 "Windows Defender ATP: " $OPTWindowsDefenderATPEnabled
+				If($OPTWindowsDefenderATPEnabled -eq "True")
+				{
+					$rowdata = @()
+					$columnHeaders = @("Windows Defender ATP Optimizations",($Script:htmlsb),"",$htmlwhite)
+
+					If($RDSHost.Optimization.WindowsDefenderATP.WinDefATPTurnOffOn.ToString() -eq "TurnOffWindowsDefenderATP")
+					{
+						$rowdata += @(,("     Turn off Windows Defender ATP (I use my own ATP solution)",($Script:htmlsb), "",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata += @(,("     Turn on Windows Defender ATP and set process and folder exclusions",($Script:htmlsb), "",$htmlwhite))
+						$rowdata += @(,("     Disable real-time protection",($Script:htmlsb), $RDSHost.Optimization.WindowsDefenderATP.DisableRealTimeProtection.ToString(),$htmlwhite))
+						$rowdata += @(,("",($Script:htmlsb), "",$htmlwhite))
+						
+						$cnt = -1
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeFolders)
+						{
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Exclude files and folders",($Script:htmlsb), $item,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), $item,$htmlwhite))
+							}
+						}
+
+						$cnt = -1
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeProcesses)
+						{
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Exclude processes",($Script:htmlsb), $item,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), $item,$htmlwhite))
+							}
+						}
+						
+						$cnt = -1
+						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeExtension)
+						{
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Exclude extensions",($Script:htmlsb), $item,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), $item,$htmlwhite))
+							}
+						}
+					}
+
+
+					$msg = ""
+					$columnWidths = @("300","275")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Windows Components: " $OPTWindowsComponentsEnabled
+				If($OPTWindowsComponentsEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Windows Components Optimizations"
+
+					$rowdata = @()
+
+					ForEach($item in $RDSHost.Optimization.WindowsComponents.WindowsComponentsList)
+					{
+						$rowdata += @(,(
+							$item.DisplayName,$htmlwhite,
+							$item.ComponentName,$htmlwhite)
+						)
+					}
+
+					$columnHeaders = @(
+						"Display Name",($Script:htmlsb),
+						"Component",($Script:htmlsb)
+					)
+
+					$msg = "Disable (remove) components:"
+					$columnWidths = @("200","200")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Windows Services: " $OPTWindowsServicesEnabled       
+				If($OPTWindowsServicesEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Windows Services Optimizations"
+
+					$rowdata = @()
+
+					ForEach($item in $RDSHost.Optimization.WindowsServices.WindowsServicesList)
+					{
+						$rowdata += @(,(
+							$item.DisplayName,$htmlwhite,
+							$item.ServiceName,$htmlwhite,
+							$item.Aliases,$htmlwhite)
+						)
+					}
+
+					$columnHeaders = @(
+						"Display Name",($Script:htmlsb),
+						"Service",($Script:htmlsb),
+						"Aliases",($Script:htmlsb)
+					)
+
+					$msg = "Disable services:"
+					$columnWidths = @("200","100","50")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Windows Scheduled Tasks: " $OPTWinodwsScheduledTasksEnabled
+				If($OPTWinodwsScheduledTasksEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Windows Scheduled Tasks Optimizations"
+
+					$rowdata = @()
+
+					ForEach($item in $RDSHost.Optimization.WindowsScheduledTasks.WindowsScheduledTasksList)
+					{
+						$rowdata += @(,(
+							$item.Task,$htmlwhite,
+							$item.Type.Tostring(),$htmlwhite,
+							$item.Location,$htmlwhite)
+						)
+					}
+
+					$columnHeaders = @(
+						"Task",($Script:htmlsb),
+						"Type",($Script:htmlsb),
+						"Location",($Script:htmlsb)
+					)
+
+					$msg = "Disable tasks:"
+					$columnWidths = @("200","50","250")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Windows advanced options: " $OPTWindowsAdvancedOptionsEnabled
+				If($OPTWindowsAdvancedOptionsEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Windows Advanced Options"
+
+					$rowdata = @()
+
+					$rowdata += @(,(
+						"Disable Hibernate",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.Hibernate.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable Telemetry collection",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.TeleCollection.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable System Restore",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.SystemRestore.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable error reporting to send additional data",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.AdditionalErrorReport.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable Tiles",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.Tiles.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable Cortana digital assistant",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.Cortana.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Turn off Microsoft consumer experience",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.MicrosoftConsumerExperience.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Do not show Windows tips",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.WindowsTips.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Remove Common program groups from the Start Menu",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.CommonProgramGroups.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Partial Start Menu layout",$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.PartialStartMenu.ToString(),$htmlwhite,
+						$RDSHost.Optimization.WindowsAdvancedOptions.PartialStartLayoutContent,$htmlwhite)
+					)
+
+					$columnHeaders = @(
+						"Setting",($Script:htmlsb),
+						"Enabled",($Script:htmlsb),
+						"Value",($Script:htmlsb)
+					)
+
+					$msg = ""
+					$columnWidths = @("300","50","200")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Network performance: " $OPTNetworkPerformanceEnabled
+				If($OPTWindowsAdvancedOptionsEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Network Performance Optimizations"
+
+					$rowdata = @()
+
+					$rowdata += @(,(
+						"FileInfoCacheEntriesMax",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.FileInfoCacheEnable.ToString(),$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.FileInfoCache,$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"DirectoryCacheEntriesMax",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DirectoryCacheEnable.ToString(),$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DirCacheMax,$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"FileNotFoundCacheEntriesMax",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.FileNotFoundCacheEnable.ToString(),$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.FileNotFoundCache,$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"DormantFileLimit",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DormantFileLimitEnable.ToString(),$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DormantFileLimit,$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable TCP/IP Task Offload",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DisableTCP.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable IPv6 Components",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DisableIPv6CompEnable.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disable IPv6 to IPv4",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DisableIPv6ToIPv4.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Disables isatap for IPv6",$htmlwhite,
+						$RDSHost.Optimization.NetworkPerformance.DisableIsaTap.ToString(),$htmlwhite,
+						"",$htmlwhite)
+					)
+
+					$columnHeaders = @(
+						"Setting",($Script:htmlsb),
+						"Enabled",($Script:htmlsb),
+						"Value",($Script:htmlsb)
+					)
+
+					$msg = ""
+					$columnWidths = @("170","50","50")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Registry: " $OPTRegistryEnabled       
+				If($OPTRegistryEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Registry Optimizations"
+
+					$rowdata = @()
+
+					ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
+					{
+						$rowdata += @(,(
+							$item.DisplayName,$htmlwhite,
+							$item.Action,$htmlwhite,
+							$item.RegistryName,$htmlwhite,
+							$item.RegType,$htmlwhite,
+							$item.DWORDValue,$htmlwhite,
+							"$($item.HiveType)\$($item.Path)",$htmlwhite)
+						)
+					}
+
+					$columnHeaders = @(
+						"Registry",($Script:htmlsb),
+						"Action",($Script:htmlsb),
+						"Value",($Script:htmlsb),
+						"Type",($Script:htmlsb),
+						"Data",($Script:htmlsb),
+						"Path",($Script:htmlsb)
+					)
+
+					$msg = ""
+					$columnWidths = @("200","50","100","100","100","200")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Visual Effects: " $OPTVisualEffectsEnabled
+				If($OPTVisualEffectsEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Visual Effects Optimizations"
+
+					$rowdata = @()
+
+					$rowdata += @(,(
+						"Animate controls and elements inside windows",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.AnimateControlSelectElements.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Animate windows when minimizing and maximizing",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.AnimateWindowsWhenMinimizingMaximizing.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Animations in the taskbar",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.AnimateTaskbar.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Enable Peek",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.EnablePeek.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Fade or slide menus into view",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.FadeSlideMenus.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Fade or slide Tooltips into view",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.FadeSlideToolTips.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Fade out menu items after clicking",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.FadeOutMenuItems.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Save taskbar thumbnail previews",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.SaveTaskbarThumbnail.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Show shadows under mouse pointer",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.ShowShadowUnderMouse.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Show shadows under windows",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.ShadowUnderWindows.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Show thumbnails instead of icons",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.ThumbnailsInsteadOfIcons.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Show translucent selection rectangle",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.ShowTranslucentSelection.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Show window contents while dragging",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.ShowWindowsContentWhilstDragging.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Slide open combo boxes",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.SlideOpenComboBoxes.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Smooth edges of screen fonts",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.SmoothEdgesScreenFonts.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Smooth-scroll list boxes",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.SmoothScrollListBoxes.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Use drop shadows for icon labels on the desktop",$htmlwhite,
+						$RDSHost.Optimization.VisualEffects.DropShadowsIcon.ToString(),$htmlwhite)
+					)
+
+					$columnHeaders = @(
+						"Setting",($Script:htmlsb),
+						"Enabled",($Script:htmlsb)
+					)
+
+					$msg = ""
+					$columnWidths = @("275","50")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Disk cleanup: " $OPTDiskCleanupEnabled
+				If($OPTDiskCleanupEnabled -eq "True")
+				{
+					WriteHTMLLine 0 0 "Disk Cleanup Optimizations"
+
+					$rowdata = @()
+
+					$rowdata += @(,(
+						"Clean up redundant system files",$htmlwhite,
+						$RDSHost.Optimization.DiskCleanup.CleanupSystemFiles.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Clean up the WinSxS Folder",$htmlwhite,
+						$RDSHost.Optimization.DiskCleanup.CleanupWinSxSFolder.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Clean up temporary files and logs",$htmlwhite,
+						$RDSHost.Optimization.DiskCleanup.CleanupTemporaryFileLogs.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Remove OneDrive",$htmlwhite,
+						$RDSHost.Optimization.DiskCleanup.RemoveOneDrive.ToString(),$htmlwhite)
+					)
+
+					$rowdata += @(,(
+						"Delete users' profiles",$htmlwhite,
+						$RDSHost.Optimization.DiskCleanup.DeleteUserProfiles.ToString(),$htmlwhite)
+					)
+
+					$columnHeaders = @(
+						"Setting",($Script:htmlsb),
+						"Enabled",($Script:htmlsb)
+					)
+
+					$msg = ""
+					$columnWidths = @("200","50")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+
+				WriteHTMLLine 4 0 "Custom script: " $OPTCustomScriptEnabled
+				If($OPTCustomScriptEnabled -eq "True")
+				{
+					$rowdata = @()
+					$columnHeaders = @("Custom Script",($Script:htmlsb),"",$htmlwhite)
+					$rowdata += @(,("     Command",($Script:htmlsb), $RDSHost.Optimization.CustomScript.Command,$htmlwhite))
+					$rowdata += @(,("     Arguments",($Script:htmlsb), $RDSHost.Optimization.CustomScript.Arguments,$htmlwhite))
+					$rowdata += @(,("     Initial directory",($Script:htmlsb), $RDSHost.Optimization.CustomScript.InitDir,$htmlwhite))
+					$rowdata += @(,("     Username",($Script:htmlsb), $RDSHost.Optimization.CustomScript.User,$htmlwhite))
+
+					$msg = ""
+					$columnWidths = @("125","200")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+			}
+
 			#Desktop Access
 			
 			If($MSWord -or $PDF)
@@ -8143,6 +10138,7 @@ Function OutputSite
 							}
 							
 							$RDSRemoveSessionNumberFromPrinter = $GroupDefaults.RemoveSessionNumberFromPrinterName.ToString()
+							$RDSRemoveClientNameFromPrinter          = $GroupDefaults.RemoveClientNameFromPrinterName.ToString()
 						}
 						Else
 						{
@@ -8161,12 +10157,14 @@ Function OutputSite
 								}
 								
 								$RDSRemoveSessionNumberFromPrinter = $RDSDefaults.RemoveSessionNumberFromPrinterName.ToString()
+								$RDSRemoveClientNameFromPrinter          = $RDSDefaults.RemoveClientNameFromPrinterName.ToString()
 							}
 							Else
 							{
 								#unable to retrieve default, use built-in default values
 								$RDSPrinterNameFormat              = "Printername (from Computername) in Session no."
 								$RDSRemoveSessionNumberFromPrinter = "False"
+								$RDSRemoveClientNameFromPrinter          = "False"
 							}
 						}
 					}
@@ -8184,6 +10182,7 @@ Function OutputSite
 					}
 					
 					$RDSRemoveSessionNumberFromPrinter = $RDSHost.RemoveSessionNumberFromPrinterName.ToString()
+					$RDSRemoveClientNameFromPrinter          = $RDSHost.RemoveClientNameFromPrinterName.ToString()
 				}
 			}
 			Else
@@ -8199,6 +10198,7 @@ Function OutputSite
 				}
 				
 				$RDSRemoveSessionNumberFromPrinter = $RDSHost.RemoveSessionNumberFromPrinterName.ToString()
+				$RDSRemoveClientNameFromPrinter          = $RDSHost.RemoveClientNameFromPrinterName.ToString()
 			}
 
 			If($MSWord -or $PDF)
@@ -8207,6 +10207,10 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $RDSHost.InheritDefaultPrinterSettings.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "RDP Printer Name Format"; Value = $RDSPrinterNameFormat; }) > $Null
 				$ScriptInformation.Add(@{Data = "Remove session number from printer name"; Value = $RDSRemoveSessionNumberFromPrinter; }) > $Null
+				If($RDSHost.RemoveSessionNumberFromPrinterName)
+				{
+					$ScriptInformation.Add(@{Data = "Remove client name from printer name"; Value = $RDSRemoveClientNameFromPrinter; }) > $Null
+				}
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -8231,6 +10235,10 @@ Function OutputSite
 				Line 4 "Inherit default settings`t`t`t`t: " $RDSHost.InheritDefaultPrinterSettings.ToString()
 				Line 4 "RDP Printer Name Format`t`t`t`t`t: " $RDSPrinterNameFormat
 				Line 4 "Remove session number from printer name`t`t`t: " $RDSRemoveSessionNumberFromPrinter
+				If($RDSHost.RemoveSessionNumberFromPrinterName)
+				{
+					Line 4 "Remove client name from printer name`t`t`t: " $RDSRemoveClientNameFromPrinter
+				}
 				Line 0 ""
 			}
 			If($HTML)
@@ -8239,6 +10247,10 @@ Function OutputSite
 				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$RDSHost.InheritDefaultPrinterSettings.ToString(),$htmlwhite)
 				$rowdata += @(,("RDP Printer Name Format",($Script:htmlsb),$RDSPrinterNameFormat,$htmlwhite))
 				$rowdata += @(,("Remove session number from printer name",($Script:htmlsb),$RDSRemoveSessionNumberFromPrinter,$htmlwhite))
+				If($RDSHost.RemoveSessionNumberFromPrinterName)
+				{
+					$rowdata += @(,("Remove client name from printer name",($Script:htmlsb),$RDSRemoveClientNameFromPrinter,$htmlwhite))
+				}
 
 				$msg = "RDP printer"
 				$columnWidths = @("300","275")
@@ -8306,6 +10318,19 @@ Function OutputSite
 		ForEach($RDSGroup in $RDSGroups)
 		{
 			Write-Verbose "$(Get-Date -Format G): `t`t`tOutput RD Session Host Group $($RDSGroup.Name)"
+			
+			#Get the agent state for the group
+			$RDSGroupStatus = Get-RASRDSGroupStatus -Name $RDSGroup.Name -EA 0 4>$Null
+			
+			If(!$? -or $Null -eq $RDSGroupStatus)
+			{
+				$RDSGroupAgentState = "Unknown"
+			}
+			Else
+			{
+				$RDSGroupAgentState = GetRASStatus $RDSGroupStatus.AgentState
+			}
+			
 			If($MSWord -or $PDF)
 			{
 				WriteWordLine 3 0 "Group $($RDSGroup.Name)"
@@ -8313,6 +10338,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Name"; Value = $RDSGroup.Name; }) > $Null
 				$ScriptInformation.Add(@{Data = "Members"; Value = $RDSGroup.RDSIds.Count.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $RDSGroup.Description; }) > $Null
+				$ScriptInformation.Add(@{Data = "Status"; Value = $RDSGroupAgentState; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $RDSGroup.AdminLastMod; }) > $Null
 				$ScriptInformation.Add(@{Data = "Modified on"; Value = $RDSGroup.TimeLastMod.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $RDSGroup.AdminCreate; }) > $Null
@@ -8342,6 +10368,7 @@ Function OutputSite
 				Line 2 "Name`t`t`t: " $RDSGroup.Name
 				Line 2 "Members`t`t`t: " $RDSGroup.RDSIds.Count.ToString()
 				Line 2 "Description`t`t: " $RDSGroup.Description
+				Line 2 "Status`t`t`t: " $RDSGroupAgentState
 				Line 2 "Last modification by`t: " $RDSGroup.AdminLastMod
 				Line 2 "Modified on`t`t: " $RDSGroup.TimeLastMod.ToString()
 				Line 2 "Created by`t`t: " $RDSGroup.AdminCreate
@@ -8356,6 +10383,7 @@ Function OutputSite
 				$columnHeaders = @("Server",($Script:htmlsb),$RDSGroup.Name,$htmlwhite)
 				$rowdata += @(,("Members",($Script:htmlsb),$RDSGroup.RDSIds.Count.ToString(),$htmlwhite))
 				$rowdata += @(,("Description",($Script:htmlsb),$RDSGroup.Description,$htmlwhite))
+				$rowdata += @(,("Status",($Script:htmlsb),$RDSGroupAgentState,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $RDSGroup.AdminLastMod,$htmlwhite))
 				$rowdata += @(,("Modified on",($Script:htmlsb), $RDSGroup.TimeLastMod.ToString(),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $RDSGroup.AdminCreate,$htmlwhite))
@@ -8554,7 +10582,7 @@ Function OutputSite
 						"Enabled"						{$RDSAllowClientURLMailRedirection = "Enabled"; 
 														 $ReplaceRegisteredApplication = "False";
 														 Break}
-						"Disbaled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
+						"Disabled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
 														 $ReplaceRegisteredApplication = "False";
 														 Break}
 						"EnabledWithAppRegistration"	{$RDSAllowClientURLMailRedirection = "Enabled";
@@ -8673,7 +10701,7 @@ Function OutputSite
 					"Enabled"						{$RDSAllowClientURLMailRedirection = "Enabled"; 
 													 $ReplaceRegisteredApplication = "False";
 													 Break}
-					"Disbaled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
+					"Disabled"						{$RDSAllowClientURLMailRedirection = "Disabled"; 
 													 $ReplaceRegisteredApplication = "False";
 													 Break}
 					"EnabledWithAppRegistration"	{$RDSAllowClientURLMailRedirection = "Enabled";
@@ -11617,7 +13645,7 @@ Function OutputSite
 				"Enabled"						{$VDIAllowClientURLMailRedirection = "Enabled"; 
 												 $ReplaceRegisteredApplication = "False";
 												 Break}
-				"Disbaled"						{$VDIAllowClientURLMailRedirection = "Disabled"; 
+				"Disabled"						{$VDIAllowClientURLMailRedirection = "Disabled"; 
 												 $ReplaceRegisteredApplication = "False";
 												 Break}
 				"EnabledWithAppRegistration"	{$VDIAllowClientURLMailRedirection = "Enabled";
@@ -11684,7 +13712,7 @@ Function OutputSite
 				Line 4 "Allow Client URL/Mail Redirection`t`t`t`t: " $VDIAllowClientURLMailRedirection
 				Line 5 "Replace registered application`t`t`t`t: " $ReplaceRegisteredApplication
 				Line 5 "Support Windows Shell URL namespace objects`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
-				Line 4 "Enable Drag and drop`t`t`t`t`t: " $VDIAllowDragandDrop
+				Line 4 "Enable Drag and drop`t`t`t`t`t`t: " $VDIAllowDragandDrop
 				Line 5 "Direction`t`t`t`t`t`t: " $VDIDragAndDrop
 				Line 4 "Allow file transfer command (Web (HTML5) and Chrome clients)`t: " $VDIHost.AllowFileTransfer.ToString()
 				Line 5 "Configure File Transfer"
@@ -11703,7 +13731,7 @@ Function OutputSite
 				$rowdata += @(,("     Support Windows Shell URL namespace objects",($Script:htmlsb),$VDIHost.SupportShellURLNamespaceObjects.ToString(),$htmlwhite))
 				$rowdata += @(,("Enable Drag and drop",($Script:htmlsb),$VDIAllowDragAndDrop,$htmlwhite))
 				$rowdata += @(,("     Directon",($Script:htmlsb),$VDIDragAndDrop,$htmlwhite))
-				$rowdata += @(,("Allow file transfer command (HTML5 and Chrome clients)",($Script:htmlsb),$VDIHost.AllowFileTransfer.ToString(),$htmlwhite))
+				$rowdata += @(,("Allow file transfer command (Web (HTML5) and Chrome clients)",($Script:htmlsb),$VDIHost.AllowFileTransfer.ToString(),$htmlwhite))
 				$rowdata += @(,("     Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("          Direction",($Script:htmlsb),$VDIHostFileTransferMode,$htmlwhite))
 				$rowdata += @(,("          Location",($Script:htmlsb),$VDIHostFileTransferLocation,$htmlwhite))
@@ -17426,7 +19454,7 @@ Function OutputSite
 			$InputPromptTable += @{
 				Language = "Japanese"
 				LoginHint = $Theme.UserPortal.InputPrompt.ja_JP.LoginHint
-				PasswordHint = $Theme.UserPortal.jInputPrompt.ja_JP.PasswordHint
+				PasswordHint = $Theme.UserPortal.InputPrompt.ja_JP.PasswordHint
 			}
 
 			$InputPromptTable += @{
