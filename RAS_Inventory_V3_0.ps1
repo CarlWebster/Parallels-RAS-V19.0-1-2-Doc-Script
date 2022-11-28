@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.006'
+$script:MyVersion         = '3.00.007'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "11/27/2022"
+$tmpdate                  = [datetime] "11/28/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -3464,7 +3464,6 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date -Format G): Folder               : $($Folder)"
 	Write-Verbose "$(Get-Date -Format G): From                 : $($From)"
 	Write-Verbose "$(Get-Date -Format G): Log                  : $($Log)"
-	Write-Verbose "$(Get-Date -Format G): RAS Version          : $($Script:RASVersion)"
 	Write-Verbose "$(Get-Date -Format G): Report Footer        : $ReportFooter"
 	Write-Verbose "$(Get-Date -Format G): Save As HTML         : $($HTML)"
 	Write-Verbose "$(Get-Date -Format G): Save As PDF          : $($PDF)"
@@ -3741,8 +3740,9 @@ Function ProcessScriptSetup
 		$tmp = $results.split(".")
 		
 		$Script:RASVersion = "$($tmp[0]).$($tmp[1])"
+		$Script:RASFullVersion = $Results
 		
-		If([version]$Script:RASVersion -ge [version]"18.1")
+		If([version]$Script:RASVersion -ge [version]"19.1")
 		{
 			#we are good
 		}
@@ -3752,9 +3752,9 @@ Function ProcessScriptSetup
 			Write-Host "You are running version $Results" -ForegroundColor White
 			Write-Error "
 	`n`n
-	This script is designed for RAS 18.1 and should not be run on $Results.
+	This script is designed for RAS 19.1 and should not be run on $Results.
 	`n`n
-	If you are running RAS 18.0, please use: 
+	If you are running RAS 18.x, please use: 
 	https://carlwebster.com/downloads/download-info/parallels-remote-application-server/
 	`n`n
 	If you are running RAS 17, please use:
@@ -3769,12 +3769,13 @@ Function ProcessScriptSetup
 	Else
 	{
 		$Script:RASVersion = "Unable to determine"
+		$Script:RASFullVersion = "Unable to determine"
 
 		Write-Error "
 	`n`n
-	This script is designed for RAS 18.1 and your RAS version could not be determined.
+	This script is designed for RAS 19.1 and your RAS version could not be determined.
 	`n`n
-	If you are running RAS 18.0, please use: 
+	If you are running RAS 18.x, please use: 
 	https://carlwebster.com/downloads/download-info/parallels-remote-application-server/
 	`n`n
 	If you are running RAS 17, please use:
@@ -3859,7 +3860,6 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Folder               : $Folder" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "From                 : $From" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Log                  : $Log" 4>$Null
-		Out-File -FilePath $SIFile -Append -InputObject "RAS Version          : $Script:RASVersion" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Report Footer        : $ReportFooter" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML         : $HTML" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF          : $PDF" 4>$Null
@@ -13311,11 +13311,17 @@ Function OutputSite
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Provider"; Value = $VDIHost.Server; }) > $Null
+					If(validobject $VDIHost Server)
+					{
+						$ScriptInformation.Add(@{Data = "Provider"; Value = $VDIHost.Server; }) > $Null
+					}
 					$ScriptInformation.Add(@{Data = "Type"; Value = $VDIType; }) > $Null
 					$ScriptInformation.Add(@{Data = "VDI Agent"; Value = $VDIHost.VDIAgent; }) > $Null
 					$ScriptInformation.Add(@{Data = "Status"; Value = $FullProviderStatus; }) > $Null
-					$ScriptInformation.Add(@{Data = "Direct address"; Value = $VDIHost.DirectAddress; }) > $Null
+					If(validobject $VDIHost DirectAddress)
+					{
+						$ScriptInformation.Add(@{Data = "Direct address"; Value = $VDIHost.DirectAddress; }) > $Null
+					}
 					$ScriptInformation.Add(@{Data = "Description"; Value = $VDIHost.Description; }) > $Null
 					$ScriptInformation.Add(@{Data = "Log level"; Value = $VDIHostStatus.LogLevel; }) > $Null
 					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $VDIHost.AdminLastMod; }) > $Null
@@ -13344,11 +13350,17 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 3 "Provider`t`t: " $VDIHost.Server
+					If(validobject $VDIHost Server)
+					{
+						Line 3 "Provider`t`t: " $VDIHost.Server
+					}
 					Line 3 "Type`t`t`t: " $VDIType
 					Line 3 "VDI Agent`t`t: " $VDIHost.VDIAgent
 					Line 3 "Status`t`t`t: " $FullProviderStatus
-					Line 3 "Direct address`t`t: " $VDIHost.DirectAddress
+					If(validobject $VDIHost DirectAddress)
+					{
+						Line 3 "Direct address`t`t: " $VDIHost.DirectAddress
+					}
 					Line 3 "Description`t`t: " $VDIHost.Description
 					Line 3 "Log level`t`t: " $VDIHostStatus.LogLevel
 					Line 3 "Last modification by`t: " $VDIHost.AdminLastMod
@@ -13361,11 +13373,21 @@ Function OutputSite
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Provider",($Script:htmlsb),$VDIHost.Server,$htmlwhite)
+					If(validobject $VDIHost Server)
+					{
+						$columnHeaders = @("Provider",($Script:htmlsb),$VDIHost.Server,$htmlwhite)
+					}
+					Else
+					{
+						$columnHeaders = @("Provider",($Script:htmlsb),"",$htmlwhite)
+					}
 					$rowdata += @(,("Type",($Script:htmlsb),$VDIType,$htmlwhite))
 					$rowdata += @(,("VDI Agent",($Script:htmlsb),$VDIHost.VDIAgent,$htmlwhite))
 					$rowdata += @(,("Status",($Script:htmlsb),$FullProviderStatus,$htmlwhite))
-					$rowdata += @(,("Direct address",($Script:htmlsb),$VDIHost.DirectAddress,$htmlwhite))
+					If(validobject $VDIHost DirectAddress)
+					{
+						$rowdata += @(,("Direct address",($Script:htmlsb),$VDIHost.DirectAddress,$htmlwhite))
+					}
 					$rowdata += @(,("Description",($Script:htmlsb),$VDIHost.Description,$htmlwhite))
 					$rowdata += @(,("Log level",($Script:htmlsb),$VDIHostStatus.LogLevel,$htmlwhite))
 					$rowdata += @(,("Last modification by",($Script:htmlsb), $VDIHost.AdminLastMod,$htmlwhite))
@@ -13396,7 +13418,15 @@ Function OutputSite
 				#Nothing
 			}
 			
-			$HostPA = Get-RASBroker -Id $VDIHost.PreferredBrokerId -EA 0 4>$Null
+			If(validobject $VDIHost PreferredBrokerId)
+			{
+				$HostPA = Get-RASBroker -Id $VDIHost.PreferredBrokerId -EA 0 4>$Null
+			}
+			Else
+			{
+				$HostPA = $Null
+				$DedicatedVDIAgent = $False
+			}
 			
 			If($? -and -$Null -ne $HostPA)
 			{
@@ -13640,38 +13670,60 @@ Function OutputSite
 			$VDIDragAndDrop = ""
 			$VDIAllowDragAndDrop = ""
 
-			Switch($VDIHost.AllowURLAndMailRedirection)
+			If(validobject $VDIHost AllowURLAndMailRedirection)
 			{
-				"Enabled"						{$VDIAllowClientURLMailRedirection = "Enabled"; 
-												 $ReplaceRegisteredApplication = "False";
-												 Break}
-				"Disabled"						{$VDIAllowClientURLMailRedirection = "Disabled"; 
-												 $ReplaceRegisteredApplication = "False";
-												 Break}
-				"EnabledWithAppRegistration"	{$VDIAllowClientURLMailRedirection = "Enabled";
-												 $ReplaceRegisteredApplication = "True";
-												 Break}
-				Default 						{$VDIAllowClientURLMailRedirection = "Unable to determine Allow CLient URL/Mail Redirection: $($VDIHost.AllowURLAndMailRedirection)"; 
-												 $ReplaceRegisteredApplication = "False";
-												 Break}
-			}
-			
-			Switch ($VDIHost.FileTransferMode)
-			{
-				"Bidirectional"		{$VDIHostFileTransferMode = "Bidirectional"; Break}
-				"Disabled"			{$VDIHostFileTransferMode = "Disabled"; Break}
-				"ClientToServer"	{$VDIHostFileTransferMode = "Client to server only"; Break}
-				"ServerToClient"	{$VDIHostFileTransferMode = "Server to client only"; Break}
-				Default				{$VDIHostFileTransferMode = "Unable to determine File Transfer mode: $($VDIHost.FileTransferMode)"; Break}
-			}
-
-			If($VDIHost.FileTransferLocation -eq "")
-			{
-				$VDIHostFileTransferLocation = "Default download location"
+				Switch($VDIHost.AllowURLAndMailRedirection)
+				{
+					"Enabled"						{$VDIAllowClientURLMailRedirection = "Enabled"; 
+													 $ReplaceRegisteredApplication = "False";
+													 Break}
+					"Disabled"						{$VDIAllowClientURLMailRedirection = "Disabled"; 
+													 $ReplaceRegisteredApplication = "False";
+													 Break}
+					"EnabledWithAppRegistration"	{$VDIAllowClientURLMailRedirection = "Enabled";
+													 $ReplaceRegisteredApplication = "True";
+													 Break}
+					Default 						{$VDIAllowClientURLMailRedirection = "Unable to determine Allow CLient URL/Mail Redirection: $($VDIHost.AllowURLAndMailRedirection)"; 
+													 $ReplaceRegisteredApplication = "False";
+													 Break}
+				}
 			}
 			Else
 			{
-				$VDIHostFileTransferLocation = $VDIHostHost.FileTransferLocation
+				$VDIAllowClientURLMailRedirection = ""
+				$ReplaceRegisteredApplication = "";
+			}
+			
+			If(validobject $VDIHost FileTransferMode)
+			{
+				Switch ($VDIHost.FileTransferMode)
+				{
+					"Bidirectional"		{$VDIHostFileTransferMode = "Bidirectional"; Break}
+					"Disabled"			{$VDIHostFileTransferMode = "Disabled"; Break}
+					"ClientToServer"	{$VDIHostFileTransferMode = "Client to server only"; Break}
+					"ServerToClient"	{$VDIHostFileTransferMode = "Server to client only"; Break}
+					Default				{$VDIHostFileTransferMode = "Unable to determine File Transfer mode: $($VDIHost.FileTransferMode)"; Break}
+				}
+			}
+			Else
+			{
+				$VDIHostFileTransferMode = ""
+			}
+
+			If(validobject $VDIHost FileTransferLocation)
+			{
+				If($VDIHost.FileTransferLocation -eq "")
+				{
+					$VDIHostFileTransferLocation = "Default download location"
+				}
+				Else
+				{
+					$VDIHostFileTransferLocation = $VDIHostHost.FileTransferLocation
+				}
+			}
+			Else
+			{
+				$VDIHostFileTransferLocation = ""
 			}
 
 			If($MSWord -or $PDF)
@@ -13679,15 +13731,24 @@ Function OutputSite
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Allow Client URL/Mail Redirection"; Value = $VDIAllowClientURLMailRedirection; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Replace registered application"; Value = $ReplaceRegisteredApplication; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Support Windows Shell URL namespace objects"; Value = $VDIHost.SupportShellURLNamespaceObjects.ToString(); }) > $Null
+				If(validobject $VDIHost SupportShellURLNamespaceObjects)
+				{
+					$ScriptInformation.Add(@{Data = "     Support Windows Shell URL namespace objects"; Value = $VDIHost.SupportShellURLNamespaceObjects.ToString(); }) > $Null
+				}
 				$ScriptInformation.Add(@{Data = "Enable Drag and drop"; Value = $VDIAllowDragAndDrop; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Direction"; Value = $VDIDragAndDrop; }) > $Null
-				$ScriptInformation.Add(@{Data = "Allow file transfer command (Web (HTML5) and Chrome clients)"; Value = $VDIHost.AllowFileTransfer.ToString(); }) > $Null
+				If(validobject $VDIHost AllowFileTransfer)
+				{
+					$ScriptInformation.Add(@{Data = "Allow file transfer command (Web (HTML5) and Chrome clients)"; Value = $VDIHost.AllowFileTransfer.ToString(); }) > $Null
+				}
 				$ScriptInformation.Add(@{Data = "     Configure File Transfer"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Direction"; Value = $VDIHostFileTransferMode; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Location"; Value = $VDIHostFileTransferLocation; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Do not allow to change location"; Value = $VDIHost.FileTransferLockLocation.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Enable drive redirection cache"; Value = $VDIHost.EnableDriveRedirectionCache.ToString(); }) > $Null
+				If(validobject $VDIHost EnableDriveRedirectionCache)
+				{
+					$ScriptInformation.Add(@{Data = "Enable drive redirection cache"; Value = $VDIHost.EnableDriveRedirectionCache.ToString(); }) > $Null
+				}
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -13711,15 +13772,24 @@ Function OutputSite
 			{
 				Line 4 "Allow Client URL/Mail Redirection`t`t`t`t: " $VDIAllowClientURLMailRedirection
 				Line 5 "Replace registered application`t`t`t`t: " $ReplaceRegisteredApplication
-				Line 5 "Support Windows Shell URL namespace objects`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
+				If(validobject $VDIHost SupportShellURLNamespaceObjects)
+				{
+					Line 5 "Support Windows Shell URL namespace objects`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
+				}
 				Line 4 "Enable Drag and drop`t`t`t`t`t`t: " $VDIAllowDragandDrop
 				Line 5 "Direction`t`t`t`t`t`t: " $VDIDragAndDrop
-				Line 4 "Allow file transfer command (Web (HTML5) and Chrome clients)`t: " $VDIHost.AllowFileTransfer.ToString()
+				If(validobject $VDIHost AllowFileTransfer)
+				{
+					Line 4 "Allow file transfer command (Web (HTML5) and Chrome clients)`t: " $VDIHost.AllowFileTransfer.ToString()
+				}
 				Line 5 "Configure File Transfer"
 				Line 6 "Direction`t`t`t: " $VDIHostFileTransferMode
 				Line 6 "Location`t`t`t: " $VDIHostFileTransferLocation
 				Line 6 "Do not allow to change location : " $VDIHost.FileTransferLockLocation.ToString()
-				Line 4 "Enable drive redirection cache`t`t`t`t`t: " $VDIHost.EnableDriveRedirectionCache.ToString()
+				If(validobject $VDIHost EnableDriveRedirectionCache)
+				{
+					Line 4 "Enable drive redirection cache`t`t`t`t`t: " $VDIHost.EnableDriveRedirectionCache.ToString()
+				}
 				
 				Line 0 ""
 			}
@@ -13728,15 +13798,24 @@ Function OutputSite
 				$rowdata = @()
 				$columnHeaders = @("Allow Client URL/Mail Redirection",($Script:htmlsb),$VDIAllowClientURLMailRedirection,$htmlwhite)
 				$rowdata += @(,("     Replace registered application",($Script:htmlsb),$ReplaceRegisteredApplication,$htmlwhite))
-				$rowdata += @(,("     Support Windows Shell URL namespace objects",($Script:htmlsb),$VDIHost.SupportShellURLNamespaceObjects.ToString(),$htmlwhite))
+				If(validobject $VDIHost SupportShellURLNamespaceObjects)
+				{
+					$rowdata += @(,("     Support Windows Shell URL namespace objects",($Script:htmlsb),$VDIHost.SupportShellURLNamespaceObjects.ToString(),$htmlwhite))
+				}
 				$rowdata += @(,("Enable Drag and drop",($Script:htmlsb),$VDIAllowDragAndDrop,$htmlwhite))
 				$rowdata += @(,("     Directon",($Script:htmlsb),$VDIDragAndDrop,$htmlwhite))
-				$rowdata += @(,("Allow file transfer command (Web (HTML5) and Chrome clients)",($Script:htmlsb),$VDIHost.AllowFileTransfer.ToString(),$htmlwhite))
+				If(validobject $VDIHost AllowFileTransfer)
+				{
+					$rowdata += @(,("Allow file transfer command (Web (HTML5) and Chrome clients)",($Script:htmlsb),$VDIHost.AllowFileTransfer.ToString(),$htmlwhite))
+				}
 				$rowdata += @(,("     Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("          Direction",($Script:htmlsb),$VDIHostFileTransferMode,$htmlwhite))
 				$rowdata += @(,("          Location",($Script:htmlsb),$VDIHostFileTransferLocation,$htmlwhite))
 				$rowdata += @(,("          Do not allow to change location",($Script:htmlsb),$VDIHost.FileTransferLockLocation.ToString(),$htmlwhite))
-				$rowdata += @(,("Enable drive redirection cache",($Script:htmlsb),$VDIHost.EnableDriveRedirectionCache.ToString(),$htmlwhite))
+				If(validobject $VDIHost EnableDriveRedirectionCache)
+				{
+					$rowdata += @(,("Enable drive redirection cache",($Script:htmlsb),$VDIHost.EnableDriveRedirectionCache.ToString(),$htmlwhite))
+				}
 				
 
 				$msg = "Agent settings"
@@ -13760,15 +13839,29 @@ Function OutputSite
 				#Nothing
 			}
 			
-			Switch ($VDIHost.PrinterNameFormat)
+			If(validobject $VDIHost PrinterNameFormat)
 			{
-				"PrnFormat_PRN_CMP_SES"	{$VDIPrinterNameFormat = "Printername (from Computername) in Session no."; Break}
-				"PrnFormat_SES_CMP_PRN"	{$VDIPrinterNameFormat = "Session no. (Computername from) Printername"; Break}
-				"PrnFormat_PRN_REDSES"	{$VDIPrinterNameFormat = "Printername (redirected Session no.)"; Break}
-				Default					{$VDIPrinterNameFormat = "Unable to determine RDP Printer Name Format: $($VDIHost.PrinterNameFormat)"; Break}
+				Switch ($VDIHost.PrinterNameFormat)
+				{
+					"PrnFormat_PRN_CMP_SES"	{$VDIPrinterNameFormat = "Printername (from Computername) in Session no."; Break}
+					"PrnFormat_SES_CMP_PRN"	{$VDIPrinterNameFormat = "Session no. (Computername from) Printername"; Break}
+					"PrnFormat_PRN_REDSES"	{$VDIPrinterNameFormat = "Printername (redirected Session no.)"; Break}
+					Default					{$VDIPrinterNameFormat = "Unable to determine RDP Printer Name Format: $($VDIHost.PrinterNameFormat)"; Break}
+				}
+			}
+			Else
+			{
+				$VDIPrinterNameFormat = ""
 			}
 			
-			$VDIRemoveSessionNumberFromPrinter = $VDIHost.RemoveSessionNumberFromPrinterName.ToString()
+			If(validobject $VDIHost RemoveSessionNumberFromPrinterName)
+			{
+				$VDIRemoveSessionNumberFromPrinter = $VDIHost.RemoveSessionNumberFromPrinterName.ToString()
+			}
+			Else
+			{
+				$VDIRemoveSessionNumberFromPrinter = ""
+			}
 
 			If($MSWord -or $PDF)
 			{
@@ -17688,494 +17781,597 @@ Function OutputSite
 	#Enrollment Servers - not in PoSH
 	
 	#HALB
-	If([version]$Script:RASVersion -ge [version]"18.3")
-	{
-		$HALBs = Get-RASHALB -Siteid $Site.Id -EA 0 4> $Null 
+	$HALBs = Get-RASHALB -Siteid $Site.Id -EA 0 4> $Null 
 
-		If(!$?)
+	If(!$?)
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve HALBs for Site $($Site.Name)`
+		"
+		If($MSWord -or $PDF)
 		{
-			Write-Warning "
-			`n
-			Unable to retrieve HALBs for Site $($Site.Name)`
-			"
-			If($MSWord -or $PDF)
-			{
-				WriteWordLine 0 0 "Unable to retrieve HALBs for Site $($Site.Name)"
-			}
-			If($Text)
-			{
-				Line 0 "Unable to retrieve HALBs for Site $($Site.Name)"
-			}
-			If($HTML)
-			{
-				WriteHTMLLine 0 0 "Unable to retrieve HALBs for Site $($Site.Name)"
-			}
+			WriteWordLine 0 0 "Unable to retrieve HALBs for Site $($Site.Name)"
 		}
-		ElseIf($? -and $Null -eq $HALBs)
+		If($Text)
 		{
-			Write-Host "
-		No HALBs retrieved for Site $($Site.Name).`
-			" -ForegroundColor White
+			Line 0 "Unable to retrieve HALBs for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve HALBs for Site $($Site.Name)"
+		}
+	}
+	ElseIf($? -and $Null -eq $HALBs)
+	{
+		Write-Host "
+	No HALBs retrieved for Site $($Site.Name).`
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No HALBs retrieved for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "No HALBs retrieved for Site $($Site.Name)"
+			Line 0 ""
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No HALBs retrieved for Site $($Site.Name)"
+		}
+	}
+	Else
+	{
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 2 0 "HALB"
+		}
+		If($Text)
+		{
+			Line 1 "HALB"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 2 0 "HALB"
+		}
+
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput HALB"
+		ForEach($HALB in $HALBs)
+		{
+			$HALBStatusResult = Get-RASHALBStatus -Name $HALB.Name -EA 0 4> $Null 
+			
+			If($? -and $Null -ne $HALBStatusResult)
+			{
+				$HALBStatus = GetRASStatus $HALBStatusResult.AgentState
+			}
+			Else
+			{
+				$HALBStatus = "Unable to determine HALB status"
+			}
+			
 			If($MSWord -or $PDF)
 			{
-				WriteWordLine 0 0 "No HALBs retrieved for Site $($Site.Name)"
+				WriteWordLine 3 0 "HALB $($HALB.Name)"
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Name"; Value = $HALB.Name; }) > $Null
+				$ScriptInformation.Add(@{Data = "IPv4"; Value = $HALB.VirtualIPV4; }) > $Null
+				$ScriptInformation.Add(@{Data = "IPv6"; Value = $HALB.VirtualIPV6; }) > $Null
+				$ScriptInformation.Add(@{Data = "Status"; Value = $HALBStatus; }) > $Null
+				$ScriptInformation.Add(@{Data = "Description"; Value = $HALB.Description; }) > $Null
+				$ScriptInformation.Add(@{Data = "Public Address"; Value = $HALB.PublicAddress; }) > $Null
+				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $HALB.AdminLastMod; }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = $HALB.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created by"; Value = $HALB.AdminCreate; }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = $HALB.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "ID"; Value = $HALB.Id.ToString(); }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
 			}
 			If($Text)
 			{
-				Line 0 "No HALBs retrieved for Site $($Site.Name)"
+				Line 2 "HALB $($HALB.Name)"
+				Line 3 "Name`t`t`t: " $HALB.Name
+				Line 3 "IPv4`t`t`t: " $HALB.VirtualIPV4
+				Line 3 "IPv6`t`t`t: " $HALB.VirtualIPV6
+				Line 3 "Status`t`t`t: " $HALBStatus
+				Line 3 "Description`t`t: " $HALB.Description
+				Line 3 "Public Address`t`t: " $HALB.PublicAddress
+				Line 3 "Last modification by`t: " $HALB.AdminLastMod
+				Line 3 "Modified on`t`t: " $HALB.TimeLastMod.ToString()
+				Line 3 "Created by`t`t: " $HALB.AdminCreate
+				Line 3 "Created on`t`t: " $HALB.TimeCreate.ToString()
+				Line 3 "ID`t`t`t: " $HALB.Id.ToString()
 				Line 0 ""
 			}
 			If($HTML)
 			{
-				WriteHTMLLine 0 0 "No HALBs retrieved for Site $($Site.Name)"
+				WriteHTMLLine 3 0 "HALB $($HALB.Name)"
+				$rowdata = @()
+				$columnHeaders = @("Name",($Script:htmlsb),$HALB.Name,$htmlwhite)
+				$rowdata += @(,("IPv4",($Script:htmlsb),$HALB.VirtualIPV4,$htmlwhite))
+				$rowdata += @(,("IPv6",($Script:htmlsb),$HALB.VirtualIPV6,$htmlwhite))
+				$rowdata += @(,("Status",($Script:htmlsb),$HALBStatus,$htmlwhite))
+				$rowdata += @(,("Description",($Script:htmlsb),$HALB.Description,$htmlwhite))
+				$rowdata += @(,("Public Address",($Script:htmlsb),$HALB.PublicAddress,$htmlwhite))
+				$rowdata += @(,("Last modification by",($Script:htmlsb), $HALB.AdminLastMod,$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), $HALB.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Created by",($Script:htmlsb), $HALB.AdminCreate,$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), $HALB.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("ID",($Script:htmlsb),$HALB.Id.ToString(),$htmlwhite))
+
+				$msg = ""
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
 			}
-		}
-		Else
-		{
+
 			If($MSWord -or $PDF)
 			{
-				WriteWordLine 2 0 "HALB"
+				WriteWordLine 4 0 "General"
 			}
 			If($Text)
 			{
-				Line 1 "HALB"
+				Line 2 "General"
 			}
 			If($HTML)
 			{
-				WriteHTMLLine 2 0 "HALB"
+				#Nothing
+			}
+			
+			Switch($HALB.IPVersion)
+			{
+				"Version4"		{$HALBIPVersion = "Version 4"; Break}
+				"Version6"		{$HALBIPVersion = "Version 6"; Break}
+				"BothVersions"	{$HALBIPVersion = "Both version 4 & 6"; Break}
+				Default			{$HALBIPVersion = "Unable to determine IP version: $($HALB.IPVersion)"; Break}
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Enable HALB"; Value = $HALB.EnableHALBInstance.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Name"; Value = $HALB.Name; }) > $Null
+				$ScriptInformation.Add(@{Data = "Description"; Value = $HALB.Description; }) > $Null
+				$ScriptInformation.Add(@{Data = "Public address"; Value = $HALB.PublicAddress; }) > $Null
+				$ScriptInformation.Add(@{Data = "Virtual IP"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Use IP version"; Value = $HALBIPVersion; }) > $Null
+				$ScriptInformation.Add(@{Data = "     IPv4"; Value = $HALB.VirtualIPV4; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Subnet Mask"; Value = $HALB.SubNetMask; }) > $Null
+				$ScriptInformation.Add(@{Data = "     IPv6"; Value = $HALB.VirtualIPV6; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Prefix"; Value = $HALB.PrefixIPV6; }) > $Null
+				$ScriptInformation.Add(@{Data = "Settings"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     LB Gateway Payload"; Value = $HALB.EnableGWPayload.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     LB SSL Payload"; Value = $HALB.EnableSSLPayload.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     Device Management"; Value = $HALB.EnableDeviceManagement.ToString(); }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Enable HALB`t`t`t: " $HALB.EnableHALBInstance.ToString()
+				Line 3 "Name`t`t`t`t: " $HALB.Name
+				Line 3 "Description`t`t`t: " $HALB.Description
+				Line 3 "Public address`t`t`t: " $HALB.PublicAddress
+				Line 3 "Virtual IP"
+				Line 4 "Use IP version`t`t: " $HALBIPVersion
+				Line 4 "IPv4`t`t`t: " $HALB.VirtualIPV4
+				Line 4 "Subnet Mask`t`t: " $HALB.SubNetMask
+				Line 4 "IPv6`t`t`t: " $HALB.VirtualIPV6
+				Line 4 "Prefix`t`t`t: " $HALB.PrefixIPV6
+				Line 3 "Settings"
+				Line 4 "LB Gateway Payload`t: " $HALB.EnableGWPayload.ToString()
+				Line 4 "LB SSL Payload`t`t: " $HALB.EnableSSLPayload.ToString()
+				Line 4 "Device Management`t: " $HALB.EnableDeviceManagement.ToString()
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Enable HALB",($Script:htmlsb),$HALB.EnableHALBInstance.ToString(),$htmlwhite)
+				$rowdata += @(,("Name",($Script:htmlsb),$HALB.Name,$htmlwhite))
+				$rowdata += @(,("Description",($Script:htmlsb),$HALB.Description,$htmlwhite))
+				$rowdata += @(,("Public address",($Script:htmlsb),$HALB.PublicAddress,$htmlwhite))
+				$rowdata += @(,("Virtual IP",($Script:htmlsb), "",$htmlwhite))
+				$rowdata += @(,("     Use IP version",($Script:htmlsb), $HALBIPVersion,$htmlwhite))
+				$rowdata += @(,("     IPv4",($Script:htmlsb), $HALB.VirtualIPV4,$htmlwhite))
+				$rowdata += @(,("     Subnet Mask",($Script:htmlsb), $HALB.SubNetMask,$htmlwhite))
+				$rowdata += @(,("     IPv6",($Script:htmlsb), $HALB.VirtualIPV6,$htmlwhite))
+				$rowdata += @(,("     Prefix",($Script:htmlsb), $HALB.PrefixIPV6,$htmlwhite))
+				$rowdata += @(,("Settings",($Script:htmlsb), "",$htmlwhite))
+				$rowdata += @(,("     LB Gateway Payload",($Script:htmlsb), $HALB.EnableGWPayload.ToString(),$htmlwhite))
+				$rowdata += @(,("     LB SSL Payload",($Script:htmlsb), $HALB.EnableSSLPayload.ToString(),$htmlwhite))
+				$rowdata += @(,("     Device Management",($Script:htmlsb), $HALB.EnableDeviceManagement.ToString(),$htmlwhite))
+
+				$msg = "General"
+				$columnWidths = @("200","400")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
 			}
 
-			Write-Verbose "$(Get-Date -Format G): `t`tOutput HALB"
-			ForEach($HALB in $HALBs)
+			If($MSWord -or $PDF)
 			{
-				$HALBStatusResult = Get-RASHALBStatus -Name $HALB.Name -EA 0 4> $Null 
+				WriteWordLine 4 0 "LB gateway payload"
+			}
+			If($Text)
+			{
+				Line 2 "LB gateway payload"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 4 0 "LB gateway payload"
+			}
+			
+			$HALBGatewayPort = $HALB.GatewayConfig.Port.ToString()
+			$HALBGateways    = $HALB.GatewayConfig.Gateways
+			
+			#First, get the port
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Port"; Value = $HALBGatewayPort; }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Port: " $HALBGatewayPort
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Port",($Script:htmlsb),$HALBGatewayPort,$htmlwhite)
+				#$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+
+				$msg = ""
+				$columnWidths = @("200","400")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			#second, process the gateways
+			#do output headers
+			If($MSWord -or $PDF)
+			{
+				[System.Collections.Hashtable[]] $GatewaysWordTable = @();
+			}
+			If($Text)
+			{
+				Line 3 "Gateways                                                 Status                                  "
+				Line 3 "================================================================================================="
+				#       abcdefghijklmno.abcdefghijklmno.local (999.999.999.999)SS1234567890123456789012345678901234567890
+				#       1234567890123456789012345678901234567890123456789012345
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+			}
+			
+			#process the gateways data
+			ForEach($GatewayItem in $HALBGateways)
+			{
+				$ip = $GatewayItem.Keys
+				$Results = [System.Net.Dns]::gethostentry($ip)
+				$hostname = $Results.HostName
+				$TempGW = Get-RASGatewayStatus -Server $hostname -EA 0 4> $Null
+				$HALBGWStatus = GetRASStatus $TempGW.AgentState
 				
-				If($? -and $Null -ne $HALBStatusResult)
+				If($MSWord -or $PDF)
 				{
-					$HALBStatus = GetRASStatus $HALBStatusResult.AgentState
+					$GatewaysWordTableRowHash = @{
+						Gateway       = "$hostname ($ip)";
+						GatewayStatus = $HALBGWStatus;
+					}
+					$GatewaysWordTable += $GatewaysWordTableRowHash
+				}
+				If($Text)
+				{
+					Line 3 ( "{0,-55}  {1,-40}" -f "$hostname ($ip)", $HALBGWStatus)
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					"$hostname ($ip)",$htmlwhite,
+					$HALBGWStatus,$htmlwhite))
+				}
+			}
+			
+			#output the Word/PDF and HTML tables
+			If($MSWord -or $PDF)
+			{
+				If($GatewaysWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $GatewaysWordTable `
+					-Columns  Gateway,GatewayStatus `
+					-Headers  "Gateways","Status"`
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 250;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+			}
+			If($Text)
+			{
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$columnHeaders = @(
+				"Gateways",($Script:htmlsb),
+				"Status",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("200","400")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "600"
+				WriteHTMLLine 0 0 ""
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "LB SSL payload"
+			}
+			If($Text)
+			{
+				Line 2 "LB SSL payload"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			$HALBSSLGatewayPort = $HALB.SSLConfig.GatewayConfig.Port.ToString()
+			$HALBSSLGateways    = $HALB.SSLConfig.GatewayConfig.Gateways
+			
+			Switch($HALB.SSLConfig.SSLMode)
+			{
+				"SSLOffloading"		{$HALBSSLMode = "SSL Offloading"; Break}
+				"SSLPassthrough"	{$HALBSSLMode = "Passthrough"; Break}
+				Default				{$HALBSSLMode = "Unable to etermine SSL Mode: $($HALB.SSLConfig.SSLMode)"; Break}
+			}
+			
+			If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
+			{
+				Switch($HALB.SSLConfig.MinSSLVersion)
+				{
+					"SSLv2"		{$HALBSSLAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
+					"SSLv3"		{$HALBSSLAcceptedSSLVersions = "SSL v3 - TLS v1.2"; Break}
+					"TLSv1"		{$HALBSSLAcceptedSSLVersions = "TLS v1.0 - TLS v1.2"; Break}
+					"TLSv1_1"	{$HALBSSLAcceptedSSLVersions = "TLS v1.1 - TLS v1.2"; Break}
+					"TLSv1_2"	{$HALBSSLAcceptedSSLVersions = "TLS v1.2 only (Strong)"; Break}
+					Default		{$HALBSSLAcceptedSSLVersions = "Unable to determine Minimum SSL version: $($HALB.SSLConfig.MinSSLVersion)"; Break}
+				}
+				
+				If($HALB.SSLConfig.SSLCipherStrength -eq "Custom")
+				{
+					$HALBSSLCipherStrength = "Custom"
+					$HALBSSLCipher         = $HALB.SSLConfig.SSLCustomCipher
 				}
 				Else
 				{
-					$HALBStatus = "Unable to determine HALB status"
+					$HALBSSLCipherStrength = $HALB.SSLConfig.SSLCipherStrength
+					Switch($HALB.SSLConfig.SSLCipherStrength)
+					{
+						"Low"		{$HALBSSLCipher	= "All:!aNULL:!eNULL"; Break}
+						"Medium"	{$HALBSSLCipher	= "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM"; Break}
+						"High"		{$HALBSSLCipher	= "EECDH:!SSLv2:!aNULL:!RC4:!ADH:!eNULL:!LOW:!MEDIUM:!EXP:+HIGH"; Break}
+						Default		{$HALBSSLCipher = "Unable to determine SSL cipher strength: $($HALB.SSLConfig.SSLCipherStrength)"; Break}
+					}
 				}
-				
-				If($MSWord -or $PDF)
+				$HALBSSLUseServerPreference = $HALB.SSLConfig.SSLCipherPreference.ToString()
+				If($HALB.SSLConfig.CertID -eq 0)
 				{
-					WriteWordLine 3 0 "HALB $($HALB.Name)"
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Name"; Value = $HALB.Name; }) > $Null
-					$ScriptInformation.Add(@{Data = "IPv4"; Value = $HALB.VirtualIPV4; }) > $Null
-					$ScriptInformation.Add(@{Data = "IPv6"; Value = $HALB.VirtualIPV6; }) > $Null
-					$ScriptInformation.Add(@{Data = "Status"; Value = $HALBStatus; }) > $Null
-					$ScriptInformation.Add(@{Data = "Description"; Value = $HALB.Description; }) > $Null
-					$ScriptInformation.Add(@{Data = "Public Address"; Value = $HALB.PublicAddress; }) > $Null
-					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $HALB.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $HALB.TimeLastMod.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Created by"; Value = $HALB.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $HALB.TimeCreate.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "ID"; Value = $HALB.Id.ToString(); }) > $Null
-
-					$Table = AddWordTable -Hashtable $ScriptInformation `
-					-Columns Data,Value `
-					-List `
-					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitFixed;
-
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
-
-					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-					FindWordDocumentEnd
-					$Table = $Null
-					WriteWordLine 0 0 ""
+					$HALBSSLCertificates = "All matching usage"
 				}
-				If($Text)
+				Else
 				{
-					Line 2 "HALB $($HALB.Name)"
-					Line 3 "Name`t`t`t: " $HALB.Name
-					Line 3 "IPv4`t`t`t: " $HALB.VirtualIPV4
-					Line 3 "IPv6`t`t`t: " $HALB.VirtualIPV6
-					Line 3 "Status`t`t`t: " $HALBStatus
-					Line 3 "Description`t`t: " $HALB.Description
-					Line 3 "Public Address`t`t: " $HALB.PublicAddress
-					Line 3 "Last modification by`t: " $HALB.AdminLastMod
-					Line 3 "Modified on`t`t: " $HALB.TimeLastMod.ToString()
-					Line 3 "Created by`t`t: " $HALB.AdminCreate
-					Line 3 "Created on`t`t: " $HALB.TimeCreate.ToString()
-					Line 3 "ID`t`t`t: " $HALB.Id.ToString()
-					Line 0 ""
-				}
-				If($HTML)
-				{
-					WriteHTMLLine 3 0 "HALB $($HALB.Name)"
-					$rowdata = @()
-					$columnHeaders = @("Name",($Script:htmlsb),$HALB.Name,$htmlwhite)
-					$rowdata += @(,("IPv4",($Script:htmlsb),$HALB.VirtualIPV4,$htmlwhite))
-					$rowdata += @(,("IPv6",($Script:htmlsb),$HALB.VirtualIPV6,$htmlwhite))
-					$rowdata += @(,("Status",($Script:htmlsb),$HALBStatus,$htmlwhite))
-					$rowdata += @(,("Description",($Script:htmlsb),$HALB.Description,$htmlwhite))
-					$rowdata += @(,("Public Address",($Script:htmlsb),$HALB.PublicAddress,$htmlwhite))
-					$rowdata += @(,("Last modification by",($Script:htmlsb), $HALB.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $HALB.TimeLastMod.ToString(),$htmlwhite))
-					$rowdata += @(,("Created by",($Script:htmlsb), $HALB.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $HALB.TimeCreate.ToString(),$htmlwhite))
-					$rowdata += @(,("ID",($Script:htmlsb),$HALB.Id.ToString(),$htmlwhite))
-
-					$msg = ""
-					$columnWidths = @("200","275")
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-					WriteHTMLLine 0 0 ""
-				}
-
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 4 0 "General"
-				}
-				If($Text)
-				{
-					Line 2 "General"
-				}
-				If($HTML)
-				{
-					#Nothing
-				}
-				
-				Switch($HALB.IPVersion)
-				{
-					"Version4"		{$HALBIPVersion = "Version 4"; Break}
-					"Version6"		{$HALBIPVersion = "Version 6"; Break}
-					"BothVersions"	{$HALBIPVersion = "Both version 4 & 6"; Break}
-					Default			{$HALBIPVersion = "Unable to determine IP version: $($HALB.IPVersion)"; Break}
-				}
-				
-				If($MSWord -or $PDF)
-				{
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Enable HALB"; Value = $HALB.EnableHALBInstance.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Name"; Value = $HALB.Name; }) > $Null
-					$ScriptInformation.Add(@{Data = "Description"; Value = $HALB.Description; }) > $Null
-					$ScriptInformation.Add(@{Data = "Public address"; Value = $HALB.PublicAddress; }) > $Null
-					$ScriptInformation.Add(@{Data = "Virtual IP"; Value = ""; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Use IP version"; Value = $HALBIPVersion; }) > $Null
-					$ScriptInformation.Add(@{Data = "     IPv4"; Value = $HALB.VirtualIPV4; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Subnet Mask"; Value = $HALB.SubNetMask; }) > $Null
-					$ScriptInformation.Add(@{Data = "     IPv6"; Value = $HALB.VirtualIPV6; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Prefix"; Value = $HALB.PrefixIPV6; }) > $Null
-					$ScriptInformation.Add(@{Data = "Settings"; Value = ""; }) > $Null
-					$ScriptInformation.Add(@{Data = "     LB Gateway Payload"; Value = $HALB.EnableGWPayload.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "     LB SSL Payload"; Value = $HALB.EnableSSLPayload.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "     Device Management"; Value = $HALB.EnableDeviceManagement.ToString(); }) > $Null
-
-					$Table = AddWordTable -Hashtable $ScriptInformation `
-					-Columns Data,Value `
-					-List `
-					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitFixed;
-
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
-
-					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-					FindWordDocumentEnd
-					$Table = $Null
-					WriteWordLine 0 0 ""
-				}
-				If($Text)
-				{
-					Line 3 "Enable HALB`t`t`t: " $HALB.EnableHALBInstance.ToString()
-					Line 3 "Name`t`t`t`t: " $HALB.Name
-					Line 3 "Description`t`t`t: " $HALB.Description
-					Line 3 "Public address`t`t`t: " $HALB.PublicAddress
-					Line 3 "Virtual IP"
-					Line 4 "Use IP version`t`t: " $HALBIPVersion
-					Line 4 "IPv4`t`t`t: " $HALB.VirtualIPV4
-					Line 4 "Subnet Mask`t`t: " $HALB.SubNetMask
-					Line 4 "IPv6`t`t`t: " $HALB.VirtualIPV6
-					Line 4 "Prefix`t`t`t: " $HALB.PrefixIPV6
-					Line 3 "Settings"
-					Line 4 "LB Gateway Payload`t: " $HALB.EnableGWPayload.ToString()
-					Line 4 "LB SSL Payload`t`t: " $HALB.EnableSSLPayload.ToString()
-					Line 4 "Device Management`t: " $HALB.EnableDeviceManagement.ToString()
-					Line 0 ""
-				}
-				If($HTML)
-				{
-					$rowdata = @()
-					$columnHeaders = @("Enable HALB",($Script:htmlsb),$HALB.EnableHALBInstance.ToString(),$htmlwhite)
-					$rowdata += @(,("Name",($Script:htmlsb),$HALB.Name,$htmlwhite))
-					$rowdata += @(,("Description",($Script:htmlsb),$HALB.Description,$htmlwhite))
-					$rowdata += @(,("Public address",($Script:htmlsb),$HALB.PublicAddress,$htmlwhite))
-					$rowdata += @(,("Virtual IP",($Script:htmlsb), "",$htmlwhite))
-					$rowdata += @(,("     Use IP version",($Script:htmlsb), $HALBIPVersion,$htmlwhite))
-					$rowdata += @(,("     IPv4",($Script:htmlsb), $HALB.VirtualIPV4,$htmlwhite))
-					$rowdata += @(,("     Subnet Mask",($Script:htmlsb), $HALB.SubNetMask,$htmlwhite))
-					$rowdata += @(,("     IPv6",($Script:htmlsb), $HALB.VirtualIPV6,$htmlwhite))
-					$rowdata += @(,("     Prefix",($Script:htmlsb), $HALB.PrefixIPV6,$htmlwhite))
-					$rowdata += @(,("Settings",($Script:htmlsb), "",$htmlwhite))
-					$rowdata += @(,("     LB Gateway Payload",($Script:htmlsb), $HALB.EnableGWPayload.ToString(),$htmlwhite))
-					$rowdata += @(,("     LB SSL Payload",($Script:htmlsb), $HALB.EnableSSLPayload.ToString(),$htmlwhite))
-					$rowdata += @(,("     Device Management",($Script:htmlsb), $HALB.EnableDeviceManagement.ToString(),$htmlwhite))
-
-					$msg = "General"
-					$columnWidths = @("200","400")
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-					WriteHTMLLine 0 0 ""
-				}
-
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 4 0 "LB gateway payload"
-				}
-				If($Text)
-				{
-					Line 2 "LB gateway payload"
-				}
-				If($HTML)
-				{
-					WriteHTMLLine 4 0 "LB gateway payload"
-				}
-				
-				$HALBGatewayPort = $HALB.GatewayConfig.Port.ToString()
-				$HALBGateways    = $HALB.GatewayConfig.Gateways
-				
-				#First, get the port
-				If($MSWord -or $PDF)
-				{
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Port"; Value = $HALBGatewayPort; }) > $Null
-
-					$Table = AddWordTable -Hashtable $ScriptInformation `
-					-Columns Data,Value `
-					-List `
-					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitFixed;
-
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
-
-					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-					FindWordDocumentEnd
-					$Table = $Null
-					WriteWordLine 0 0 ""
-				}
-				If($Text)
-				{
-					Line 3 "Port: " $HALBGatewayPort
-					Line 0 ""
-				}
-				If($HTML)
-				{
-					$rowdata = @()
-					$columnHeaders = @("Port",($Script:htmlsb),$HALBGatewayPort,$htmlwhite)
-					#$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
-
-					$msg = ""
-					$columnWidths = @("200","400")
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-					WriteHTMLLine 0 0 ""
-				}
-
-				#second, process the gateways
-				#do output headers
-				If($MSWord -or $PDF)
-				{
-					[System.Collections.Hashtable[]] $GatewaysWordTable = @();
-				}
-				If($Text)
-				{
-					Line 3 "Gateways                                                 Status                                  "
-					Line 3 "================================================================================================="
-					#       abcdefghijklmno.abcdefghijklmno.local (999.999.999.999)SS1234567890123456789012345678901234567890
-					#       1234567890123456789012345678901234567890123456789012345
-				}
-				If($HTML)
-				{
-					$rowdata = @()
-				}
-				
-				#process the gateways data
-				ForEach($GatewayItem in $HALBGateways)
-				{
-					$ip = $GatewayItem.Keys
-					$Results = [System.Net.Dns]::gethostentry($ip)
-					$hostname = $Results.HostName
-					$TempGW = Get-RASGatewayStatus -Server $hostname -EA 0 4> $Null
-					$HALBGWStatus = GetRASStatus $TempGW.AgentState
+					$Results = Get-RASCertificate -Id $HALB.SSLConfig.CertID -EA 0 4> $Null
 					
-					If($MSWord -or $PDF)
+					If($? -and $Null -ne $Results)
 					{
-						$GatewaysWordTableRowHash = @{
-							Gateway       = "$hostname ($ip)";
-							GatewayStatus = $HALBGWStatus;
-						}
-						$GatewaysWordTable += $GatewaysWordTableRowHash
+						$HALBSSLCertificates = $Results.Name
 					}
-					If($Text)
+					Else
 					{
-						Line 3 ( "{0,-55}  {1,-40}" -f "$hostname ($ip)", $HALBGWStatus)
-					}
-					If($HTML)
-					{
-						$rowdata += @(,(
-						"$hostname ($ip)",$htmlwhite,
-						$HALBGWStatus,$htmlwhite))
+						$HALBSSLCertificates = "Unable to find certificate with an ID of $($HALB.SSLConfig.CertID)"
 					}
 				}
-				
-				#output the Word/PDF and HTML tables
-				If($MSWord -or $PDF)
-				{
-					If($GatewaysWordTable.Count -gt 0)
-					{
-						$Table = AddWordTable -Hashtable $GatewaysWordTable `
-						-Columns  Gateway,GatewayStatus `
-						-Headers  "Gateways","Status"`
-						-Format $wdTableGrid `
-						-AutoFit $wdAutoFitFixed;
-
-						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-						$Table.Columns.Item(1).Width = 200;
-						$Table.Columns.Item(2).Width = 250;
-
-						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-						FindWordDocumentEnd
-						$Table = $Null
-						WriteWordLine 0 0 ""
-					}
-				}
-				If($Text)
-				{
-					Line 0 ""
-				}
-				If($HTML)
-				{
-					$columnHeaders = @(
-					"Gateways",($Script:htmlsb),
-					"Status",($Script:htmlsb))
-
-					$msg = ""
-					$columnWidths = @("200","400")
-					FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "600"
-					WriteHTMLLine 0 0 ""
-				}
-				
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 4 0 "LB SSL payload"
-				}
-				If($Text)
-				{
-					Line 2 "LB SSL payload"
-				}
-				If($HTML)
-				{
-					#Nothing
-				}
-				
-				$HALBSSLGatewayPort = $HALB.SSLConfig.GatewayConfig.Port.ToString()
-				$HALBSSLGateways    = $HALB.SSLConfig.GatewayConfig.Gateways
-				
-				Switch($HALB.SSLConfig.SSLMode)
-				{
-					"SSLOffloading"		{$HALBSSLMode = "SSL Offloading"; Break}
-					"SSLPassthrough"	{$HALBSSLMode = "Passthrough"; Break}
-					Default				{$HALBSSLMode = "Unable to etermine SSL Mode: $($HALB.SSLConfig.SSLMode)"; Break}
-				}
-				
+			}
+			Else
+			{
+				$HALBSSLAcceptedSSLVersions = ""
+				$HALBSSLCipherStrength      = ""
+				$HALBSSLCipher              = ""
+				$HALBSSLUseServerPreference = ""
+				$HALBSSLCertificates        = ""
+			}
+			
+			#First, get the port
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Port"; Value = $HALBSSLGatewayPort; }) > $Null
+				$ScriptInformation.Add(@{Data = "Mode"; Value = $HALBSSLMode; }) > $Null
 				If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
 				{
-					Switch($HALB.SSLConfig.MinSSLVersion)
-					{
-						"SSLv2"		{$HALBSSLAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
-						"SSLv3"		{$HALBSSLAcceptedSSLVersions = "SSL v3 - TLS v1.2"; Break}
-						"TLSv1"		{$HALBSSLAcceptedSSLVersions = "TLS v1.0 - TLS v1.2"; Break}
-						"TLSv1_1"	{$HALBSSLAcceptedSSLVersions = "TLS v1.1 - TLS v1.2"; Break}
-						"TLSv1_2"	{$HALBSSLAcceptedSSLVersions = "TLS v1.2 only (Strong)"; Break}
-						Default		{$HALBSSLAcceptedSSLVersions = "Unable to determine Minimum SSL version: $($HALB.SSLConfig.MinSSLVersion)"; Break}
-					}
-					
-					If($HALB.SSLConfig.SSLCipherStrength -eq "Custom")
-					{
-						$HALBSSLCipherStrength = "Custom"
-						$HALBSSLCipher         = $HALB.SSLConfig.SSLCustomCipher
-					}
-					Else
-					{
-						$HALBSSLCipherStrength = $HALB.SSLConfig.SSLCipherStrength
-						Switch($HALB.SSLConfig.SSLCipherStrength)
-						{
-							"Low"		{$HALBSSLCipher	= "All:!aNULL:!eNULL"; Break}
-							"Medium"	{$HALBSSLCipher	= "ALL:!aNULL:!ADH:!eNULL:!LOW:!EXP:RC4+RSA:+HIGH:+MEDIUM"; Break}
-							"High"		{$HALBSSLCipher	= "EECDH:!SSLv2:!aNULL:!RC4:!ADH:!eNULL:!LOW:!MEDIUM:!EXP:+HIGH"; Break}
-							Default		{$HALBSSLCipher = "Unable to determine SSL cipher strength: $($HALB.SSLConfig.SSLCipherStrength)"; Break}
-						}
-					}
-					$HALBSSLUseServerPreference = $HALB.SSLConfig.SSLCipherPreference.ToString()
-					If($HALB.SSLConfig.CertID -eq 0)
-					{
-						$HALBSSLCertificates = "All matching usage"
-					}
-					Else
-					{
-						$Results = Get-RASCertificate -Id $HALB.SSLConfig.CertID -EA 0 4> $Null
-						
-						If($? -and $Null -ne $Results)
-						{
-							$HALBSSLCertificates = $Results.Name
-						}
-						Else
-						{
-							$HALBSSLCertificates = "Unable to find certificate with an ID of $($HALB.SSLConfig.CertID)"
-						}
-					}
+					$ScriptInformation.Add(@{Data = "Security"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Accepted SSL Versions"; Value = $HALBSSLAcceptedSSLVersions; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Cipher Strength"; Value = $HALBSSLCipherStrength; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Cipher"; Value = $HALBSSLCipher; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Use ciphers according to server preference"; Value = $HALBSSLUseServerPreference; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Certificates"; Value = $HALBSSLCertificates; }) > $Null
 				}
-				Else
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Port: " $HALBSSLGatewayPort
+				Line 3 "Mode: " $HALBSSLMode
+				If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
 				{
-					$HALBSSLAcceptedSSLVersions = ""
-					$HALBSSLCipherStrength      = ""
-					$HALBSSLCipher              = ""
-					$HALBSSLUseServerPreference = ""
-					$HALBSSLCertificates        = ""
+					Line 3 "Security"
+					Line 4 "Accepted SSL Versions`t`t`t`t: " $HALBSSLAcceptedSSLVersions
+					Line 4 "Cipher Strength`t`t`t`t`t: " $HALBSSLCipherStrength
+					Line 4 "Cipher`t`t`t`t`t`t: " $HALBSSLCipher
+					Line 4 "Use ciphers according to server preference`t: " $HALBSSLUseServerPreference
+					Line 4 "Certificates`t`t`t`t`t: " $HALBSSLCertificates
 				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Port",($Script:htmlsb),$HALBSSLGatewayPort,$htmlwhite)
+				$rowdata += @(,("Mode",($Script:htmlsb),$HALBSSLMode,$htmlwhite))
+				If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
+				{
+					$rowdata += @(,( "Security",($Script:htmlsb), "",$htmlwhite))
+					$rowdata += @(,( "     Accepted SSL Versions",($Script:htmlsb), $HALBSSLAcceptedSSLVersions,$htmlwhite))
+					$rowdata += @(,( "     Cipher Strength",($Script:htmlsb), $HALBSSLCipherStrength,$htmlwhite))
+					$rowdata += @(,( "     Cipher",($Script:htmlsb), $HALBSSLCipher,$htmlwhite))
+					$rowdata += @(,( "     Use ciphers according to server preference",($Script:htmlsb), $HALBSSLUseServerPreference,$htmlwhite))
+					$rowdata += @(,( "     Certificates",($Script:htmlsb), $HALBSSLCertificates,$htmlwhite))
+				}
+
+				$msg = ""
+				$columnWidths = @("200","400")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			#second, process the gateways
+			#do output headers
+			If($MSWord -or $PDF)
+			{
+				[System.Collections.Hashtable[]] $GatewaysWordTable = @();
+			}
+			If($Text)
+			{
+				Line 3 "Gateways                                                 Status                                  "
+				Line 3 "================================================================================================="
+				#       abcdefghijklmno.abcdefghijklmno.local (999.999.999.999)SS1234567890123456789012345678901234567890
+				#       1234567890123456789012345678901234567890123456789012345
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+			}
+			
+			#process the gateways data
+			ForEach($GatewayItem in $HALBSSLGateways)
+			{
+				$ip = $GatewayItem.Keys
+				$Results = [System.Net.Dns]::gethostentry($ip)
+				$hostname = $Results.HostName
+				$TempGW = Get-RASGatewayStatus -Server $hostname -EA 0 4> $Null
+				$HALBGWStatus = GetRASStatus $TempGW.AgentState
 				
-				#First, get the port
 				If($MSWord -or $PDF)
 				{
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Port"; Value = $HALBSSLGatewayPort; }) > $Null
-					$ScriptInformation.Add(@{Data = "Mode"; Value = $HALBSSLMode; }) > $Null
-					If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
-					{
-						$ScriptInformation.Add(@{Data = "Security"; Value = ""; }) > $Null
-						$ScriptInformation.Add(@{Data = "     Accepted SSL Versions"; Value = $HALBSSLAcceptedSSLVersions; }) > $Null
-						$ScriptInformation.Add(@{Data = "     Cipher Strength"; Value = $HALBSSLCipherStrength; }) > $Null
-						$ScriptInformation.Add(@{Data = "     Cipher"; Value = $HALBSSLCipher; }) > $Null
-						$ScriptInformation.Add(@{Data = "     Use ciphers according to server preference"; Value = $HALBSSLUseServerPreference; }) > $Null
-						$ScriptInformation.Add(@{Data = "     Certificates"; Value = $HALBSSLCertificates; }) > $Null
+					$GatewaysWordTableRowHash = @{
+						Gateway       = "$hostname ($ip)";
+						GatewayStatus = $HALBGWStatus;
 					}
-
-					$Table = AddWordTable -Hashtable $ScriptInformation `
-					-Columns Data,Value `
-					-List `
+					$GatewaysWordTable += $GatewaysWordTableRowHash
+				}
+				If($Text)
+				{
+					Line 3 ( "{0,-55}  {1,-40}" -f "$hostname ($ip)", $HALBGWStatus)
+				}
+				If($HTML)
+				{
+					$rowdata += @(,(
+					"$hostname ($ip)",$htmlwhite,
+					$HALBGWStatus,$htmlwhite))
+				}
+			}
+			
+			#output the Word/PDF and HTML tables
+			If($MSWord -or $PDF)
+			{
+				If($GatewaysWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $GatewaysWordTable `
+					-Columns  Gateway,GatewayStatus `
+					-Headers  "Gateways","Status"`
 					-Format $wdTableGrid `
 					-AutoFit $wdAutoFitFixed;
 
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 					$Table.Columns.Item(1).Width = 200;
 					$Table.Columns.Item(2).Width = 250;
@@ -18186,54 +18382,121 @@ Function OutputSite
 					$Table = $Null
 					WriteWordLine 0 0 ""
 				}
+			}
+			If($Text)
+			{
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$columnHeaders = @(
+				"Gateways",($Script:htmlsb),
+				"Status",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("200","400")
+				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "600"
+				WriteHTMLLine 0 0 ""
+			}
+<#
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Device Manager"
+			}
+			If($Text)
+			{
+				Line 2 "Device Manager"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Port"; Value = ""; }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Port: "
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Port",($Script:htmlsb),"",$htmlwhite)
+				$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+
+				$msg = "Device Manager"
+				$columnWidths = @("200","400")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+#>
+
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Devices"
+			}
+			If($Text)
+			{
+				Line 2 "Devices"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			$HALBDevices = Get-RASHALBDevice -HALBName $HALB.Name -EA 0 4> $Null
+			
+			If((!$?) -or ($? -and $Null -eq $HALBDevices))
+			{
+				Write-Host "
+				No HALB Devices retrieved for HALB $($HALB.Name).`
+				" -ForegroundColor White
+				If($MSWord -or $PDF)
+				{
+					WriteWordLine 0 0 "No HALB Devices retrieved for HALB $($HALB.Name)"
+				}
 				If($Text)
 				{
-					Line 3 "Port: " $HALBSSLGatewayPort
-					Line 3 "Mode: " $HALBSSLMode
-					If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
-					{
-						Line 3 "Security"
-						Line 4 "Accepted SSL Versions`t`t`t`t: " $HALBSSLAcceptedSSLVersions
-						Line 4 "Cipher Strength`t`t`t`t`t: " $HALBSSLCipherStrength
-						Line 4 "Cipher`t`t`t`t`t`t: " $HALBSSLCipher
-						Line 4 "Use ciphers according to server preference`t: " $HALBSSLUseServerPreference
-						Line 4 "Certificates`t`t`t`t`t: " $HALBSSLCertificates
-					}
-					Line 0 ""
+					Line 0 "No HALB Devices retrieved for HALB $($HALB.Name)"
 				}
 				If($HTML)
 				{
-					$rowdata = @()
-					$columnHeaders = @("Port",($Script:htmlsb),$HALBSSLGatewayPort,$htmlwhite)
-					$rowdata += @(,("Mode",($Script:htmlsb),$HALBSSLMode,$htmlwhite))
-					If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
-					{
-						$rowdata += @(,( "Security",($Script:htmlsb), "",$htmlwhite))
-						$rowdata += @(,( "     Accepted SSL Versions",($Script:htmlsb), $HALBSSLAcceptedSSLVersions,$htmlwhite))
-						$rowdata += @(,( "     Cipher Strength",($Script:htmlsb), $HALBSSLCipherStrength,$htmlwhite))
-						$rowdata += @(,( "     Cipher",($Script:htmlsb), $HALBSSLCipher,$htmlwhite))
-						$rowdata += @(,( "     Use ciphers according to server preference",($Script:htmlsb), $HALBSSLUseServerPreference,$htmlwhite))
-						$rowdata += @(,( "     Certificates",($Script:htmlsb), $HALBSSLCertificates,$htmlwhite))
-					}
-
-					$msg = ""
-					$columnWidths = @("200","400")
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-					WriteHTMLLine 0 0 ""
+					WriteHTMLLine 0 0 "No HALB Devices retrieved for HALB $($HALB.Name)"
 				}
-
-				#second, process the gateways
-				#do output headers
+			}
+			Else
+			{
 				If($MSWord -or $PDF)
 				{
-					[System.Collections.Hashtable[]] $GatewaysWordTable = @();
+					[System.Collections.Hashtable[]] $HALBDevicesWordTable = @();
 				}
 				If($Text)
 				{
-					Line 3 "Gateways                                                 Status                                  "
-					Line 3 "================================================================================================="
-					#       abcdefghijklmno.abcdefghijklmno.local (999.999.999.999)SS1234567890123456789012345678901234567890
-					#       1234567890123456789012345678901234567890123456789012345
+					Line 3 "Devices          ID"
+					Line 3 "==================="
+					#       999.999.999.999SS12
 				}
 				If($HTML)
 				{
@@ -18241,49 +18504,46 @@ Function OutputSite
 				}
 				
 				#process the gateways data
-				ForEach($GatewayItem in $HALBSSLGateways)
+				ForEach($HALBDevice in $HALBDevices)
 				{
-					$ip = $GatewayItem.Keys
-					$Results = [System.Net.Dns]::gethostentry($ip)
-					$hostname = $Results.HostName
-					$TempGW = Get-RASGatewayStatus -Server $hostname -EA 0 4> $Null
-					$HALBGWStatus = GetRASStatus $TempGW.AgentState
+					$ip = $HALBDevice.DeviceIP
+					$ID = $HALBDevice.DeviceId
 					
 					If($MSWord -or $PDF)
 					{
-						$GatewaysWordTableRowHash = @{
-							Gateway       = "$hostname ($ip)";
-							GatewayStatus = $HALBGWStatus;
+						$HALBDevicesWordTableRowHash = @{
+							DeviceIP = $ip;
+							DeviceID = $ID;
 						}
-						$GatewaysWordTable += $GatewaysWordTableRowHash
+						$HALBDevicesWordTable += $HALBDevicesWordTableRowHash
 					}
 					If($Text)
 					{
-						Line 3 ( "{0,-55}  {1,-40}" -f "$hostname ($ip)", $HALBGWStatus)
+						Line 3 ( "{0,-15}  {1,-2}" -f $ip, $ID)
 					}
 					If($HTML)
 					{
 						$rowdata += @(,(
-						"$hostname ($ip)",$htmlwhite,
-						$HALBGWStatus,$htmlwhite))
+						$ip,$htmlwhite,
+						$ID,$htmlwhite))
 					}
 				}
 				
 				#output the Word/PDF and HTML tables
 				If($MSWord -or $PDF)
 				{
-					If($GatewaysWordTable.Count -gt 0)
+					If($HALBDevicesWordTable.Count -gt 0)
 					{
-						$Table = AddWordTable -Hashtable $GatewaysWordTable `
-						-Columns  Gateway,GatewayStatus `
-						-Headers  "Gateways","Status"`
+						$Table = AddWordTable -Hashtable $HALBDevicesWordTable `
+						-Columns  DeviceIP,DeviceID `
+						-Headers  "Devices","ID" `
 						-Format $wdTableGrid `
 						-AutoFit $wdAutoFitFixed;
 
 						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-						$Table.Columns.Item(1).Width = 200;
-						$Table.Columns.Item(2).Width = 250;
+						$Table.Columns.Item(1).Width = 100;
+						$Table.Columns.Item(2).Width = 50;
 
 						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -18299,284 +18559,114 @@ Function OutputSite
 				If($HTML)
 				{
 					$columnHeaders = @(
-					"Gateways",($Script:htmlsb),
-					"Status",($Script:htmlsb))
+					"Devices",($Script:htmlsb),
+					"ID",($Script:htmlsb))
 
 					$msg = ""
-					$columnWidths = @("200","400")
-					FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "600"
+					$columnWidths = @("100","50")
+					FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "150"
 					WriteHTMLLine 0 0 ""
 				}
-<#
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 4 0 "Device Manager"
-				}
-				If($Text)
-				{
-					Line 2 "Device Manager"
-				}
-				If($HTML)
-				{
-					#Nothing
-				}
-				
-				If($MSWord -or $PDF)
-				{
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Port"; Value = ""; }) > $Null
+			}
 
-					$Table = AddWordTable -Hashtable $ScriptInformation `
-					-Columns Data,Value `
-					-List `
-					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitFixed;
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Advanced"
+			}
+			If($Text)
+			{
+				Line 2 "Advanced"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Enable RDP UPD tunneling"; Value = $HALB.EnableUDPTunneling.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Maximum TCP connections"; Value = $HALB.MaxTCPConnections.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Client inactivity timeout (s)"; Value = $HALB.ClientIdleTimeout.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Gateway connection timeout (s)"; Value = $HALB.GWConnectionTimeout.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Client connection queue timeout (s)"; Value = $HALB.ClientQueueTimeout.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Gateway inactivity timeout (s)"; Value = $HALB.GatewayIdleTimeout.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Amount of TCP connections per second"; Value = $HALB.SessionsRate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Gateways health check intervals (s)"; Value = $HALB.GWHealthCheckInterval.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "VRRP virtual router ID"; Value = $HALB.VirtualRouterID.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "VRRP authentication password"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "VRRP broadcast interval (m)"; Value = $HALB.VrrpBroadcastInterval.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "VRRP health check script interval (s)"; Value = $HALB.VrrpHealthCheckInterval.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "VRRP health check script timeout"; Value = $HALB.VrrpHealthCheckTimeout.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "VRRP advertisement interval (s)"; Value = $HALB.VrrpAdvertInterval.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Enable OS updates"; Value = $HALB.OSUpdate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Keep existing load balancing settings"; Value = $HALB.KeepLBProxyConfig.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Keep existing VRRP/keepalive settings"; Value = $HALB.KeepVRRPConfig.ToString(); }) > $Null
 
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
 
-					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
 
-					FindWordDocumentEnd
-					$Table = $Null
-					WriteWordLine 0 0 ""
-				}
-				If($Text)
-				{
-					Line 3 "Port: "
-					Line 0 ""
-				}
-				If($HTML)
-				{
-					$rowdata = @()
-					$columnHeaders = @("Port",($Script:htmlsb),"",$htmlwhite)
-					$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-					$msg = "Device Manager"
-					$columnWidths = @("200","400")
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-					WriteHTMLLine 0 0 ""
-				}
-#>
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Enable RDP UPD tunneling`t`t: " $HALB.EnableUDPTunneling.ToString()
+				Line 3 "Maximum TCP connections`t`t`t: " $HALB.MaxTCPConnections.ToString()
+				Line 3 "Client inactivity timeout (s)`t`t: " $HALB.ClientIdleTimeout.ToString()
+				Line 3 "Gateway connection timeout (s)`t`t: " $HALB.GWConnectionTimeout.ToString()
+				Line 3 "Client connection queue timeout (s)`t: " $HALB.ClientQueueTimeout.ToString()
+				Line 3 "Gateway inactivity timeout (s)`t`t: " $HALB.GatewayIdleTimeout.ToString()
+				Line 3 "Amount of TCP connections per second`t: " $HALB.SessionsRate.ToString()
+				Line 3 "Gateways health check intervals (s)`t: " $HALB.GWHealthCheckInterval.ToString()
+				Line 3 "VRRP virtual router ID`t`t`t: " $HALB.VirtualRouterID.ToString()
+				Line 3 "VRRP authentication password`t`t: " 
+				Line 3 "VRRP broadcast interval (m)`t`t: " $HALB.VrrpBroadcastInterval.ToString()
+				Line 3 "VRRP health check script interval (s)`t: " $HALB.VrrpHealthCheckInterval.ToString()
+				Line 3 "VRRP health check script timeout`t: " $HALB.VrrpHealthCheckTimeout.ToString()
+				Line 3 "VRRP advertisement interval (s)`t`t: " $HALB.VrrpAdvertInterval.ToString()
+				Line 3 "Enable OS updates`t`t`t: " $HALB.OSUpdate.ToString()
+				Line 3 "Keep existing load balancing settings`t: " $HALB.KeepLBProxyConfig.ToString()
+				Line 3 "Keep existing VRRP/keepalive settings`t: " $HALB.KeepVRRPConfig.ToString()
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Enable RDP UPD tunneling",($Script:htmlsb),$HALB.EnableUDPTunneling.ToString(),$htmlwhite)
+				$rowdata += @(,("Maximum TCP connections",($Script:htmlsb),$HALB.MaxTCPConnections.ToString(),$htmlwhite))
+				$rowdata += @(,("Client inactivity timeout (s)",($Script:htmlsb),$HALB.ClientIdleTimeout.ToString(),$htmlwhite))
+				$rowdata += @(,("Gateway connection timeout (s)",($Script:htmlsb),$HALB.GWConnectionTimeout.ToString(),$htmlwhite))
+				$rowdata += @(,("Client connection queue timeout (s)",($Script:htmlsb),$HALB.ClientQueueTimeout.ToString(),$htmlwhite))
+				$rowdata += @(,("Gateway inactivity timeout (s)",($Script:htmlsb),$HALB.GatewayIdleTimeout.ToString(),$htmlwhite))
+				$rowdata += @(,("Amount of TCP connections per second",($Script:htmlsb),$HALB.SessionsRate.ToString(),$htmlwhite))
+				$rowdata += @(,("Gateways health check intervals (s)",($Script:htmlsb),$HALB.GWHealthCheckInterval.ToString(),$htmlwhite))
+				$rowdata += @(,("VRRP virtual router ID",($Script:htmlsb),$HALB.VirtualRouterID.ToString(),$htmlwhite))
+				$rowdata += @(,("VRRP authentication password",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("VRRP broadcast interval (m)",($Script:htmlsb),$HALB.VrrpBroadcastInterval.ToString(),$htmlwhite))
+				$rowdata += @(,("VRRP health check script interval (s)",($Script:htmlsb),$HALB.VrrpHealthCheckInterval.ToString(),$htmlwhite))
+				$rowdata += @(,("VRRP health check script timeout",($Script:htmlsb),$HALB.VrrpHealthCheckTimeout.ToString(),$htmlwhite))
+				$rowdata += @(,("VRRP advertisement interval (s)",($Script:htmlsb),$HALB.VrrpAdvertInterval.ToString(),$htmlwhite))
+				$rowdata += @(,("Enable OS updates",($Script:htmlsb),$HALB.OSUpdate.ToString(),$htmlwhite))
+				$rowdata += @(,("Keep existing load balancing settings",($Script:htmlsb),$HALB.KeepLBProxyConfig.ToString(),$htmlwhite))
+				$rowdata += @(,("Keep existing VRRP/keepalive settings",($Script:htmlsb),$HALB.KeepVRRPConfig.ToString(),$htmlwhite))
 
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 4 0 "Devices"
-				}
-				If($Text)
-				{
-					Line 2 "Devices"
-				}
-				If($HTML)
-				{
-					#Nothing
-				}
-				
-				$HALBDevices = Get-RASHALBDevice -HALBName $HALB.Name -EA 0 4> $Null
-				
-				If((!$?) -or ($? -and $Null -eq $HALBDevices))
-				{
-					Write-Host "
-					No HALB Devices retrieved for HALB $($HALB.Name).`
-					" -ForegroundColor White
-					If($MSWord -or $PDF)
-					{
-						WriteWordLine 0 0 "No HALB Devices retrieved for HALB $($HALB.Name)"
-					}
-					If($Text)
-					{
-						Line 0 "No HALB Devices retrieved for HALB $($HALB.Name)"
-					}
-					If($HTML)
-					{
-						WriteHTMLLine 0 0 "No HALB Devices retrieved for HALB $($HALB.Name)"
-					}
-				}
-				Else
-				{
-					If($MSWord -or $PDF)
-					{
-						[System.Collections.Hashtable[]] $HALBDevicesWordTable = @();
-					}
-					If($Text)
-					{
-						Line 3 "Devices          ID"
-						Line 3 "==================="
-						#       999.999.999.999SS12
-					}
-					If($HTML)
-					{
-						$rowdata = @()
-					}
-					
-					#process the gateways data
-					ForEach($HALBDevice in $HALBDevices)
-					{
-						$ip = $HALBDevice.DeviceIP
-						$ID = $HALBDevice.DeviceId
-						
-						If($MSWord -or $PDF)
-						{
-							$HALBDevicesWordTableRowHash = @{
-								DeviceIP = $ip;
-								DeviceID = $ID;
-							}
-							$HALBDevicesWordTable += $HALBDevicesWordTableRowHash
-						}
-						If($Text)
-						{
-							Line 3 ( "{0,-15}  {1,-2}" -f $ip, $ID)
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$ip,$htmlwhite,
-							$ID,$htmlwhite))
-						}
-					}
-					
-					#output the Word/PDF and HTML tables
-					If($MSWord -or $PDF)
-					{
-						If($HALBDevicesWordTable.Count -gt 0)
-						{
-							$Table = AddWordTable -Hashtable $HALBDevicesWordTable `
-							-Columns  DeviceIP,DeviceID `
-							-Headers  "Devices","ID" `
-							-Format $wdTableGrid `
-							-AutoFit $wdAutoFitFixed;
-
-							SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-							$Table.Columns.Item(1).Width = 100;
-							$Table.Columns.Item(2).Width = 50;
-
-							$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-							FindWordDocumentEnd
-							$Table = $Null
-							WriteWordLine 0 0 ""
-						}
-					}
-					If($Text)
-					{
-						Line 0 ""
-					}
-					If($HTML)
-					{
-						$columnHeaders = @(
-						"Devices",($Script:htmlsb),
-						"ID",($Script:htmlsb))
-
-						$msg = ""
-						$columnWidths = @("100","50")
-						FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "150"
-						WriteHTMLLine 0 0 ""
-					}
-				}
-
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 4 0 "Advanced"
-				}
-				If($Text)
-				{
-					Line 2 "Advanced"
-				}
-				If($HTML)
-				{
-					#Nothing
-				}
-				
-				If($MSWord -or $PDF)
-				{
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Enable RDP UPD tunneling"; Value = $HALB.EnableUDPTunneling.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Maximum TCP connections"; Value = $HALB.MaxTCPConnections.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Client inactivity timeout (s)"; Value = $HALB.ClientIdleTimeout.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Gateway connection timeout (s)"; Value = $HALB.GWConnectionTimeout.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Client connection queue timeout (s)"; Value = $HALB.ClientQueueTimeout.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Gateway inactivity timeout (s)"; Value = $HALB.GatewayIdleTimeout.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Amount of TCP connections per second"; Value = $HALB.SessionsRate.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Gateways health check intervals (s)"; Value = $HALB.GWHealthCheckInterval.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "VRRP virtual router ID"; Value = $HALB.VirtualRouterID.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "VRRP authentication password"; Value = ""; }) > $Null
-					$ScriptInformation.Add(@{Data = "VRRP broadcast interval (m)"; Value = $HALB.VrrpBroadcastInterval.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "VRRP health check script interval (s)"; Value = $HALB.VrrpHealthCheckInterval.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "VRRP health check script timeout"; Value = $HALB.VrrpHealthCheckTimeout.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "VRRP advertisement interval (s)"; Value = $HALB.VrrpAdvertInterval.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Enable OS updates"; Value = $HALB.OSUpdate.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Keep existing load balancing settings"; Value = $HALB.KeepLBProxyConfig.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Keep existing VRRP/keepalive settings"; Value = $HALB.KeepVRRPConfig.ToString(); }) > $Null
-
-					$Table = AddWordTable -Hashtable $ScriptInformation `
-					-Columns Data,Value `
-					-List `
-					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitFixed;
-
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
-
-					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-					FindWordDocumentEnd
-					$Table = $Null
-					WriteWordLine 0 0 ""
-				}
-				If($Text)
-				{
-					Line 3 "Enable RDP UPD tunneling`t`t: " $HALB.EnableUDPTunneling.ToString()
-					Line 3 "Maximum TCP connections`t`t`t: " $HALB.MaxTCPConnections.ToString()
-					Line 3 "Client inactivity timeout (s)`t`t: " $HALB.ClientIdleTimeout.ToString()
-					Line 3 "Gateway connection timeout (s)`t`t: " $HALB.GWConnectionTimeout.ToString()
-					Line 3 "Client connection queue timeout (s)`t: " $HALB.ClientQueueTimeout.ToString()
-					Line 3 "Gateway inactivity timeout (s)`t`t: " $HALB.GatewayIdleTimeout.ToString()
-					Line 3 "Amount of TCP connections per second`t: " $HALB.SessionsRate.ToString()
-					Line 3 "Gateways health check intervals (s)`t: " $HALB.GWHealthCheckInterval.ToString()
-					Line 3 "VRRP virtual router ID`t`t`t: " $HALB.VirtualRouterID.ToString()
-					Line 3 "VRRP authentication password`t`t: " 
-					Line 3 "VRRP broadcast interval (m)`t`t: " $HALB.VrrpBroadcastInterval.ToString()
-					Line 3 "VRRP health check script interval (s)`t: " $HALB.VrrpHealthCheckInterval.ToString()
-					Line 3 "VRRP health check script timeout`t: " $HALB.VrrpHealthCheckTimeout.ToString()
-					Line 3 "VRRP advertisement interval (s)`t`t: " $HALB.VrrpAdvertInterval.ToString()
-					Line 3 "Enable OS updates`t`t`t: " $HALB.OSUpdate.ToString()
-					Line 3 "Keep existing load balancing settings`t: " $HALB.KeepLBProxyConfig.ToString()
-					Line 3 "Keep existing VRRP/keepalive settings`t: " $HALB.KeepVRRPConfig.ToString()
-					Line 0 ""
-				}
-				If($HTML)
-				{
-					$rowdata = @()
-					$columnHeaders = @("Enable RDP UPD tunneling",($Script:htmlsb),$HALB.EnableUDPTunneling.ToString(),$htmlwhite)
-					$rowdata += @(,("Maximum TCP connections",($Script:htmlsb),$HALB.MaxTCPConnections.ToString(),$htmlwhite))
-					$rowdata += @(,("Client inactivity timeout (s)",($Script:htmlsb),$HALB.ClientIdleTimeout.ToString(),$htmlwhite))
-					$rowdata += @(,("Gateway connection timeout (s)",($Script:htmlsb),$HALB.GWConnectionTimeout.ToString(),$htmlwhite))
-					$rowdata += @(,("Client connection queue timeout (s)",($Script:htmlsb),$HALB.ClientQueueTimeout.ToString(),$htmlwhite))
-					$rowdata += @(,("Gateway inactivity timeout (s)",($Script:htmlsb),$HALB.GatewayIdleTimeout.ToString(),$htmlwhite))
-					$rowdata += @(,("Amount of TCP connections per second",($Script:htmlsb),$HALB.SessionsRate.ToString(),$htmlwhite))
-					$rowdata += @(,("Gateways health check intervals (s)",($Script:htmlsb),$HALB.GWHealthCheckInterval.ToString(),$htmlwhite))
-					$rowdata += @(,("VRRP virtual router ID",($Script:htmlsb),$HALB.VirtualRouterID.ToString(),$htmlwhite))
-					$rowdata += @(,("VRRP authentication password",($Script:htmlsb),"",$htmlwhite))
-					$rowdata += @(,("VRRP broadcast interval (m)",($Script:htmlsb),$HALB.VrrpBroadcastInterval.ToString(),$htmlwhite))
-					$rowdata += @(,("VRRP health check script interval (s)",($Script:htmlsb),$HALB.VrrpHealthCheckInterval.ToString(),$htmlwhite))
-					$rowdata += @(,("VRRP health check script timeout",($Script:htmlsb),$HALB.VrrpHealthCheckTimeout.ToString(),$htmlwhite))
-					$rowdata += @(,("VRRP advertisement interval (s)",($Script:htmlsb),$HALB.VrrpAdvertInterval.ToString(),$htmlwhite))
-					$rowdata += @(,("Enable OS updates",($Script:htmlsb),$HALB.OSUpdate.ToString(),$htmlwhite))
-					$rowdata += @(,("Keep existing load balancing settings",($Script:htmlsb),$HALB.KeepLBProxyConfig.ToString(),$htmlwhite))
-					$rowdata += @(,("Keep existing VRRP/keepalive settings",($Script:htmlsb),$HALB.KeepVRRPConfig.ToString(),$htmlwhite))
-
-					$msg = "Advanced"
-					$columnWidths = @("200","400")
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-					WriteHTMLLine 0 0 ""
-				}
+				$msg = "Advanced"
+				$columnWidths = @("200","400")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
 			}
 		}
 	}
@@ -30508,26 +30598,29 @@ Function OutputPubItemFilters
 				WriteWordLine 0 0 ""
 			}
 
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.UserFilterReplicate.ToString(); }) > $Null
+			If(validObject $PubItem UserFilterReplicate)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.UserFilterReplicate.ToString(); }) > $Null
 
-			$Table = AddWordTable -Hashtable $ScriptInformation `
-			-Columns Data,Value `
-			-List `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
 
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Columns.Item(1).Width = 200;
-			$Table.Columns.Item(2).Width = 100;
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 100;
 
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
 		}
 		
 		If(!($PubItem.ClientFilterEnabled))
@@ -30955,8 +31048,11 @@ Function OutputPubItemFilters
 			}
 			Line 0 ""
 
-			Line 3 "Settings are replicated to all Sites: " $PubItem.UserFilterReplicate.ToString()
-			Line 0 ""
+			If(validObject $PubItem UserFilterReplicate)
+			{
+				Line 3 "Settings are replicated to all Sites: " $PubItem.UserFilterReplicate.ToString()
+				Line 0 ""
+			}
 		}
 		
 		If(!($PubItem.ClientFilterEnabled))
@@ -31218,13 +31314,16 @@ Function OutputPubItemFilters
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
 			WriteHTMLLine 0 0 ""
 
-			$rowdata = @()
-			$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$PubItem.UserFilterReplicate.ToString(),$htmlwhite)
+			If(validObject $PubItem UserFilterReplicate)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$PubItem.UserFilterReplicate.ToString(),$htmlwhite)
 
-			$msg = ""
-			$columnWidths = @("183","100")
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-			WriteHTMLLine 0 0 ""
+				$msg = ""
+				$columnWidths = @("183","100")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
 		}
 		
 		If(!($PubItem.ClientFilterEnabled))
@@ -31724,10 +31823,19 @@ Function ProcessUniversalPrinting
 		}
 		Else
 		{
+			If(validObject $results EnablePrinting)
+			{
+				$PrintingState = $Results.EnablePrinting
+			}
+			Else
+			{
+				$PrintingState = ""
+			}
+			
 			$RDSobj = [PSCustomObject] @{
 				Server = $Results.Server
 				Type = "RD Session Hosts"
-				PrintingState = $Results.EnablePrinting
+				PrintingState = $PrintingState
 			}
 		}
 		
@@ -31759,10 +31867,19 @@ Function ProcessUniversalPrinting
 		}
 		Else
 		{
+			If(validObject $results EnablePrinting)
+			{
+				$PrintingState = $Results.EnablePrinting
+			}
+			Else
+			{
+				$PrintingState = ""
+			}
+			
 			$VDIHostsobj = [PSCustomObject] @{
 				Server = $Results.Server
 				Type = "VDI Providers"
-				PrintingState = $Results.EnablePrinting
+				PrintingState = $PrintingState
 			}
 		}
 		
@@ -31906,8 +32023,23 @@ Function OutputUniversalPrintingSettings
 		Default	{$VDIHostsPrintingState = "Unable to determine VDI Hosts Printing State: $($VDIHostsobj.PrintingState)"; Break}
 	}
 
-	$RDSType = $RDSObj.Type
-	$VDIType = $VDIHostsObj.Type
+	If(validObject $RDSObj Type)
+	{
+		$RDSType = $RDSObj.Type
+	}
+	Else
+	{
+		$RDSType = ""
+	}
+
+	If(validObject $VDIHostsObj Type)
+	{
+		$VDIType = $VDIHostsObj.Type
+	}
+	Else
+	{
+		$VDIType = ""
+	}
 	
 	If($MSWord -or $PDF)
 	{
@@ -31923,12 +32055,15 @@ Function OutputUniversalPrintingSettings
 			}
 		}
 		
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		If(validObject $VDIHostsObj Server)
 		{
-			$ServersInSiteTable += @{
-				Server = $VDIServer
-				Type   = $VDIType
-				State  = $VDIHostsPrintingState
+			ForEach($VDIServer in $VDIHostsobj.Server)
+			{
+				$ServersInSiteTable += @{
+					Server = $VDIServer
+					Type   = $VDIType
+					State  = $VDIHostsPrintingState
+				}
 			}
 		}
 
@@ -32542,11 +32677,29 @@ Function ProcessUniversalScanning
 		}
 		Else
 		{
+			If(validObject $Results EnableWIA)
+			{
+				$WIAState = $Results.EnableWIA
+			}
+			Else
+			{
+				$WIAState = $False
+			}
+			
+			If(validObject $Results EnableTWAIN)
+			{
+				$TWAINState = $Results.EnableTWAIN
+			}
+			Else
+			{
+				$TWAINState = $False
+			}
+			
 			$RDSobj = [PSCustomObject] @{
 				Server = $Results.Server
 				Type = "RD Session Hosts"
-				WIAState = $Results.EnableWIA
-				TWAINState = $Results.EnableTWAIN
+				WIAState = $WIAState
+				TWAINState = $TWAINState
 			}
 		}
 		
@@ -32579,11 +32732,29 @@ Function ProcessUniversalScanning
 		}
 		Else
 		{
+			If(validObject $Results EnableWIA)
+			{
+				$WIAState = $Results.EnableWIA
+			}
+			Else
+			{
+				$WIAState = $False
+			}
+			
+			If(validObject $Results EnableTWAIN)
+			{
+				$TWAINState = $Results.EnableTWAIN
+			}
+			Else
+			{
+				$TWAINState = $False
+			}
+			
 			$VDIHostsobj = [PSCustomObject] @{
 				Server = $Results.Server
 				Type = "VDI Providers"
-				WIAState = $Results.EnableWIA
-				TWAINState = $Results.EnableTWAIN
+				WIAState = $WIAState
+				TWAINState = $TWAINState
 			}
 		}
 		
@@ -32709,25 +32880,31 @@ Function OutputUniversalScanningSettings
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ServersInSiteTable = @()
 		
-		$cnt = -1
-		ForEach($RDSServer in $RDSobj.Server)
+		If(validObject $RDSobj Server)
 		{
-			$cnt++
-			$ServersInSiteTable += @{
-				Server = $RDSServer
-				Type   = $RDSType
-				State  = $RDSobj.WIAState[$cnt].ToString()
+			$cnt = -1
+			ForEach($RDSServer in $RDSobj.Server)
+			{
+				$cnt++
+				$ServersInSiteTable += @{
+					Server = $RDSServer
+					Type   = $RDSType
+					State  = $RDSobj.WIAState[$cnt].ToString()
+				}
 			}
 		}
 		
-		$cnt = -1
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		If(validObject $VDIHostsobj Server)
 		{
-			$cnt++
-			$ServersInSiteTable += @{
-				Server = $VDIServer
-				Type   = $VDIType
-				State  = $VDIHostsobj.WIAState[$cnt].ToString()
+			$cnt = -1
+			ForEach($VDIServer in $VDIHostsobj.Server)
+			{
+				$cnt++
+				$ServersInSiteTable += @{
+					Server = $VDIServer
+					Type   = $VDIType
+					State  = $VDIHostsobj.WIAState[$cnt].ToString()
+				}
 			}
 		}
 
@@ -32758,26 +32935,32 @@ Function OutputUniversalScanningSettings
 		Line 3 "Server                         Type                 State   "
 		Line 3 "============================================================"
 		#       123456789012345678901234567890S12345678901234567890S12345678
-		$cnt = -1
-		ForEach($RDSServer in $RDSobj.Server)
+		If(validObject $RDSobj Server)
 		{
-			$cnt++
-			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-				$RDSServer, 
-				$RDSType, 
-				$RDSobj.WIAState[$cnt].ToString()
-			)
+			$cnt = -1
+			ForEach($RDSServer in $RDSobj.Server)
+			{
+				$cnt++
+				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+					$RDSServer, 
+					$RDSType, 
+					$RDSobj.WIAState[$cnt].ToString()
+				)
+			}
 		}
 		
-		$cnt = -1
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		If(validObject $VDIHostsobj Server)
 		{
-			$cnt++
-			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-				$VDIServer, 
-				$VDIType, 
-				$VDIHostsobj.WIAState[$cnt].ToString()
-			)
+			$cnt = -1
+			ForEach($VDIServer in $VDIHostsobj.Server)
+			{
+				$cnt++
+				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+					$VDIServer, 
+					$VDIType, 
+					$VDIHostsobj.WIAState[$cnt].ToString()
+				)
+			}
 		}
 		Line 0 ""
 	}
@@ -32785,26 +32968,32 @@ Function OutputUniversalScanningSettings
 	{
 		$rowdata = @()
 
-		$cnt = -1
-		ForEach($RDSServer in $RDSobj.Server)
+		If(validObject $RDSobj Server)
 		{
-			$cnt++
-			$rowdata += @(,(
-				$RDSServer,$htmlwhite,
-				$RDSType,$htmlwhite,
-				$RDSobj.WIAState[$cnt].ToString(),$htmlwhite)
-			)
+			$cnt = -1
+			ForEach($RDSServer in $RDSobj.Server)
+			{
+				$cnt++
+				$rowdata += @(,(
+					$RDSServer,$htmlwhite,
+					$RDSType,$htmlwhite,
+					$RDSobj.WIAState[$cnt].ToString(),$htmlwhite)
+				)
+			}
 		}
 		
-		$cnt = -1
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		If(validObject $VDIHostsobj Server)
 		{
-			$cnt++
-			$rowdata += @(,(
-				$VDIServer,$htmlwhite,
-				$VDIType,$htmlwhite,
-				$VDIHostsobj.WIAState[$cnt].ToString(),$htmlwhite)
-			)
+			$cnt = -1
+			ForEach($VDIServer in $VDIHostsobj.Server)
+			{
+				$cnt++
+				$rowdata += @(,(
+					$VDIServer,$htmlwhite,
+					$VDIType,$htmlwhite,
+					$VDIHostsobj.WIAState[$cnt].ToString(),$htmlwhite)
+				)
+			}
 		}
 
 		$columnHeaders = @(
