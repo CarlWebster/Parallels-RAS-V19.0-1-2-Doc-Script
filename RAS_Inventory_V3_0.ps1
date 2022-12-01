@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.007'
+$script:MyVersion         = '3.00.009'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "11/28/2022"
+$tmpdate                  = [datetime] "12/01/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -4487,7 +4487,7 @@ Function OutputSite
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $RDSHost.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Name"; Value = $RDSHost.Server; }) > $Null
 					$ScriptInformation.Add(@{Data = "Status"; Value = $RDSStatusAgentState; }) > $Null
 					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($RDSStatus.CPULoad)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($RDSStatus.MemLoad)%"; }) > $Null
@@ -4508,7 +4508,7 @@ Function OutputSite
 					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
+					$Table.Columns.Item(2).Width = 300;
 
 					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -4518,7 +4518,7 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t`t`t: " $RDSHost.Server
+					Line 2 "Name`t`t`t`t: " $RDSHost.Server
 					Line 2 "Status`t`t`t`t: " $RDSStatusAgentState
 					Line 2 "CPU`t`t`t`t: " "$($RDSStatus.CPULoad)%"
 					Line 2 "RAM`t`t`t`t: " "$($RDSStatus.MemLoad)%"
@@ -4533,7 +4533,7 @@ Function OutputSite
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$RDSHost.Server,$htmlwhite)
+					$columnHeaders = @("Name",($Script:htmlsb),$RDSHost.Server,$htmlwhite)
 					$rowdata += @(,("Status",($Script:htmlsb),$RDSStatusAgentState,$htmlwhite))
 					$rowdata += @(,("CPU",($Script:htmlsb),"$($RDSStatus.CPULoad)%",$htmlwhite))
 					$rowdata += @(,("RAM",($Script:htmlsb),"$($RDSStatus.MemLoad)%",$htmlwhite))
@@ -4545,7 +4545,7 @@ Function OutputSite
 					$rowdata += @(,("Agent version",($Script:htmlsb),$RDSStatus.AgentVer,$htmlwhite))
 
 					$msg = ""
-					$columnWidths = @("200","275")
+					$columnWidths = @("200","350")
 					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 					WriteHTMLLine 0 0 ""
 				}
@@ -4656,7 +4656,7 @@ Function OutputSite
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $Provider.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Name"; Value = $Provider.Server; }) > $Null
 					$ScriptInformation.Add(@{Data = "Status"; Value = $FullProviderStatus; }) > $Null
 					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($Providerstatus.CPULoad)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($Providerstatus.MemLoad)%"; }) > $Null
@@ -4676,7 +4676,7 @@ Function OutputSite
 					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
+					$Table.Columns.Item(2).Width = 300;
 
 					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -4686,7 +4686,7 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t`t`t: " $Provider.Server
+					Line 2 "Name`t`t`t`t: " $Provider.Server
 					Line 2 "Status`t`t`t`t: " $FullProviderStatus
 					Line 2 "CPU`t`t`t`t: " "$($Providerstatus.CPULoad)%"
 					Line 2 "RAM`t`t`t`t: " "$($Providerstatus.MemLoad)%"
@@ -4700,7 +4700,7 @@ Function OutputSite
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$Provider.Server,$htmlwhite)
+					$columnHeaders = @("Name",($Script:htmlsb),$Provider.Server,$htmlwhite)
 					$rowdata += @(,("Status",($Script:htmlsb),$FullProviderStatus,$htmlwhite))
 					$rowdata += @(,("CPU",($Script:htmlsb),"$($Providerstatus.CPULoad)%",$htmlwhite))
 					$rowdata += @(,("RAM",($Script:htmlsb),"$($Providerstatus.MemLoad)%",$htmlwhite))
@@ -4711,7 +4711,7 @@ Function OutputSite
 					$rowdata += @(,("Agent version",($Script:htmlsb),$Providerstatus.AgentVer,$htmlwhite))
 
 					$msg = ""
-					$columnWidths = @("200","275")
+					$columnWidths = @("200","350")
 					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 					WriteHTMLLine 0 0 ""
 				}
@@ -4823,7 +4823,7 @@ Function OutputSite
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $SecureGateway.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Name"; Value = $SecureGateway.Server; }) > $Null
 					$ScriptInformation.Add(@{Data = "Status"; Value = $SecureGatewayStatusAgentState; }) > $Null
 					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($SecureGatewayStatus.CPULoad)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($SecureGatewayStatus.MemLoad)%"; }) > $Null
@@ -4844,7 +4844,7 @@ Function OutputSite
 					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
+					$Table.Columns.Item(2).Width = 300;
 
 					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -4854,7 +4854,7 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t`t`t: " $SecureGateway.Server
+					Line 2 "Name`t`t`t`t: " $SecureGateway.Server
 					Line 2 "Status`t`t`t`t: " $SecureGatewayStatusAgentState
 					Line 2 "CPU`t`t`t`t: " "$($SecureGatewayStatus.CPULoad)%"
 					Line 2 "RAM`t`t`t`t: " "$($SecureGatewayStatus.MemLoad)%"
@@ -4869,7 +4869,7 @@ Function OutputSite
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$SecureGateway.Server,$htmlwhite)
+					$columnHeaders = @("Name",($Script:htmlsb),$SecureGateway.Server,$htmlwhite)
 					$rowdata += @(,("Status",($Script:htmlsb),$SecureGatewayStatusAgentState.ToString(),$htmlwhite))
 					$rowdata += @(,("CPU",($Script:htmlsb),"$($SecureGatewayStatus.CPULoad)%",$htmlwhite))
 					$rowdata += @(,("RAM",($Script:htmlsb),"$($SecureGatewayStatus.MemLoad)%",$htmlwhite))
@@ -4881,7 +4881,7 @@ Function OutputSite
 					$rowdata += @(,("Agent version",($Script:htmlsb),$SecureGatewayStatus.AgentVer,$htmlwhite))
 
 					$msg = ""
-					$columnWidths = @("200","275")
+					$columnWidths = @("200","350")
 					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 					WriteHTMLLine 0 0 ""
 				}
@@ -4987,12 +4987,22 @@ Function OutputSite
 			}
 			Else
 			{
+				If($ConnectionBroker.Priority -eq 0)
+				{
+					$ConnectionBrokerPriority = "Primary"
+				}
+				Else
+				{
+					$ConnectionBrokerPriority = "Secondary"
+				}
+				
 				$ConnectionBrokerStatusAgentState = GetRASStatus $ConnectionBrokerStatus.AgentState
 				
 				If($MSWord -or $PDF)
 				{
 					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Address"; Value = $ConnectionBroker.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Name"; Value = $ConnectionBroker.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Priority"; Value = $ConnectionBrokerPriority; }) > $Null
 					$ScriptInformation.Add(@{Data = "Status"; Value = $ConnectionBrokerStatusAgentState; }) > $Null
 					$ScriptInformation.Add(@{Data = "CPU"; Value = "$($ConnectionBrokerStatus.CPULoad)%"; }) > $Null
 					$ScriptInformation.Add(@{Data = "RAM"; Value = "$($ConnectionBrokerStatus.MemLoad)%"; }) > $Null
@@ -5011,7 +5021,7 @@ Function OutputSite
 					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
+					$Table.Columns.Item(2).Width = 300;
 
 					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -5021,7 +5031,8 @@ Function OutputSite
 				}
 				If($Text)
 				{
-					Line 2 "Address`t`t: " $ConnectionBroker.Server
+					Line 2 "Name`t`t: " $ConnectionBroker.Server
+					Line 2 "Priority`t: " $ConnectionBrokerPriority
 					Line 2 "Status`t`t: " $ConnectionBrokerStatusAgentState
 					Line 2 "CPU`t`t: " "$($ConnectionBrokerStatus.CPULoad)%"
 					Line 2 "RAM`t`t: " "$($ConnectionBrokerStatus.MemLoad)%"
@@ -5034,7 +5045,8 @@ Function OutputSite
 				If($HTML)
 				{
 					$rowdata = @()
-					$columnHeaders = @("Address",($Script:htmlsb),$ConnectionBroker.Server,$htmlwhite)
+					$columnHeaders = @("Name",($Script:htmlsb),$ConnectionBroker.Server,$htmlwhite)
+					$rowdata += @(,("Priority",($Script:htmlsb),$ConnectionBrokerPriority,$htmlwhite))
 					$rowdata += @(,("Status",($Script:htmlsb),$ConnectionBrokerStatusAgentState.ToString(),$htmlwhite))
 					$rowdata += @(,("CPU",($Script:htmlsb),"$($ConnectionBrokerStatus.CPULoad)%",$htmlwhite))
 					$rowdata += @(,("RAM",($Script:htmlsb),"$($ConnectionBrokerStatus.MemLoad)%",$htmlwhite))
@@ -5044,7 +5056,7 @@ Function OutputSite
 					$rowdata += @(,("Agent version",($Script:htmlsb),$ConnectionBrokerStatus.AgentVer,$htmlwhite))
 
 					$msg = ""
-					$columnWidths = @("200","275")
+					$columnWidths = @("200","350")
 					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 					WriteHTMLLine 0 0 ""
 				}
@@ -13430,13 +13442,20 @@ Function OutputSite
 			
 			If($? -and -$Null -ne $HostPA)
 			{
-				If($VDIHost.VDIAgent -eq $HostPa.Server)
+				If(validobject $HostPA Server)
 				{
-					$DedicatedVDIAgent = $False
+					If($VDIHost.VDIAgent -eq $HostPa.Server)
+					{
+						$DedicatedVDIAgent = $False
+					}
+					Else
+					{
+						$DedicatedVDIAgent = $True
+					}
 				}
 				Else
 				{
-					$DedicatedVDIAgent = $True
+					$DedicatedVDIAgent = $False
 				}
 			}
 			ElseIf($? -and $Null -eq $HostPA)
@@ -13744,7 +13763,10 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "     Configure File Transfer"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Direction"; Value = $VDIHostFileTransferMode; }) > $Null
 				$ScriptInformation.Add(@{Data = "          Location"; Value = $VDIHostFileTransferLocation; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Do not allow to change location"; Value = $VDIHost.FileTransferLockLocation.ToString(); }) > $Null
+				If(validobject $VDIHost FileTransferLockLocation)
+				{
+					$ScriptInformation.Add(@{Data = "          Do not allow to change location"; Value = $VDIHost.FileTransferLockLocation.ToString(); }) > $Null
+				}
 				If(validobject $VDIHost EnableDriveRedirectionCache)
 				{
 					$ScriptInformation.Add(@{Data = "Enable drive redirection cache"; Value = $VDIHost.EnableDriveRedirectionCache.ToString(); }) > $Null
@@ -13785,7 +13807,10 @@ Function OutputSite
 				Line 5 "Configure File Transfer"
 				Line 6 "Direction`t`t`t: " $VDIHostFileTransferMode
 				Line 6 "Location`t`t`t: " $VDIHostFileTransferLocation
-				Line 6 "Do not allow to change location : " $VDIHost.FileTransferLockLocation.ToString()
+				If(validobject $VDIHost FileTransferLockLocation)
+				{
+					Line 6 "Do not allow to change location : " $VDIHost.FileTransferLockLocation.ToString()
+				}
 				If(validobject $VDIHost EnableDriveRedirectionCache)
 				{
 					Line 4 "Enable drive redirection cache`t`t`t`t`t: " $VDIHost.EnableDriveRedirectionCache.ToString()
@@ -13811,7 +13836,10 @@ Function OutputSite
 				$rowdata += @(,("     Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("          Direction",($Script:htmlsb),$VDIHostFileTransferMode,$htmlwhite))
 				$rowdata += @(,("          Location",($Script:htmlsb),$VDIHostFileTransferLocation,$htmlwhite))
-				$rowdata += @(,("          Do not allow to change location",($Script:htmlsb),$VDIHost.FileTransferLockLocation.ToString(),$htmlwhite))
+				If(validobject $VDIHost FileTransferLockLocation)
+				{
+					$rowdata += @(,("          Do not allow to change location",($Script:htmlsb),$VDIHost.FileTransferLockLocation.ToString(),$htmlwhite))
+				}
 				If(validobject $VDIHost EnableDriveRedirectionCache)
 				{
 					$rowdata += @(,("Enable drive redirection cache",($Script:htmlsb),$VDIHost.EnableDriveRedirectionCache.ToString(),$htmlwhite))
@@ -17066,10 +17094,10 @@ Function OutputSite
 				Line 3 "Client" ""
 				Line 4 "Launch sessions using`t`t`t: " $GatewayLaunchSessionsUsing
 				Line 4 "Allow user to select a launch method`t: " $GatewayAllowLaunchMethod
-				Line 4 "Allow opening applications in a new tab`t`t: " $GatewayAllowAppsInNewTab
+				Line 4 "Allow opening applications in a new tab`t: " $GatewayAllowAppsInNewTab
 				Line 4 "Use Pre Windows 2000 login format`t: " $GatewayUsePreWin2000LoginFormat
 				Line 4 "Allow embedding of User Portal"
-				Line 4 "into other web pages`t`t: " $GatewayAllowEmbed
+				Line 4 "into other web pages`t`t`t: " $GatewayAllowEmbed
 
 				Line 4 "Allow file transfer command`t`t: " $GatewayAllowFileTransfer.ToString()
 				If($Gateway.AllowFileTransfer)
@@ -34164,38 +34192,40 @@ Function OutputMFASetting
 				If($RASMFASetting.Type -eq "AzureRadius")
 				{
 					Line 4 "General"
-					Line 5 "Enable MFA provider in site: " $RASMFASetting.Enabled.ToString()
-					Line 5 "Name: " $RASMFASetting.Name
-					Line 5 "Description: " $RASMFASetting.Description
-					Line 5 "Type: " $RASMFASetting.DisplayName
+					Line 5 "Enable MFA provider in site`t: " $RASMFASetting.Enabled.ToString()
+					Line 5 "Name`t`t`t`t: " $RASMFASetting.Name
+					Line 5 "Description`t`t`t: " $RASMFASetting.Description
+					Line 5 "Type`t`t`t`t: " $RASMFASetting.DisplayName
 					Line 4 "Connection"
-					Line 5 "Display Name: " $RASMFASetting.DisplayName
-					Line 5 "Primary server: " $RASMFASetting.Server
-					Line 5 "Secondary server: " $RASMFASetting.BackupServer
+					Line 5 "Display Name`t`t`t: " $RASMFASetting.DisplayName
+					Line 5 "Primary server`t`t`t: " $RASMFASetting.Server
+					Line 5 "Secondary server`t`t: " $RASMFASetting.BackupServer
 					If($RASMFASetting.HAMode -eq "Parallel")
 					{
-						Line 5 "HA mode: Active - active (parallel)"
+						Line 5 "HA mode`t`t`t`t: Active - active (parallel)"
 					}
 					Else
 					{
-						Line 5 "HA mode: Active - passive (failover)"
+						Line 5 "HA mode`t`t`t`t: Active - passive (failover)"
 					}
-					Line 5 "Port: " $RASMFASetting.Port
-					Line 5 "Timeout (seconds): " $RASMFASetting.Timeout
-					Line 5 "Retries: " $RASMFASetting.Retries
-					Line 5 "Password Encoding: " $RASMFASetting.PasswordEncoding
-					Line 5 "Forward username only to Radius Server: " $RASMFASetting.UsernameOnly.ToString()
-					Line 5 "Forward the first password to Windows authentication provider: " $RASMFASetting.ForwardFirstPwdToAD.ToString()
+					Line 5 "Port`t`t`t`t: " $RASMFASetting.Port
+					Line 5 "Timeout (seconds)`t`t: " $RASMFASetting.Timeout
+					Line 5 "Retries`t`t`t`t: " $RASMFASetting.Retries
+					Line 5 "Password Encoding`t`t: " $RASMFASetting.PasswordEncoding
+					Line 5 "Forward username only to "
+					Line 5 "Radius Server`t`t`t: " $RASMFASetting.UsernameOnly.ToString()
+					Line 5 "Forward the first password to "
+					Line 5 "Windows authentication provider`t: " $RASMFASetting.ForwardFirstPwdToAD.ToString()
 					Line 4 "Attributes"
 					$cnt=0
 					ForEach($Item in $RASMFASetting.AttributeInfoList)
 					{
 						$cnt++
 						Line 5 "Attribute $cnt"
-						Line 6 "Name: $($Item.RadiusAttrName)"
-						Line 6 "Vendor: $($Item.VendorID)"
-						Line 6 "Type: $($Item.AttributeType)"
-						Line 6 "Value: $($Item.Value)"
+						Line 6 "Name`t: $($Item.RadiusAttrName)"
+						Line 6 "Vendor`t: $($Item.VendorID)"
+						Line 6 "Type`t: $($Item.AttributeType)"
+						Line 6 "Value`t: $($Item.Value)"
 						Line 5 "" #blank separator line
 					}
 					Line 5 "Automation"
@@ -34204,13 +34234,13 @@ Function OutputMFASetting
 					{
 						$cnt++
 						Line 5 "Automation $cnt"
-						Line 6 "Enable Action: $($Item.Enabled.ToString())"
-						Line 6 "Title: $($Item.Title)"
-						Line 6 "Command: $($Item.Command)"
-						Line 6 "Description: $($Item.Description)"
-						Line 6 "Action message: $($Item.ActionMessage)"
-						Line 6 "Image: $($Item.Image)"
-						Line 6 "Autosend: $($Item.AutoSend.ToString())"
+						Line 6 "Enable Action`t: $($Item.Enabled.ToString())"
+						Line 6 "Title`t`t: $($Item.Title)"
+						Line 6 "Command`t`t: $($Item.Command)"
+						Line 6 "Description`t: $($Item.Description)"
+						Line 6 "Action message`t: $($Item.ActionMessage)"
+						Line 6 "Image`t`t: $($Item.Image)"
+						Line 6 "Autosend`t: $($Item.AutoSend.ToString())"
 						Line 6 "" #blank separator line
 					}
 					Line 0 ""
@@ -34242,10 +34272,10 @@ Function OutputMFASetting
 					{
 						$cnt++
 						Line 5 "Attribute $cnt"
-						Line 6 "Name  : $($Item.Name)"
-						Line 6 "Vendor: $($Item.Vendor)"
-						Line 6 "Type  : $($Item.AttributeType)"
-						Line 6 "Value : $($Item.Value)"
+						Line 6 "Name`t: $($Item.RadiusAttrName)"
+						Line 6 "Vendor`t: $($Item.VendorID)"
+						Line 6 "Type`t: $($Item.AttributeType)"
+						Line 6 "Value`t: $($Item.Value)"
 						Line 5 "" #blank separator line
 					}
 					Line 4 "Automation"
@@ -34254,11 +34284,13 @@ Function OutputMFASetting
 					{
 						$cnt++
 						Line 5 "" "Automation $cnt"
-						Line 6 "Enabled : $($Item.Enabled.ToString())"
-						Line 6 "Title   : $($Item.Title)"
-						Line 6 "Command : $($Item.Command)"
-						Line 6 "Image   : $($Item.Image)"
-						Line 6 "Autosend: $($Item.AutoSend.ToString())"
+						Line 6 "Enable Action`t: $($Item.Enabled.ToString())"
+						Line 6 "Title`t`t: $($Item.Title)"
+						Line 6 "Command`t`t: $($Item.Command)"
+						Line 6 "Description`t: $($Item.Description)"
+						Line 6 "Action message`t: $($Item.ActionMessage)"
+						Line 6 "Image`t`t: $($Item.Image)"
+						Line 6 "Autosend`t: $($Item.AutoSend.ToString())"
 						Line 5 "" "" #blank separator line
 					}
 					Line 0 ""
@@ -35172,18 +35204,18 @@ Function OutputRASAllowedDevicesSetting
 		Line 1 "Device Access"
 		Line 2 "Mode: " $RASAllowedDevicesAllowClientMode
 		Line 0 ""
-		Line 2 "Enabled Clients              Minimum build"
-		Line 2 "=========================================="
-		#		1234567S12345678901234567890S1234
-		#       False   WIndows Phone client 9999
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWindows, "Windows client", $RASAllowedDevices.MinBuildWindows)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWeb, "User Portal (Web client)", $RASAllowedDevices.MinBuildWeb)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientMAC, "macOS client", $RASAllowedDevices.MinBuildMAC)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientLinux, "Linux client", $RASAllowedDevices.MinBuildLinux)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientIOS, "iOS/iPadOS client", $RASAllowedDevices.MinBuildIOS)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientAndroid, "Android client", $RASAllowedDevices.MinBuildAndroid)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientChromeApp, "Chrome OS client", $RASAllowedDevices.MinBuildChromeApp)
-		Line 2 ( "{0,-7} {1,-20} {2,-4}" -f $RASAllowedDevices.AllowClientWyse, "Wyse client", $RASAllowedDevices.MinBuildWyse)
+		Line 2 "Enabled Clients                  Minimum build"
+		Line 2 "=============================================="
+		#		1234567S123456789012345678901234S12345
+		#       False   User Portal (Web client) 99999
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientWindows, "Windows client", $RASAllowedDevices.MinBuildWindows)
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientWeb, "User Portal (Web client)", $RASAllowedDevices.MinBuildWeb)
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientMAC, "macOS client", $RASAllowedDevices.MinBuildMAC)
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientLinux, "Linux client", $RASAllowedDevices.MinBuildLinux)
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientIOS, "iOS/iPadOS client", $RASAllowedDevices.MinBuildIOS)
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientAndroid, "Android client", $RASAllowedDevices.MinBuildAndroid)
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientChromeApp, "Chrome OS client", $RASAllowedDevices.MinBuildChromeApp)
+		Line 2 ( "{0,-7} {1,-24} {2,-5}" -f $RASAllowedDevices.AllowClientWyse, "Wyse client", $RASAllowedDevices.MinBuildWyse)
 		Line 0 ""
 		Line 2 "Settings are replicated to all Sites: " $RASAllowedDevices.ReplicateSettings.ToString()
 		Line 0 ""
@@ -40691,10 +40723,10 @@ Function OutputRASClientSettings
 			Line 5 "Standard resolution"
 		}
 		Line 4 "Overlay:"
-		Line 5 "Enable overlay icon`t`t`t: " $RASClientSettings.EnableOverlayIcons.ToString()
+		Line 5 "Enable overlay icon`t : " $RASClientSettings.EnableOverlayIcons.ToString()
 		LIne 3 "Password notifications"
-		Line 4 "Show password expiration reminder`t: " $RASClientSettings.ShowPasswordExpiry.ToString()
-		Line 3 "Settings are replicated to all Sites`t: " $RASClientSettings.ReplicateSendHDIcons.ToString()
+		Line 4 "Show password expiration reminder: " $RASClientSettings.ShowPasswordExpiry.ToString()
+		Line 3 "Settings are replicated to all Sites`t : " $RASClientSettings.ReplicateSendHDIcons.ToString()
 		Line 0 ""
 	}
 	If($HTML)
