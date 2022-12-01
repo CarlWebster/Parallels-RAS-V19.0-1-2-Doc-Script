@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: November 15, 2022
+	LASTEDIT: December 1, 2022
 #>
 
 
@@ -596,7 +596,7 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.009'
+$script:MyVersion         = '3.00.010'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
 $tmpdate                  = [datetime] "12/01/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -10432,22 +10432,96 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Enable Group in site"; Value = $RDSGroup.Enabled.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Name"; Value = $RDSGroup.Name; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $RDSGroup.Description; }) > $Null
-				$ScriptInformation.Add(@{Data = "RD session hosts based on a template"; Value = $RDSGroup.Autoscale; }) > $Null
-				$ScriptInformation.Add(@{Data = "RAS template"; Value = $RDSGroup.RASTemplateId; }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 250;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Enable Group in site`t: " $RDSGroup.Enabled.ToString()
+				Line 3 "Name`t`t`t: " $RDSGroup.Name
+				Line 3 "Description`t`t: " $RDSGroup.Description
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Enable Group in site",($Script:htmlsb),$RDSGroup.Enabled.ToString(),$htmlwhite)
+				$rowdata += @(,("Name",($Script:htmlsb),$RDSGroup.Name,$htmlwhite))
+				$rowdata += @(,("Description",($Script:htmlsb),$RDSGroup.Description,$htmlwhite))
+
+				$msg = "General"
+				$columnWidths = @("300","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			#Servers
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Servers"
+			}
+			If($Text)
+			{
+				Line 2 "Servers"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
 				If($RDSGroupMembers.Count -gt 0)
 				{
-					$ScriptInformation.Add(@{Data = "Group Members"; Value = ""; }) > $Null
 					$cnt=-1
 					ForEach($RDSGroupMember in $RDSGroupMembers)
 					{
-						$cnt++
-						$ScriptInformation.Add(@{Data = "     Member"; Value = $RDSGroupMember.Server; }) > $Null
-						$ScriptInformation.Add(@{Data = "     Logon status"; Value = $RDSGroupMember.Enabled.ToString(); }) > $Null
-						$ScriptInformation.Add(@{Data = "     Type"; Value = "Server"; }) > $Null
-						$ScriptInformation.Add(@{Data = "     Description"; Value = $RDSGroupMember.Description; }) > $Null
-						If($RDSGroupMembers.Count -gt 1)
+						If($RDSGroupMember.Enabled)
 						{
-							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							$RDSGroupMemberLogonStatus = "Enabled"
+						}
+						Else
+						{
+							$RDSGroupMemberLogonStatus = "Disabled"
+						}
+						
+						$Status = Get-RASRDSStatus -Server $RDSGroupMember.Server  -EA 0 4>$Null
+						
+						If($? -and $Null -ne $Status)
+						{
+							$AgentStatus = GetRASStatus $Status.AgentState
+							$cnt++
+							$ScriptInformation.Add(@{Data = "Server"; Value = $RDSGroupMember.Server; }) > $Null
+							$ScriptInformation.Add(@{Data = "Status"; Value = $AgentStatus; }) > $Null
+							$ScriptInformation.Add(@{Data = "Logon status"; Value = $RDSGroupMemberLogonStatus; }) > $Null
+							$ScriptInformation.Add(@{Data = "Description"; Value = $RDSGroupMember.Description; }) > $Null
+							$ScriptInformation.Add(@{Data = "Sessions"; Value = $Status.ActiveSessions.ToString(); }) > $Null
+							If($RDSGroupMembers.Count -gt 1)
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = "Server"; Value = "Error retrieving server $($RDSGroupMember.Server) status"; }) > $Null
 						}
 					}
 				}
@@ -10476,25 +10550,39 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Enable Group in site`t`t`t: " $RDSGroup.Enabled.ToString()
-				Line 3 "Name`t`t`t`t`t: " $RDSGroup.Name
-				Line 3 "Description`t`t`t`t: " $RDSGroup.Description
-				Line 3 "RD session hosts based on a template`t: " $RDSGroup.Autoscale
-				Line 3 "RAS template`t`t`t`t: " $RDSGroup.RASTemplateId
 				If($RDSGroupMembers.Count -gt 0)
 				{
-					Line 3 "Group Members" ""
 					$cnt=-1
 					ForEach($RDSGroupMember in $RDSGroupMembers)
 					{
-						$cnt++
-						Line 4 "Member`t`t: " $RDSGroupMember.Server
-						Line 4 "Logon status`t: " $RDSGroupMember.Enabled.ToString()
-						Line 4 "Type`t`t: " "Server"
-						Line 4 "Description`t: " $RDSGroupMember.Description
-						If($RDSGroupMembers.Count -gt 1)
+						If($RDSGroupMember.Enabled)
 						{
-							Line 4 ""
+							$RDSGroupMemberLogonStatus = "Enabled"
+						}
+						Else
+						{
+							$RDSGroupMemberLogonStatus = "Disabled"
+						}
+							
+						$Status = Get-RASRDSStatus -Server $RDSGroupMember.Server  -EA 0 4>$Null
+							
+						If($? -and $Null -ne $Status)
+						{
+							$AgentStatus = GetRASStatus $Status.AgentState
+							$cnt++
+							Line 3 "Server`t`t: " $RDSGroupMember.Server
+							Line 3 "Status`t`t: " $AgentStatus
+							Line 3 "Logon status`t: " $RDSGroupMemberLogonStatus
+							Line 3 "Description`t: " $RDSGroupMember.Description
+							Line 3 "Sessions`t: " $Status.ActiveSessions.ToString()
+							If($RDSGroupMembers.Count -gt 1)
+							{
+								Line 3 ""
+							}
+						}
+						Else
+						{
+							Line 3 "Server`t`t: " "Error retrieving server $($RDSGroupMember.Server) status"
 						}
 					}
 				}
@@ -10507,25 +10595,46 @@ Function OutputSite
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Enable Group in site",($Script:htmlsb),$RDSGroup.Enabled.ToString(),$htmlwhite)
-				$rowdata += @(,("Name",($Script:htmlsb),$RDSGroup.Name,$htmlwhite))
-				$rowdata += @(,("Description",($Script:htmlsb),$RDSGroup.Description,$htmlwhite))
-				$rowdata += @(,("RD session hosts based on a template",($Script:htmlsb),$RDSGroup.Autoscale.ToString(),$htmlwhite))
-				$rowdata += @(,("RAS template",($Script:htmlsb),$RDSGroup.RASTemplateId.ToString(),$htmlwhite))
 				If($RDSGroupMembers.Count -gt 0)
 				{
-					$rowdata += @(,("Group Members",($Script:htmlsb),"",$htmlwhite))
 					$cnt=-1
 					ForEach($RDSGroupMember in $RDSGroupMembers)
 					{
-						$cnt++
-						$rowdata += @(,("     Member",($Script:htmlsb),$RDSGroupMember.Server,$htmlwhite))
-						$rowdata += @(,("     Logon status",($Script:htmlsb),$RDSGroupMember.Enabled.ToString(),$htmlwhite))
-						$rowdata += @(,("     Type",($Script:htmlsb),"Server",$htmlwhite))
-						$rowdata += @(,("     Description",($Script:htmlsb),$RDSGroupMember.Description,$htmlwhite))
-						If($RDSGroupMembers.Count -gt 1)
+						If($RDSGroupMember.Enabled)
 						{
-							$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+							$RDSGroupMemberLogonStatus = "Enabled"
+						}
+						Else
+						{
+							$RDSGroupMemberLogonStatus = "Disabled"
+						}
+							
+						$Status = Get-RASRDSStatus -Server $RDSGroupMember.Server  -EA 0 4>$Null
+						
+						If($? -and $Null -ne $Status)
+						{
+							$AgentStatus = GetRASStatus $Status.AgentState
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$columnHeaders = @("Member",($Script:htmlsb),$RDSGroupMember.Server,$htmlwhite)
+							}
+							Else
+							{
+								$rowdata += @(,("Member",($Script:htmlsb),$RDSGroupMember.Server,$htmlwhite))
+							}
+							$rowdata += @(,("Status",($Script:htmlsb),$AgentStatus,$htmlwhite))
+							$rowdata += @(,("Logon status",($Script:htmlsb),$RDSGroupMemberLogonStatus,$htmlwhite))
+							$rowdata += @(,("Description",($Script:htmlsb),$RDSGroupMember.Description,$htmlwhite))
+							$rowdata += @(,("Sessions",($Script:htmlsb),$Status.ActiveSessions.ToString(),$htmlwhite))
+							If($RDSGroupMembers.Count -gt 1)
+							{
+								$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+							}
+						}
+						Else
+						{
+							$rowdata += @(,("Server",($Script:htmlsb),"Error retrieving server $($RDSGroupMember.Server) status",$htmlwhite))
 						}
 					}
 				}
@@ -10534,7 +10643,7 @@ Function OutputSite
 					$rowdata += @(,("Group Members",($Script:htmlsb),"No Group Members Found",$htmlwhite))
 				}
 
-				$msg = "General"
+				$msg = "Servers"
 				$columnWidths = @("300","275")
 				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 				WriteHTMLLine 0 0 ""
@@ -32074,12 +32183,15 @@ Function OutputUniversalPrintingSettings
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ServersInSiteTable = @()
 		
-		ForEach($RDSServer in $RDSobj.Server)
+		If(validObject $RDSobj Server)
 		{
-			$ServersInSiteTable += @{
-				Server = $RDSServer
-				Type   = $RDSType
-				State  = $RDSPrintingState
+			ForEach($RDSServer in $RDSobj.Server)
+			{
+				$ServersInSiteTable += @{
+					Server = $RDSServer
+					Type   = $RDSType
+					State  = $RDSPrintingState
+				}
 			}
 		}
 		
@@ -32122,22 +32234,28 @@ Function OutputUniversalPrintingSettings
 		Line 3 "============================================================"
 		#       123456789012345678901234567890S12345678901234567890S12345678
 
-		ForEach($RDSServer in $RDSobj.Server)
+		If(validObject $RDSobj Server)
 		{
-			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-				$RDSServer, 
-				$RDSType, 
-				$RDSPrintingState
-			)
+			ForEach($RDSServer in $RDSobj.Server)
+			{
+				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+					$RDSServer, 
+					$RDSType, 
+					$RDSPrintingState
+				)
+			}
 		}
 		
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		If(validObject $VDIHostsobj Server)
 		{
-			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-				$VDIServer, 
-				$VDIType, 
-				$VDIHostsPrintingState
-			)
+			ForEach($VDIServer in $VDIHostsobj.Server)
+			{
+				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+					$VDIServer, 
+					$VDIType, 
+					$VDIHostsPrintingState
+				)
+			}
 		}
 		Line 0 ""
 	}
@@ -32145,22 +32263,28 @@ Function OutputUniversalPrintingSettings
 	{
 		$rowdata = @()
 
-		ForEach($RDSServer in $RDSobj.Server)
+		If(validObject $RDSobj Server)
 		{
-			$rowdata += @(,(
-				$RDSServer,$htmlwhite,
-				$RDSType,$htmlwhite,
-				$RDSPrintingState,$htmlwhite)
-			)
+			ForEach($RDSServer in $RDSobj.Server)
+			{
+				$rowdata += @(,(
+					$RDSServer,$htmlwhite,
+					$RDSType,$htmlwhite,
+					$RDSPrintingState,$htmlwhite)
+				)
+			}
 		}
 		
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		If(validObject $VDIHostsobj Server)
 		{
-			$rowdata += @(,(
-				$VDIServer,$htmlwhite,
-				$VDIType,$htmlwhite,
-				$VDIHostsPrintingState,$htmlwhite)
-			)
+			ForEach($VDIServer in $VDIHostsobj.Server)
+			{
+				$rowdata += @(,(
+					$VDIServer,$htmlwhite,
+					$VDIType,$htmlwhite,
+					$VDIHostsPrintingState,$htmlwhite)
+				)
+			}
 		}
 		
 		$columnHeaders = @(
@@ -32900,8 +33024,24 @@ Function OutputUniversalScanningSettings
 		#Nothing
 	}
 
-	$RDSType = $RDSObj.Type
-	$VDIType = $VDIHostsObj.Type
+
+	If(validObject $RDSObj Type)
+	{
+		$RDSType = $RDSObj.Type
+	}
+	Else
+	{
+		$RDSType = ""
+	}
+
+	If(validObject $VDIHostsObj Type)
+	{
+		$VDIType = $VDIHostsObj.Type
+	}
+	Else
+	{
+		$VDIType = ""
+	}
 	
 	If($MSWord -or $PDF)
 	{
