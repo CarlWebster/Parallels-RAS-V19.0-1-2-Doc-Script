@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: December 1, 2022
+	LASTEDIT: December 2, 2022
 #>
 
 
@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.010'
+$script:MyVersion         = '3.00.011'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "12/01/2022"
+$tmpdate                  = [datetime] "12/02/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -12658,26 +12658,169 @@ Function OutputSite
 		}
 	}
 
-	Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Host Scheduler"
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Hosts Templates"
+	$RDSTemplates = Get-RASVDITemplate -Siteid $Site.Id -EA 0 4> $Null
+
+	If(!$?)
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve RD Session Hosts Templates for Site $($Site.Name)`
+		"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "Unable to retrieve RD Session Hosts Templates for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve RD Session Hosts Templates for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve RD Session Hosts Templates for Site $($Site.Name)"
+		}
+	}
+	ElseIf($? -and $Null -eq $RDSTemplates)
+	{
+		Write-Host "
+		No RD Session Hosts Templates retrieved for Site $($Site.Name).`
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No RD Session Hosts Templates retrieved for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "No RD Session Hosts Templates retrieved for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No RD Session Hosts Templates retrieved for Site $($Site.Name)"
+		}
+	}
+	Else
+	{
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 2 0 "Templates"
+		}
+		If($Text)
+		{
+			Line 1 "Templates"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 2 0 "Templates"
+		}
+		
+		ForEach($RDSTemplate in $RDSTemplates)
+		{
+			$TemplateProvider = Get-RASProvider -Id $RDSTemplate.ProviderId -EA 0 4>$Null
+			
+			If($? -and $Null -ne $TemplateProvider)
+			{
+				$TemplateProviderName = $TemplateProvider.Server
+				$TemplateProviderType = GetVDIType $TemplateProvider.Type
+			}
+			Else
+			{
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 3 0 "Template Name $($RDSTemplate.Name)"
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Name"; Value = $RDSTemplate.Name; }) > $Null
+				$ScriptInformation.Add(@{Data = "Status"; Value = "Can't find"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Power state"; Value = "Can't find"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Agent status"; Value = "Can't find"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Distribution"; Value = "Can't find"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Provider"; Value = $TemplateProviderName; }) > $Null
+				$ScriptInformation.Add(@{Data = "Provider type"; Value = $TemplateProviderType; }) > $Null
+				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $RDSTemplate.AdminLastMod; }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = $RDSTemplate.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created by"; Value = $RDSTemplate.AdminCreate; }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = $RDSTemplate.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "ID"; Value = $RDSTemplate.Id.ToString(); }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 2 "Name: " $RDSTemplate.Name
+				Line 2 "Status`t`t`t: " "Can't find"
+				Line 2 "Power state`t`t: " "Can't find"
+				Line 2 "Agent status`t`t: " "Can't find"
+				Line 2 "Distribution`t`t: " "Can't find"
+				Line 2 "Provider`t`t: " $TemplateProviderName
+				Line 2 "Provider type`t`t: " $TemplateProviderType
+				Line 2 "Last modification by`t: " $RDSTemplate.AdminLastMod
+				Line 2 "Modified on`t`t: " $RDSTemplate.TimeLastMod.ToString()
+				Line 2 "Created by`t`t: " $RDSTemplate.AdminCreate
+				Line 2 "Created on`t`t: " $RDSTemplate.TimeCreate.ToString()
+				Line 2 "ID`t`t`t: " $RDSTemplate.Id.ToString()
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Name",($Script:htmlsb),$RDSTemplate.Name,$htmlwhite)
+				$rowdata += @(,("Status",($Script:htmlsb),"Can't find",$htmlwhite))
+				$rowdata += @(,("Power state",($Script:htmlsb),"Can't find",$htmlwhite))
+				$rowdata += @(,("Agent status",($Script:htmlsb),"Can't find",$htmlwhite))
+				$rowdata += @(,("Distribution",($Script:htmlsb),"Can't find",$htmlwhite))
+				$rowdata += @(,("Provider",($Script:htmlsb),$TemplateProviderName,$htmlwhite))
+				$rowdata += @(,("Provider type",($Script:htmlsb),$TemplateProviderType,$htmlwhite))
+				$rowdata += @(,("Last modification by",($Script:htmlsb), $RDSTemplate.AdminLastMod,$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), $RDSTemplate.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Created by",($Script:htmlsb), $RDSTemplate.AdminCreate,$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), $RDSTemplate.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Id",($Script:htmlsb),$RDSTemplate.Id.ToString(),$htmlwhite))
+
+				$msg = ""
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+		}
+	}
+	
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Hosts Scheduler"
 	$RDSSchedules = Get-RASRDSSchedule -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
 	{
 		Write-Warning "
 		`n
-		Unable to retrieve RD Session Host Scheduler for Site $($Site.Name)`
+		Unable to retrieve RD Session Hosts Scheduler for Site $($Site.Name)`
 		"
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 0 0 "Unable to retrieve RD Session Host Scheduler for Site $($Site.Name)"
+			WriteWordLine 0 0 "Unable to retrieve RD Session Hosts Scheduler for Site $($Site.Name)"
 		}
 		If($Text)
 		{
-			Line 0 "Unable to retrieve RD Session Host Scheduler for Site $($Site.Name)"
+			Line 0 "Unable to retrieve RD Session Hosts Scheduler for Site $($Site.Name)"
 		}
 		If($HTML)
 		{
-			WriteHTMLLine 0 0 "Unable to retrieve RD Session Host Scheduler for Site $($Site.Name)"
+			WriteHTMLLine 0 0 "Unable to retrieve RD Session Hosts Scheduler for Site $($Site.Name)"
 		}
 	}
 	ElseIf($? -and $Null -eq $RDSSchedules)
@@ -31927,6 +32070,9 @@ Function ProcessUniversalPrinting
 	}
 	Else
 	{
+		$RDSObjects     = New-Object System.Collections.ArrayList
+		$VDIHostObjects = New-Object System.Collections.ArrayList
+
 		$Printingobj = [PSCustomObject] @{
 			PrinterNamePattern = $RASPrinterSettings.PrinterNamePattern
 			ReplicateSettings  = $RASPrinterSettings.ReplicatePrinterPattern
@@ -31941,9 +32087,9 @@ Function ProcessUniversalPrinting
 			`n
 			Unable to retrieve RDS Printing information
 			"
-			$RDSobj = [PSCustomObject] @{
-				Server = "None found"
-				Type = "N/A"
+			$RDSobjjects = [PSCustomObject] @{
+				Server        = "None found"
+				Type          = "N/A"
 				PrintingState = "N/A"
 			}
 		}
@@ -31952,28 +32098,32 @@ Function ProcessUniversalPrinting
 		Write-Host "
 		No RDS Printing information was found
 		" -ForegroundColor White
-			$RDSobj = [PSCustomObject] @{
-				Server = "None found"
-				Type = "N/A"
+			$RDSobjects = [PSCustomObject] @{
+				Server        = "None found"
+				Type          = "N/A"
 				PrintingState = "N/A"
 			}
 		}
 		Else
 		{
-			If(validObject $results EnablePrinting)
+			ForEach($Result in $Results)
 			{
-				$PrintingState = $Results.EnablePrinting
-			}
-			Else
-			{
-				$PrintingState = ""
-			}
-			
-			$RDSobj = [PSCustomObject] @{
-				Server = $Results.Server
-				Type = "RD Session Hosts"
-				PrintingState = $PrintingState
-			}
+				If($Result.EnablePrinting)
+				{
+					$State = "Enabled"
+				}
+				Else
+				{
+					$State = "Disabled"
+				}
+				
+				$RDSobj = [PSCustomObject] @{
+					Server        = $Result.Server
+					Type          = "RD Session Hosts"
+					PrintingState = $State
+				}
+				$Null = $RDSObjects.Add($RDSobj)
+		}
 		}
 		
 		$results = Get-RASProvider -SiteId $Site.Id -EA 0 4>$Null
@@ -31985,9 +32135,9 @@ Function ProcessUniversalPrinting
 			Unable to retrieve VDI Hosts Printing information
 			"
 			
-			$VDIHostsobj = [PSCustomObject] @{
-				Server = "Unable to retrieve"
-				Type = "N/A"
+			$VDIHostsobjects = [PSCustomObject] @{
+				Server        = "Unable to retrieve"
+				Type          = "N/A"
 				PrintingState = "N/A"
 			}
 		}
@@ -31996,31 +32146,35 @@ Function ProcessUniversalPrinting
 		Write-Host "
 		No VDI Hosts Printing information was found
 		" -ForegroundColor White
-			$VDIHostsobj = [PSCustomObject] @{
-				Server = "None found"
-				Type = "N/A"
+			$VDIHostsobjects = [PSCustomObject] @{
+				Server        = "None found"
+				Type          = "N/A"
 				PrintingState = "N/A"
 			}
 		}
 		Else
 		{
-			If(validObject $results EnablePrinting)
+			ForEach($Result in $Results)
 			{
-				$PrintingState = $Results.EnablePrinting
-			}
-			Else
-			{
-				$PrintingState = ""
-			}
-			
-			$VDIHostsobj = [PSCustomObject] @{
-				Server = $Results.Server
-				Type = "VDI Providers"
-				PrintingState = $PrintingState
+				If($Result.EnablePrinting)
+				{
+					$State = "Enabled"
+				}
+				Else
+				{
+					$State = "Disabled"
+				}
+				
+				$VDIHostsobj = [PSCustomObject] @{
+					Server        = $Result.Server
+					Type          = "VDI Providers"
+					PrintingState = $State
+				}
+				$Null = $VDIHostObjects.Add($VDIHostsobj)
 			}
 		}
 		
-		OutputUniversalPrintingSettings $Printingobj $RDSobj $VDIHostsobj
+		OutputUniversalPrintingSettings $Printingobj $RDSobjects $VDIHostobjects
 		
 		OutputUniversalPrinterDriversSettings $RASPrinterSettings
 		
@@ -32144,66 +32298,26 @@ Function OutputUniversalPrintingSettings
 		#Nothing
 	}
 
-	Switch ($RDSobj.PrintingState)
-	{
-		$True	{$RDSPrintingState = "Enabled"; Break}
-		$False	{$RDSPrintingState = "Disabled"; Break}
-		"N/A"	{$RDSPrintingState = "N/A"; Break}
-		Default	{$RDSPrintingState = "Unable to determine RD Sessions Hosts Printing State: $($RDSobj.PrintingState)"; Break}
-	}
-	
-	Switch ($VDIHostsobj.PrintingState)
-	{
-		$True	{$VDIHostsPrintingState = "Enabled"; Break}
-		$False	{$VDIHostsPrintingState = "Disabled"; Break}
-		"N/A"	{$VDIHostsPrintingState = "N/A"; Break}
-		Default	{$VDIHostsPrintingState = "Unable to determine VDI Hosts Printing State: $($VDIHostsobj.PrintingState)"; Break}
-	}
-
-	If(validObject $RDSObj Type)
-	{
-		$RDSType = $RDSObj.Type
-	}
-	Else
-	{
-		$RDSType = ""
-	}
-
-	If(validObject $VDIHostsObj Type)
-	{
-		$VDIType = $VDIHostsObj.Type
-	}
-	Else
-	{
-		$VDIType = ""
-	}
-	
 	If($MSWord -or $PDF)
 	{
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ServersInSiteTable = @()
 		
-		If(validObject $RDSobj Server)
+		ForEach($obj in $RDSobj)
 		{
-			ForEach($RDSServer in $RDSobj.Server)
-			{
-				$ServersInSiteTable += @{
-					Server = $RDSServer
-					Type   = $RDSType
-					State  = $RDSPrintingState
-				}
+			$ServersInSiteTable += @{
+				Server = $obj.Server
+				Type   = $obj.Type
+				State  = $obj.PrintingState
 			}
 		}
-		
-		If(validObject $VDIHostsObj Server)
+	
+		ForEach($obj in $VDIHostsobj)
 		{
-			ForEach($VDIServer in $VDIHostsobj.Server)
-			{
-				$ServersInSiteTable += @{
-					Server = $VDIServer
-					Type   = $VDIType
-					State  = $VDIHostsPrintingState
-				}
+			$ServersInSiteTable += @{
+				Server = $obj.Server
+				Type   = $obj.Type
+				State  = $obj.PrintingState
 			}
 		}
 
@@ -32234,57 +32348,46 @@ Function OutputUniversalPrintingSettings
 		Line 3 "============================================================"
 		#       123456789012345678901234567890S12345678901234567890S12345678
 
-		If(validObject $RDSobj Server)
+		ForEach($obj in $RDSobj)
 		{
-			ForEach($RDSServer in $RDSobj.Server)
-			{
-				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-					$RDSServer, 
-					$RDSType, 
-					$RDSPrintingState
-				)
-			}
+			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+				$obj.Server, 
+				$obj.Type, 
+				$obj.PrintingState
+			)
 		}
-		
-		If(validObject $VDIHostsobj Server)
+	
+		ForEach($obj in $VDIHostsobj)
 		{
-			ForEach($VDIServer in $VDIHostsobj.Server)
-			{
-				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-					$VDIServer, 
-					$VDIType, 
-					$VDIHostsPrintingState
-				)
-			}
+			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+				$obj.Server, 
+				$obj.Type, 
+				$obj.PrintingState
+			)
 		}
+
 		Line 0 ""
 	}
 	If($HTML)
 	{
 		$rowdata = @()
 
-		If(validObject $RDSobj Server)
+		ForEach($obj in $RDSobj)
 		{
-			ForEach($RDSServer in $RDSobj.Server)
-			{
-				$rowdata += @(,(
-					$RDSServer,$htmlwhite,
-					$RDSType,$htmlwhite,
-					$RDSPrintingState,$htmlwhite)
-				)
-			}
+			$rowdata += @(,(
+				$obj.Server,$htmlwhite,
+				$obj.Type,$htmlwhite,
+				$obj.PrintingState,$htmlwhite)
+			)
 		}
-		
-		If(validObject $VDIHostsobj Server)
+
+		ForEach($obj in $VDIHostsobj)
 		{
-			ForEach($VDIServer in $VDIHostsobj.Server)
-			{
-				$rowdata += @(,(
-					$VDIServer,$htmlwhite,
-					$VDIType,$htmlwhite,
-					$VDIHostsPrintingState,$htmlwhite)
-				)
-			}
+			$rowdata += @(,(
+				$obj.Server,$htmlwhite,
+				$obj.Type,$htmlwhite,
+				$obj.PrintingState,$htmlwhite)
+			)
 		}
 		
 		$columnHeaders = @(
@@ -32348,8 +32451,8 @@ Function OutputUniversalPrinterDriversSettings
 			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
 			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Columns.Item(1).Width = 100;
-			$Table.Columns.Item(2).Width = 275;
+			$Table.Columns.Item(1).Width = 275;
+			$Table.Columns.Item(2).Width = 100;
 
 			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -32370,7 +32473,7 @@ Function OutputUniversalPrinterDriversSettings
 			$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$RASPrinterSettings.ReplicatePrinterDrivers.ToString(),$htmlwhite))
 
 			$msg = ""
-			$columnWidths = @("100","300")
+			$columnWidths = @("300","100")
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
 		}
@@ -32790,6 +32893,9 @@ Function ProcessUniversalScanning
 	}
 	Else
 	{
+		$RDSObjects     = New-Object System.Collections.ArrayList
+		$VDIHostObjects = New-Object System.Collections.ArrayList
+		
 		$WIAobj = [PSCustomObject] @{
 			WIANamePattern    = $Results.WIANamePattern
 			ReplicateSettings = $Results.ReplicateWIAPattern
@@ -32811,9 +32917,10 @@ Function ProcessUniversalScanning
 			$RDSobj = [PSCustomObject] @{
 				Server = "Unable to retrieve"
 				Type = "N/A"
-				WIAState = $False
-				TWAINState = $False
+				WIAState = "Disabled"
+				TWAINState = "Disabled"
 			}
+			$Null = $RDSObjects.Add($RDSobj)
 		}
 		ElseIf($? -and $null -eq $results)
 		{
@@ -32823,35 +32930,40 @@ Function ProcessUniversalScanning
 			$RDSobj = [PSCustomObject] @{
 				Server = "Not found"
 				Type = "Not found"
-				WIAState = $False
-				TWAINState = $False
+				WIAState = "Disabled"
+				TWAINState = "Disabled"
 			}
+			$Null = $RDSObjects.Add($RDSobj)
 		}
 		Else
 		{
-			If(validObject $Results EnableWIA)
+			ForEach($Result in $Results)
 			{
-				$WIAState = $Results.EnableWIA
-			}
-			Else
-			{
-				$WIAState = $False
-			}
-			
-			If(validObject $Results EnableTWAIN)
-			{
-				$TWAINState = $Results.EnableTWAIN
-			}
-			Else
-			{
-				$TWAINState = $False
-			}
-			
-			$RDSobj = [PSCustomObject] @{
-				Server = $Results.Server
-				Type = "RD Session Hosts"
-				WIAState = $WIAState
-				TWAINState = $TWAINState
+				If($Result.EnableWIA)
+				{
+					$WIAState = "Enabled"
+				}
+				Else
+				{
+					$WIAState = "Disabled"
+				}
+				
+				If($Result.EnableTWAIN)
+				{
+					$TWAINState = "Enabled"
+				}
+				Else
+				{
+					$TWAINState = "Disabled"
+				}
+
+				$RDSobj = [PSCustomObject] @{
+					Server = $Result.Server
+					Type = "RD Session Hosts"
+					WIAState = $WIAState
+					TWAINState = $TwainState
+				}
+				$Null = $RDSObjects.Add($RDSobj)
 			}
 		}
 		
@@ -32866,9 +32978,10 @@ Function ProcessUniversalScanning
 			$VDIHostsobj = [PSCustomObject] @{
 				Server = "Unable to retrieve"
 				Type = "Unknown"
-				WIAState = $False
-				TWAINState = $False
+				WIAState = "Disabled"
+				TWAINState = "Disabled"
 			}
+			$Null = $VDIHostObjects.Add($VDIHostsobj)
 		}
 		ElseIf($? -and $null -eq $results)
 		{
@@ -32878,39 +32991,44 @@ Function ProcessUniversalScanning
 			$VDIHostsobj = [PSCustomObject] @{
 				Server = "None found"
 				Type = "Unknown"
-				WIAState = $False
-				TWAINState = $False
+				WIAState = "Disabled"
+				TWAINState = "Disabled"
 			}
+			$Null = $VDIHostObjects.Add($VDIHostsobj)
 		}
 		Else
 		{
-			If(validObject $Results EnableWIA)
+			ForEach($Result in $Results)
 			{
-				$WIAState = $Results.EnableWIA
-			}
-			Else
-			{
-				$WIAState = $False
-			}
-			
-			If(validObject $Results EnableTWAIN)
-			{
-				$TWAINState = $Results.EnableTWAIN
-			}
-			Else
-			{
-				$TWAINState = $False
-			}
-			
-			$VDIHostsobj = [PSCustomObject] @{
-				Server = $Results.Server
-				Type = "VDI Providers"
-				WIAState = $WIAState
-				TWAINState = $TWAINState
+				If($Result.EnableWIA)
+				{
+					$WIAState = "Enabled"
+				}
+				Else
+				{
+					$WIAState = "Disabled"
+				}
+				
+				If($Result.EnableTWAIN)
+				{
+					$TWAINState = "Enabled"
+				}
+				Else
+				{
+					$TWAINState = "Disabled"
+				}
+
+				$VDIHostsobj = [PSCustomObject] @{
+					Server = $Result.Server
+					Type = "VDI Providers"
+					WIAState = $WIAState
+					TWAINState = $TWAINState
+				}
+				$Null = $VDIHostObjects.Add($VDIHostsobj)
 			}
 		}
 		
-		OutputUniversalScanningSettings $WIAobj $TWAINobj $RDSobj $VDIHostsobj
+		OutputUniversalScanningSettings $WIAobj $TWAINobj $RDSobjects $VDIHostobjects
 	}
 }
 
@@ -33024,55 +33142,26 @@ Function OutputUniversalScanningSettings
 		#Nothing
 	}
 
-
-	If(validObject $RDSObj Type)
-	{
-		$RDSType = $RDSObj.Type
-	}
-	Else
-	{
-		$RDSType = ""
-	}
-
-	If(validObject $VDIHostsObj Type)
-	{
-		$VDIType = $VDIHostsObj.Type
-	}
-	Else
-	{
-		$VDIType = ""
-	}
-	
 	If($MSWord -or $PDF)
 	{
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ServersInSiteTable = @()
 		
-		If(validObject $RDSobj Server)
+		ForEach($obj in $RDSObj)
 		{
-			$cnt = -1
-			ForEach($RDSServer in $RDSobj.Server)
-			{
-				$cnt++
-				$ServersInSiteTable += @{
-					Server = $RDSServer
-					Type   = $RDSType
-					State  = $RDSobj.WIAState[$cnt].ToString()
-				}
+			$ServersInSiteTable += @{
+				Server = $obj.Server
+				Type   = $obj.Type
+				State  = $obj.WIAState
 			}
 		}
 		
-		If(validObject $VDIHostsobj Server)
+		ForEach($obj in $VDIHostsobj)
 		{
-			$cnt = -1
-			ForEach($VDIServer in $VDIHostsobj.Server)
-			{
-				$cnt++
-				$ServersInSiteTable += @{
-					Server = $VDIServer
-					Type   = $VDIType
-					State  = $VDIHostsobj.WIAState[$cnt].ToString()
-				}
+			$ServersInSiteTable += @{
+				Server = $obj.Server
+				Type   = $obj.Type
+				State  = $obj.WIAState
 			}
 		}
 
@@ -33103,65 +33192,47 @@ Function OutputUniversalScanningSettings
 		Line 3 "Server                         Type                 State   "
 		Line 3 "============================================================"
 		#       123456789012345678901234567890S12345678901234567890S12345678
-		If(validObject $RDSobj Server)
+
+		ForEach($obj in $RDSobj)
 		{
-			$cnt = -1
-			ForEach($RDSServer in $RDSobj.Server)
-			{
-				$cnt++
-				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-					$RDSServer, 
-					$RDSType, 
-					$RDSobj.WIAState[$cnt].ToString()
-				)
-			}
+			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+				$obj.Server, 
+				$obj.Type, 
+				$obj.WIAState
+			)
 		}
 		
-		If(validObject $VDIHostsobj Server)
+		ForEach($obj in $VDIHostsobj)
 		{
-			$cnt = -1
-			ForEach($VDIServer in $VDIHostsobj.Server)
-			{
-				$cnt++
-				Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-					$VDIServer, 
-					$VDIType, 
-					$VDIHostsobj.WIAState[$cnt].ToString()
-				)
-			}
+			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
+				$obj.Server, 
+				$obj.Type, 
+				$obj.WIAState
+			)
 		}
+
 		Line 0 ""
 	}
 	If($HTML)
 	{
 		$rowdata = @()
 
-		If(validObject $RDSobj Server)
+		ForEach($obj in $RDSobj)
 		{
-			$cnt = -1
-			ForEach($RDSServer in $RDSobj.Server)
-			{
-				$cnt++
-				$rowdata += @(,(
-					$RDSServer,$htmlwhite,
-					$RDSType,$htmlwhite,
-					$RDSobj.WIAState[$cnt].ToString(),$htmlwhite)
-				)
-			}
+			$rowdata += @(,(
+				$obj.Server,$htmlwhite,
+				$obj.Type,$htmlwhite,
+				$obj.WIAState,$htmlwhite)
+			)
 		}
-		
-		If(validObject $VDIHostsobj Server)
+	
+		ForEach($obj in $VDIHostsobj)
 		{
-			$cnt = -1
-			ForEach($VDIServer in $VDIHostsobj.Server)
-			{
-				$cnt++
-				$rowdata += @(,(
-					$VDIServer,$htmlwhite,
-					$VDIType,$htmlwhite,
-					$VDIHostsobj.WIAState[$cnt].ToString(),$htmlwhite)
-				)
-			}
+			$rowdata += @(,(
+				$obj.Server,$htmlwhite,
+				$obj.Type,$htmlwhite,
+				$obj.WIAState,$htmlwhite)
+			)
 		}
 
 		$columnHeaders = @(
@@ -33270,25 +33341,21 @@ Function OutputUniversalScanningSettings
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ServersInSiteTable = @()
 		
-		$cnt = -1
-		ForEach($RDSServer in $RDSobj.Server)
+		ForEach($obj in $RDSobj)
 		{
-			$cnt++
 			$ServersInSiteTable += @{
-				Server = $RDSServer
-				Type   = $RDSType
-				State  = $RDSobj.TwainState[$cnt].ToString()
+				Server = $obj.Server
+				Type   = $obj.Type
+				State  = $obj.TwainState
 			}
 		}
 		
-		$cnt = -1
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		ForEach($obj in $VDIHostsobj)
 		{
-			$cnt++
 			$ServersInSiteTable += @{
-				Server = $VDIServer
-				Type   = $VDIType
-				State  = $VDIHostsobj.TwainState[$cnt].ToString()
+				Server = $obj.Server
+				Type   = $obj.Type
+				State  = $obj.TwainState
 			}
 		}
 
@@ -33319,52 +33386,46 @@ Function OutputUniversalScanningSettings
 		Line 3 "Server                         Type                 State   "
 		Line 3 "============================================================"
 		#       123456789012345678901234567890S12345678901234567890S12345678
-		$cnt = -1
-		ForEach($RDSServer in $RDSobj.Server)
+
+		ForEach($obj in $RDSobj)
 		{
-			$cnt++
 			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-				$RDSServer, 
-				$RDSType, 
-				$RDSobj.TwainState[$cnt].ToString()
+				$obj.Server, 
+				$obj.Type, 
+				$obj.TwainState
 			)
 		}
 		
-		$cnt = -1
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		ForEach($obj in $VDIHostsobj)
 		{
-			$cnt++
 			Line 3 ( "{0,-30} {1,-20} {2,-8}" -f 
-				$VDIServer, 
-				$VDIType, 
-				$VDIHostsobj.TwainState[$cnt].ToString()
+				$obj.Server, 
+				$obj.Type, 
+				$obj.TwainState
 			)
 		}
+
 		Line 0 ""
 	}
 	If($HTML)
 	{
 		$rowdata = @()
 
-		$cnt = -1
-		ForEach($RDSServer in $RDSobj.Server)
+		ForEach($obj in $RDSobj)
 		{
-			$cnt++
 			$rowdata += @(,(
-				$RDSServer,$htmlwhite,
-				$RDSType,$htmlwhite,
-				$RDSobj.TwainState[$cnt].ToString(),$htmlwhite)
+				$obj.Server,$htmlwhite,
+				$obj.Type,$htmlwhite,
+				$obj.TwainState,$htmlwhite)
 			)
 		}
 		
-		$cnt = -1
-		ForEach($VDIServer in $VDIHostsobj.Server)
+		ForEach($obj in $VDIHostsobj)
 		{
-			$cnt++
 			$rowdata += @(,(
-				$VDIServer,$htmlwhite,
-				$VDIType,$htmlwhite,
-				$VDIHostsobj.TwainState[$cnt].ToString(),$htmlwhite)
+				$obj.Server,$htmlwhite,
+				$obj.Type,$htmlwhite,
+				$obj.TwainState,$htmlwhite)
 			)
 		}
 		
