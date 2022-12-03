@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: December 2, 2022
+	LASTEDIT: December 3, 2022
 #>
 
 
@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.012'
+$script:MyVersion         = '3.00.013'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "12/02/2022"
+$tmpdate                  = [datetime] "12/03/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -4260,6 +4260,7 @@ Function GetVDIType
 		"VmwareVCenter6_5"					{$VDIType = "Vmware VCenter Server 6.5"; Break}
 		"VmwareVCenter6_7"					{$VDIType = "Vmware VCenter Server 6.7"; Break}
 		"VmwareVCenter7_0"					{$VDIType = "Vmware VCenter Server 7.0"; Break}
+		15									{$VDIType = "Vmware VCenter Server 7.0"; Break}
 		"NutanixUnknown"					{$VDIType = "Nutanix unknown"; Break}
 		"Nutanix5_0"						{$VDIType = "Nutanix 5.0"; Break}
 		"Nutanix5_5"						{$VDIType = "Nutanix 5.5"; Break}
@@ -4278,7 +4279,8 @@ Function GetVDIType
 		"Scale8_8"							{$VDIType = "Scale 8.8"; Break}
 		"Scale8_9"							{$VDIType = "Scale 8.9"; Break}
 		"Scale9_1"							{$VDIType = "Scale 9.1"; Break}
-		"Azure"								{$VDIType = "Azure"; Break}					
+		"Azure"								{$VDIType = "Azure"; Break}
+		21									{$VDIType = "Azure"; Break}
 		"AzureUnknown"						{$VDIType = "Azure"; Break}					
 		"AVD"								{$VDIType = "AVD"; Break}					
 		"AWSEC2"							{$VDIType = "AWSEC2"; Break}					
@@ -10208,7 +10210,7 @@ Function OutputSite
 				}
 				
 				$RDSRemoveSessionNumberFromPrinter = $RDSHost.RemoveSessionNumberFromPrinterName.ToString()
-				$RDSRemoveClientNameFromPrinter          = $RDSHost.RemoveClientNameFromPrinterName.ToString()
+				$RDSRemoveClientNameFromPrinter    = $RDSHost.RemoveClientNameFromPrinterName.ToString()
 			}
 
 			If($MSWord -or $PDF)
@@ -15551,6 +15553,7 @@ Function OutputSite
 		}
 	}
 
+	#VDI
 	$VDIHosts = Get-RASProvider -SiteId $Site.Id -EA 0 4>$Null
 	
 	If(!$?)
@@ -15605,681 +15608,6 @@ Function OutputSite
 			WriteHTMLLine 2 0 "VDI"
 		}
 
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput VDI"
-		ForEach($VDIHost in $VDIHosts)
-		{
-			$VDIHostStatus = Get-RASProviderStatus -Id $VDIHost.Id -EA 0 4>$Null
-			
-			If(!$?)
-			{
-				Write-Warning "
-				`n
-				Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)`
-				"
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 0 0 "Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)"
-				}
-				If($Text)
-				{
-					Line 0 "Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)"
-				}
-				If($HTML)
-				{
-					WriteHTMLLine 0 0 "Unable to retrieve VDI Host Status for VDI Host $($VDIHost.Id)"
-				}
-			}
-			ElseIf($? -and $Null -eq $VDIHostStatus)
-			{
-				Write-Host "
-				No VDI Host Status retrieved for VDI Host $($VDIHost.Id)`
-				" -ForegroundColor White
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 0 0 "No VDI Host Status retrieved for VDI Host $($VDIHost.Id)"
-				}
-				If($Text)
-				{
-					Line 0 "No VDI Host Status retrieved for VDI Host $($VDIHost.Id)"
-				}
-				If($HTML)
-				{
-					WriteHTMLLine 0 0 "No VDI Host Status retrieved for VDI Host $($VDIHost.Id)"
-				}
-			}
-			Else
-			{
-				$FullProviderStatus = GetRASStatus $VDIHostStatus.AgentState
-
-				If($MSWord -or $PDF)
-				{
-					WriteWordLine 3 0 "Providers"
-				}
-				If($Text)
-				{
-					Line 2 "Providers"
-				}
-				If($HTML)
-				{
-					WriteHTMLLine 3 0 "Providers"
-				}
-
-				$VDIType = GetVDIType $VDIHost.Type
-				
-				If($MSWord -or $PDF)
-				{
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					If(validobject $VDIHost Server)
-					{
-						$ScriptInformation.Add(@{Data = "Provider"; Value = $VDIHost.Server; }) > $Null
-					}
-					$ScriptInformation.Add(@{Data = "Type"; Value = $VDIType; }) > $Null
-					$ScriptInformation.Add(@{Data = "VDI Agent"; Value = $VDIHost.VDIAgent; }) > $Null
-					$ScriptInformation.Add(@{Data = "Status"; Value = $FullProviderStatus; }) > $Null
-					If(validobject $VDIHost DirectAddress)
-					{
-						$ScriptInformation.Add(@{Data = "Direct address"; Value = $VDIHost.DirectAddress; }) > $Null
-					}
-					$ScriptInformation.Add(@{Data = "Description"; Value = $VDIHost.Description; }) > $Null
-					$ScriptInformation.Add(@{Data = "Log level"; Value = $VDIHostStatus.LogLevel; }) > $Null
-					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $VDIHost.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $VDIHost.TimeLastMod.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Created by"; Value = $VDIHost.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $VDIHost.TimeCreate.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "ID"; Value = $VDIHost.Id.ToString(); }) > $Null
-
-					$Table = AddWordTable -Hashtable $ScriptInformation `
-					-Columns Data,Value `
-					-List `
-					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitFixed;
-
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-					$Table.Columns.Item(1).Width = 200;
-					$Table.Columns.Item(2).Width = 250;
-
-					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-					FindWordDocumentEnd
-					$Table = $Null
-					WriteWordLine 0 0 ""
-				}
-				If($Text)
-				{
-					If(validobject $VDIHost Server)
-					{
-						Line 3 "Provider`t`t: " $VDIHost.Server
-					}
-					Line 3 "Type`t`t`t: " $VDIType
-					Line 3 "VDI Agent`t`t: " $VDIHost.VDIAgent
-					Line 3 "Status`t`t`t: " $FullProviderStatus
-					If(validobject $VDIHost DirectAddress)
-					{
-						Line 3 "Direct address`t`t: " $VDIHost.DirectAddress
-					}
-					Line 3 "Description`t`t: " $VDIHost.Description
-					Line 3 "Log level`t`t: " $VDIHostStatus.LogLevel
-					Line 3 "Last modification by`t: " $VDIHost.AdminLastMod
-					Line 3 "Modified on`t`t: " $VDIHost.TimeLastMod.ToString()
-					Line 3 "Created by`t`t: " $VDIHost.AdminCreate
-					Line 3 "Created on`t`t: " $VDIHost.TimeCreate.ToString()
-					Line 3 "ID`t`t`t: " $VDIHost.Id.ToString()
-					Line 0 ""
-				}
-				If($HTML)
-				{
-					$rowdata = @()
-					If(validobject $VDIHost Server)
-					{
-						$columnHeaders = @("Provider",($Script:htmlsb),$VDIHost.Server,$htmlwhite)
-					}
-					Else
-					{
-						$columnHeaders = @("Provider",($Script:htmlsb),"",$htmlwhite)
-					}
-					$rowdata += @(,("Type",($Script:htmlsb),$VDIType,$htmlwhite))
-					$rowdata += @(,("VDI Agent",($Script:htmlsb),$VDIHost.VDIAgent,$htmlwhite))
-					$rowdata += @(,("Status",($Script:htmlsb),$FullProviderStatus,$htmlwhite))
-					If(validobject $VDIHost DirectAddress)
-					{
-						$rowdata += @(,("Direct address",($Script:htmlsb),$VDIHost.DirectAddress,$htmlwhite))
-					}
-					$rowdata += @(,("Description",($Script:htmlsb),$VDIHost.Description,$htmlwhite))
-					$rowdata += @(,("Log level",($Script:htmlsb),$VDIHostStatus.LogLevel,$htmlwhite))
-					$rowdata += @(,("Last modification by",($Script:htmlsb), $VDIHost.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $VDIHost.TimeLastMod.ToString(),$htmlwhite))
-					$rowdata += @(,("Created by",($Script:htmlsb), $VDIHost.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $VDIHost.TimeCreate.ToString(),$htmlwhite))
-					$rowdata += @(,("Id",($Script:htmlsb),$VDIHost.Id.ToString(),$htmlwhite))
-
-					$msg = ""
-					$columnWidths = @("200","275")
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-					WriteHTMLLine 0 0 ""
-				}
-			}
-			
-			#General
-			
-			If($MSWord -or $PDF)
-			{
-				WriteWordLine 4 0 "General"
-			}
-			If($Text)
-			{
-				Line 3 "General"
-			}
-			If($HTML)
-			{
-				#Nothing
-			}
-			
-			If(validobject $VDIHost PreferredBrokerId)
-			{
-				$HostPA = Get-RASBroker -Id $VDIHost.PreferredBrokerId -EA 0 4>$Null
-			}
-			Else
-			{
-				$HostPA = $Null
-				$DedicatedVDIAgent = $False
-			}
-			
-			If($? -and -$Null -ne $HostPA)
-			{
-				If(validobject $HostPA Server)
-				{
-					If($VDIHost.VDIAgent -eq $HostPa.Server)
-					{
-						$DedicatedVDIAgent = $False
-					}
-					Else
-					{
-						$DedicatedVDIAgent = $True
-					}
-				}
-				Else
-				{
-					$DedicatedVDIAgent = $False
-				}
-			}
-			ElseIf($? -and $Null -eq $HostPA)
-			{
-				$DedicatedVDIAgent = $False
-			}
-			Else
-			{
-				$DedicatedVDIAgent = $False
-			}
-			
-			If($MSWord -or $PDF)
-			{
-				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Enable provider in site"; Value = $VDIHost.Enabled.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Type"; Value = $VDIType; }) > $Null
-				If($VDIType -eq "Azure")
-				{
-					$ScriptInformation.Add(@{Data = "Name"; Value = $VDIHost.Server; }) > $Null
-					$ScriptInformation.Add(@{Data = "Description"; Value = $VDIHost.Description; }) > $Null
-					$ScriptInformation.Add(@{Data = "Subscription details"; Value = ""; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Authentication URL"; Value = $VDIHost.AzureInfo.AuthenticationURL; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Management URL"; Value = $VDIHost.AzureInfo.ManagementURL; }) > $Null
-					$ScriptInformation.Add(@{Data = "     Resource URI"; Value = $VDIHost.AzureInfo.ResourceURI; }) > $Null
-					$ScriptInformation.Add(@{Data = "Tenant ID"; Value = $VDIHost.AzureInfo.TenantID; }) > $Null
-					$ScriptInformation.Add(@{Data = "Subscription ID"; Value = $VDIHost.AzureInfo.SubscriptionID; }) > $Null
-				}
-				Else
-				{
-					$ScriptInformation.Add(@{Data = "Host"; Value = $VDIHost.Server; }) > $Null
-					$ScriptInformation.Add(@{Data = "Port"; Value = $VDIHost.VDIPort.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Description"; Value = $VDIHost.Description; }) > $Null
-				}
-				$ScriptInformation.Add(@{Data = "Dedicated VDI Agent"; Value = $DedicatedVDIAgent.ToString(); }) > $Null
-				If($DedicatedVDIAgent)
-				{
-					$ScriptInformation.Add(@{Data = "Agent address"; Value = $VDIHost.VDIAgent; }) > $Null
-				}
-
-				$Table = AddWordTable -Hashtable $ScriptInformation `
-				-Columns Data,Value `
-				-List `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitFixed;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Columns.Item(1).Width = 200;
-				$Table.Columns.Item(2).Width = 250;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
-			If($Text)
-			{
-				Line 4 "Enable provider in site`t`t: " $VDIHost.Enabled.ToString()
-				Line 4 "Type`t`t`t`t: " $VDIType
-				If($VDIType -eq "Azure")
-				{
-					Line 4 "Name`t`t`t`t: " $VDIHost.Server
-					Line 4 "Description`t`t`t: " $VDIHost.Description
-					Line 4 "Subscription details`t`t: " 
-					Line 5 "Authentication URL: " $VDIHost.AzureInfo.AuthenticationURL
-					Line 5 "Management URL`t  : " $VDIHost.AzureInfo.ManagementURL
-					Line 5 "Resource URI`t  : " $VDIHost.AzureInfo.ResourceURI
-					Line 4 "Tenant ID`t`t`t: " $VDIHost.AzureInfo.TenantID
-					Line 4 "Subscription ID`t`t`t: " $VDIHost.AzureInfo.SubscriptionID
-				}
-				Else
-				{
-					Line 4 "Host`t`t`t`t: " $VDIHost.Server
-					Line 4 "Port`t`t`t`t: " $VDIHost.VDIPort.ToString()
-					Line 4 "Description`t`t`t: " $VDIHost.Description
-				}
-				Line 4 "Dedicated VDI Agent`t`t: " $DedicatedVDIAgent.ToString()
-				If($DedicatedVDIAgent)
-				{
-					Line 4 "Agent address`t`t`t: " $VDIHost.VDIAgent
-				}
-				Line 0 ""
-			}
-			If($HTML)
-			{
-				$rowdata = @()
-				$columnHeaders = @("Enable provider in site",($Script:htmlsb),$VDIHost.Enabled.ToString(),$htmlwhite)
-				$rowdata += @(,("Type",($Script:htmlsb),$VDIType,$htmlwhite))
-				If($VDIType -eq "Azure")
-				{
-					$rowdata += @(,( "Name",($Script:htmlsb), $VDIHost.Server,$htmlwhite))
-					$rowdata += @(,( "Description",($Script:htmlsb), $VDIHost.Description,$htmlwhite))
-					$rowdata += @(,( "Subscription details",($Script:htmlsb), "",$htmlwhite))
-					$rowdata += @(,( "     Authentication URL",($Script:htmlsb), $VDIHost.AzureInfo.AuthenticationURL,$htmlwhite))
-					$rowdata += @(,( "     Management URL",($Script:htmlsb), $VDIHost.AzureInfo.ManagementURL,$htmlwhite))
-					$rowdata += @(,( "     Resource URI",($Script:htmlsb), $VDIHost.AzureInfo.ResourceURI,$htmlwhite))
-					$rowdata += @(,( "Tenant ID",($Script:htmlsb), $VDIHost.AzureInfo.TenantID,$htmlwhite))
-					$rowdata += @(,( "Subscription ID",($Script:htmlsb), $VDIHost.AzureInfo.SubscriptionID,$htmlwhite))
-				}
-				Else
-				{
-					$rowdata += @(,("Host",($Script:htmlsb),$VDIHost.Server,$htmlwhite))
-					$rowdata += @(,("Port",($Script:htmlsb),$VDIHost.VDIPort.ToString(),$htmlwhite))
-					$rowdata += @(,("Description",($Script:htmlsb),$VDIHost.Description,$htmlwhite))
-				}
-				$rowdata += @(,("Dedicated VDI Agent",($Script:htmlsb),$DedicatedVDIAgent.ToString(),$htmlwhite))
-				If($DedicatedVDIAgent)
-				{
-					$rowdata += @(,("Agent address",($Script:htmlsb),$VDIHost.VDIAgent,$htmlwhite))
-				}
-
-				$msg = "General"
-				$columnWidths = @("200","275")
-				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-				WriteHTMLLine 0 0 ""
-			}
-			
-			#Credentials
-			
-			If($MSWord -or $PDF)
-			{
-				WriteWordLine 4 0 "Credentials"
-			}
-			If($Text)
-			{
-				Line 3 "Credentials"
-			}
-			If($HTML)
-			{
-				#Nothing
-			}
-			
-			If($MSWord -or $PDF)
-			{
-				$ScriptInformation = New-Object System.Collections.ArrayList
-				If($VDIType -eq "Azure")
-				{
-					$ScriptInformation.Add(@{Data = "Application ID"; Value = $VDIHost.VDIUsername; }) > $Null
-				}
-				Else
-				{
-					$ScriptInformation.Add(@{Data = "Username"; Value = $VDIHost.VDIUsername; }) > $Null
-				}
-
-				$Table = AddWordTable -Hashtable $ScriptInformation `
-				-Columns Data,Value `
-				-List `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitFixed;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Columns.Item(1).Width = 200;
-				$Table.Columns.Item(2).Width = 250;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
-			If($Text)
-			{
-				If($VDIType -eq "Azure")
-				{
-					Line 4 "Application ID: " $VDIHost.VDIUsername
-				}
-				Else
-				{
-					Line 4 "Username`t`t`t: " $VDIHost.VDIUsername
-				}
-				Line 0 ""
-			}
-			If($HTML)
-			{
-				$rowdata = @()
-				If($VDIType -eq "Azure")
-				{
-					$columnHeaders = @("Application ID",($Script:htmlsb),$VDIHost.VDIUsername,$htmlwhite)
-				}
-				Else
-				{
-					$columnHeaders = @("Username",($Script:htmlsb),$VDIHost.VDIUsername,$htmlwhite)
-				}
-
-				$msg = "Credentials"
-				$columnWidths = @("200","275")
-				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-				WriteHTMLLine 0 0 ""
-			}
-
-			#Agent Settings
-			
-			If($MSWord -or $PDF)
-			{
-				WriteWordLine 4 0 "Agent settings"
-			}
-			If($Text)
-			{
-				Line 3 "Agent settings"
-			}
-			If($HTML)
-			{
-				#Nothing
-			}
-			
-			<#
-			Switch ($VDIHost.DragAndDropMode)
-			{
-				"Bidirectional"		{$VDIDragAndDrop = "Bidirectional"; 
-				$VDIAllowDragAndDrop = "True";
-				Break}
-				"Disabled"			{$VDIDragAndDrop = "Disabled"; 
-				$VDIAllowDragAndDrop = "False";
-				Break}
-				"ClientToServer"	{$VDIDragAndDrop = "Client to server only"; 
-				$VDIAllowDragAndDrop = "True";
-				Break}
-				"ServerToClient"	{$VDIDragAndDrop = "Server to client only"; 
-				$VDIAllowDragAndDrop = "True";
-				Break}
-				Default				{$VDIDragAndDrop = "Unable to determine Drag and drop: $($VDIHost.DragAndDropMode)"; 
-				$VDIAllowDragAndDrop = "False";
-				Break}
-			}
-			
-			#>
-			$VDIDragAndDrop = ""
-			$VDIAllowDragAndDrop = ""
-
-			If(validobject $VDIHost AllowURLAndMailRedirection)
-			{
-				Switch($VDIHost.AllowURLAndMailRedirection)
-				{
-					"Enabled"						{$VDIAllowClientURLMailRedirection = "Enabled"; 
-													 $ReplaceRegisteredApplication = "False";
-													 Break}
-					"Disabled"						{$VDIAllowClientURLMailRedirection = "Disabled"; 
-													 $ReplaceRegisteredApplication = "False";
-													 Break}
-					"EnabledWithAppRegistration"	{$VDIAllowClientURLMailRedirection = "Enabled";
-													 $ReplaceRegisteredApplication = "True";
-													 Break}
-					Default 						{$VDIAllowClientURLMailRedirection = "Unable to determine Allow CLient URL/Mail Redirection: $($VDIHost.AllowURLAndMailRedirection)"; 
-													 $ReplaceRegisteredApplication = "False";
-													 Break}
-				}
-			}
-			Else
-			{
-				$VDIAllowClientURLMailRedirection = ""
-				$ReplaceRegisteredApplication = "";
-			}
-			
-			If(validobject $VDIHost FileTransferMode)
-			{
-				Switch ($VDIHost.FileTransferMode)
-				{
-					"Bidirectional"		{$VDIHostFileTransferMode = "Bidirectional"; Break}
-					"Disabled"			{$VDIHostFileTransferMode = "Disabled"; Break}
-					"ClientToServer"	{$VDIHostFileTransferMode = "Client to server only"; Break}
-					"ServerToClient"	{$VDIHostFileTransferMode = "Server to client only"; Break}
-					Default				{$VDIHostFileTransferMode = "Unable to determine File Transfer mode: $($VDIHost.FileTransferMode)"; Break}
-				}
-			}
-			Else
-			{
-				$VDIHostFileTransferMode = ""
-			}
-
-			If(validobject $VDIHost FileTransferLocation)
-			{
-				If($VDIHost.FileTransferLocation -eq "")
-				{
-					$VDIHostFileTransferLocation = "Default download location"
-				}
-				Else
-				{
-					$VDIHostFileTransferLocation = $VDIHostHost.FileTransferLocation
-				}
-			}
-			Else
-			{
-				$VDIHostFileTransferLocation = ""
-			}
-
-			If($MSWord -or $PDF)
-			{
-				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Allow Client URL/Mail Redirection"; Value = $VDIAllowClientURLMailRedirection; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Replace registered application"; Value = $ReplaceRegisteredApplication; }) > $Null
-				If(validobject $VDIHost SupportShellURLNamespaceObjects)
-				{
-					$ScriptInformation.Add(@{Data = "     Support Windows Shell URL namespace objects"; Value = $VDIHost.SupportShellURLNamespaceObjects.ToString(); }) > $Null
-				}
-				$ScriptInformation.Add(@{Data = "Enable Drag and drop"; Value = $VDIAllowDragAndDrop; }) > $Null
-				$ScriptInformation.Add(@{Data = "     Direction"; Value = $VDIDragAndDrop; }) > $Null
-				If(validobject $VDIHost AllowFileTransfer)
-				{
-					$ScriptInformation.Add(@{Data = "Allow file transfer command (Web (HTML5) and Chrome clients)"; Value = $VDIHost.AllowFileTransfer.ToString(); }) > $Null
-				}
-				$ScriptInformation.Add(@{Data = "     Configure File Transfer"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Direction"; Value = $VDIHostFileTransferMode; }) > $Null
-				$ScriptInformation.Add(@{Data = "          Location"; Value = $VDIHostFileTransferLocation; }) > $Null
-				If(validobject $VDIHost FileTransferLockLocation)
-				{
-					$ScriptInformation.Add(@{Data = "          Do not allow to change location"; Value = $VDIHost.FileTransferLockLocation.ToString(); }) > $Null
-				}
-				If(validobject $VDIHost EnableDriveRedirectionCache)
-				{
-					$ScriptInformation.Add(@{Data = "Enable drive redirection cache"; Value = $VDIHost.EnableDriveRedirectionCache.ToString(); }) > $Null
-				}
-
-				$Table = AddWordTable -Hashtable $ScriptInformation `
-				-Columns Data,Value `
-				-List `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitFixed;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Columns.Item(1).Width = 200;
-				$Table.Columns.Item(2).Width = 250;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
-			If($Text)
-			{
-				Line 4 "Allow Client URL/Mail Redirection`t`t`t`t: " $VDIAllowClientURLMailRedirection
-				Line 5 "Replace registered application`t`t`t`t: " $ReplaceRegisteredApplication
-				If(validobject $VDIHost SupportShellURLNamespaceObjects)
-				{
-					Line 5 "Support Windows Shell URL namespace objects`t`t: " $VDIHost.SupportShellURLNamespaceObjects.ToString()
-				}
-				Line 4 "Enable Drag and drop`t`t`t`t`t`t: " $VDIAllowDragandDrop
-				Line 5 "Direction`t`t`t`t`t`t: " $VDIDragAndDrop
-				If(validobject $VDIHost AllowFileTransfer)
-				{
-					Line 4 "Allow file transfer command (Web (HTML5) and Chrome clients)`t: " $VDIHost.AllowFileTransfer.ToString()
-				}
-				Line 5 "Configure File Transfer"
-				Line 6 "Direction`t`t`t: " $VDIHostFileTransferMode
-				Line 6 "Location`t`t`t: " $VDIHostFileTransferLocation
-				If(validobject $VDIHost FileTransferLockLocation)
-				{
-					Line 6 "Do not allow to change location : " $VDIHost.FileTransferLockLocation.ToString()
-				}
-				If(validobject $VDIHost EnableDriveRedirectionCache)
-				{
-					Line 4 "Enable drive redirection cache`t`t`t`t`t: " $VDIHost.EnableDriveRedirectionCache.ToString()
-				}
-				
-				Line 0 ""
-			}
-			If($HTML)
-			{
-				$rowdata = @()
-				$columnHeaders = @("Allow Client URL/Mail Redirection",($Script:htmlsb),$VDIAllowClientURLMailRedirection,$htmlwhite)
-				$rowdata += @(,("     Replace registered application",($Script:htmlsb),$ReplaceRegisteredApplication,$htmlwhite))
-				If(validobject $VDIHost SupportShellURLNamespaceObjects)
-				{
-					$rowdata += @(,("     Support Windows Shell URL namespace objects",($Script:htmlsb),$VDIHost.SupportShellURLNamespaceObjects.ToString(),$htmlwhite))
-				}
-				$rowdata += @(,("Enable Drag and drop",($Script:htmlsb),$VDIAllowDragAndDrop,$htmlwhite))
-				$rowdata += @(,("     Directon",($Script:htmlsb),$VDIDragAndDrop,$htmlwhite))
-				If(validobject $VDIHost AllowFileTransfer)
-				{
-					$rowdata += @(,("Allow file transfer command (Web (HTML5) and Chrome clients)",($Script:htmlsb),$VDIHost.AllowFileTransfer.ToString(),$htmlwhite))
-				}
-				$rowdata += @(,("     Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
-				$rowdata += @(,("          Direction",($Script:htmlsb),$VDIHostFileTransferMode,$htmlwhite))
-				$rowdata += @(,("          Location",($Script:htmlsb),$VDIHostFileTransferLocation,$htmlwhite))
-				If(validobject $VDIHost FileTransferLockLocation)
-				{
-					$rowdata += @(,("          Do not allow to change location",($Script:htmlsb),$VDIHost.FileTransferLockLocation.ToString(),$htmlwhite))
-				}
-				If(validobject $VDIHost EnableDriveRedirectionCache)
-				{
-					$rowdata += @(,("Enable drive redirection cache",($Script:htmlsb),$VDIHost.EnableDriveRedirectionCache.ToString(),$htmlwhite))
-				}
-				
-
-				$msg = "Agent settings"
-				$columnWidths = @("200","275")
-				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-				WriteHTMLLine 0 0 ""
-			}
-
-			#RDP Printer
-			
-			If($MSWord -or $PDF)
-			{
-				WriteWordLine 4 0 "RDP printer"
-			}
-			If($Text)
-			{
-				Line 3 "RDP printer"
-			}
-			If($HTML)
-			{
-				#Nothing
-			}
-			
-			If(validobject $VDIHost PrinterNameFormat)
-			{
-				Switch ($VDIHost.PrinterNameFormat)
-				{
-					"PrnFormat_PRN_CMP_SES"	{$VDIPrinterNameFormat = "Printername (from Computername) in Session no."; Break}
-					"PrnFormat_SES_CMP_PRN"	{$VDIPrinterNameFormat = "Session no. (Computername from) Printername"; Break}
-					"PrnFormat_PRN_REDSES"	{$VDIPrinterNameFormat = "Printername (redirected Session no.)"; Break}
-					Default					{$VDIPrinterNameFormat = "Unable to determine RDP Printer Name Format: $($VDIHost.PrinterNameFormat)"; Break}
-				}
-			}
-			Else
-			{
-				$VDIPrinterNameFormat = ""
-			}
-			
-			If(validobject $VDIHost RemoveSessionNumberFromPrinterName)
-			{
-				$VDIRemoveSessionNumberFromPrinter = $VDIHost.RemoveSessionNumberFromPrinterName.ToString()
-			}
-			Else
-			{
-				$VDIRemoveSessionNumberFromPrinter = ""
-			}
-
-			If($MSWord -or $PDF)
-			{
-				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "RDP Printer Name Format"; Value = $VDIPrinterNameFormat; }) > $Null
-				$ScriptInformation.Add(@{Data = "Remove session number from printer name"; Value = $VDIRemoveSessionNumberFromPrinter; }) > $Null
-
-				$Table = AddWordTable -Hashtable $ScriptInformation `
-				-Columns Data,Value `
-				-List `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitFixed;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Columns.Item(1).Width = 200;
-				$Table.Columns.Item(2).Width = 250;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
-			If($Text)
-			{
-				Line 4 "RDP Printer Name Format`t`t`t`t: " $VDIPrinterNameFormat
-				Line 4 "Remove session number from printer name`t`t: " $VDIRemoveSessionNumberFromPrinter
-				Line 0 ""
-			}
-			If($HTML)
-			{
-				$rowdata = @()
-				$columnHeaders = @("RDP Printer Name Format",($Script:htmlsb),$VDIPrinterNameFormat,$htmlwhite)
-				$rowdata += @(,("Remove session number from printer name",($Script:htmlsb),$VDIRemoveSessionNumberFromPrinter,$htmlwhite))
-
-				$msg = "RDP printer"
-				$columnWidths = @("200","275")
-				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-				WriteHTMLLine 0 0 ""
-			}
-		}
-		
 		#Pools
 		
 		If($MSWord -or $PDF)
@@ -18199,6 +17527,764 @@ Function OutputSite
 		
 		#Desktops
 		#can't find this
+	}
+	
+	#Providers
+	$Providers = Get-RASProvider -SiteId $Site.Id -EA 0 4>$Null
+	
+	If(!$?)
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve Providers for Site $($Site.Name)`
+		"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "Unable to retrieve Providers for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve Providers for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve Providers for Site $($Site.Name)"
+		}
+	}
+	ElseIf($? -and $Null -eq $Providers)
+	{
+		Write-Host "
+		No Providers retrieved for Site $($Site.Name).`
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No Providers retrieved for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "No Providers retrieved for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No Providers retrieved for Site $($Site.Name)"
+		}
+	}
+	Else
+	{
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 2 0 "Providers"
+		}
+		If($Text)
+		{
+			Line 1 "Providers"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 2 0 "Providers"
+		}
+
+		Write-Verbose "$(Get-Date -Format G): `t`tOutput Providers"
+		ForEach($Provider in $Providers)
+		{
+			$ProviderStatus = Get-RASProviderStatus -Id $Provider.Id -EA 0 4>$Null
+			
+			If(!$?)
+			{
+				Write-Warning "
+				`n
+				Unable to retrieve Provider Status for Provider $($Provider.Id)`
+				"
+				If($MSWord -or $PDF)
+				{
+					WriteWordLine 0 0 "Unable to retrieve Provider Status for Provider $($Provider.Id)"
+				}
+				If($Text)
+				{
+					Line 0 "Unable to retrieve Provider Status for Provider $($Provider.Id)"
+				}
+				If($HTML)
+				{
+					WriteHTMLLine 0 0 "Unable to retrieve Provider Status for Provider $($Provider.Id)"
+				}
+			}
+			ElseIf($? -and $Null -eq $ProviderStatus)
+			{
+				Write-Host "
+				No Provider Status retrieved for Provider $($Provider.Id)`
+				" -ForegroundColor White
+				If($MSWord -or $PDF)
+				{
+					WriteWordLine 0 0 "No Provider Status retrieved for Provider $($Provider.Id)"
+				}
+				If($Text)
+				{
+					Line 0 "No Provider Status retrieved for Provider $($Provider.Id)"
+				}
+				If($HTML)
+				{
+					WriteHTMLLine 0 0 "No Provider Status retrieved for Provider $($Provider.Id)"
+				}
+			}
+			Else
+			{
+				$FullProviderStatus = GetRASStatus $ProviderStatus.AgentState
+
+				If($MSWord -or $PDF)
+				{
+					WriteWordLine 3 0 "Providers"
+				}
+				If($Text)
+				{
+					Line 2 "Providers"
+				}
+				If($HTML)
+				{
+					WriteHTMLLine 3 0 "Providers"
+				}
+
+				$VDIType = GetVDIType $Provider.Type
+				
+				Switch($ProviderStatus.HighAvailabilityState)
+				{
+					"Off"		{$HAMode = "Off"; Break}
+					"On_Pref"	{$HAMode = "On Preferred"; Break}
+					"On_Auto"	{$HAMode = "On Auto"; Break}
+					Default		{$HAMode = "Unable to determine High Availability mode: $($ProviderStatus.HighAvailabilityState)"; Break}
+				}
+				
+				If($MSWord -or $PDF)
+				{
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Name"; Value = $Provider.Name; }) > $Null
+					$ScriptInformation.Add(@{Data = "Status"; Value = $FullProviderStatus; }) > $Null
+					$ScriptInformation.Add(@{Data = "Type"; Value = $VDIType; }) > $Null
+					$ScriptInformation.Add(@{Data = "Description"; Value = $Provider.Description; }) > $Null
+					$ScriptInformation.Add(@{Data = "Provider Agent"; Value = $Provider.VDIAgent; }) > $Null
+					$ScriptInformation.Add(@{Data = "High availability"; Value = $HAMode; }) > $Null
+					If($VDIType -like "*azure*")
+					{
+						$ScriptInformation.Add(@{Data = "Tenant ID"; Value = $Provider.VDIAzureCloudInfo.TenantID; }) > $Null
+						$ScriptInformation.Add(@{Data = "Subscription ID"; Value = $Provider.VDIAzureCloudInfo.SubscriptionID; }) > $Null
+					}
+					$ScriptInformation.Add(@{Data = "Application ID"; Value = $Provider.VDIUsername; }) > $Null
+					$ScriptInformation.Add(@{Data = "Log level"; Value = $ProviderStatus.LogLevel; }) > $Null
+					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Provider.AdminLastMod; }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = $Provider.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created by"; Value = $Provider.AdminCreate; }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = $Provider.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "ID"; Value = $Provider.Id.ToString(); }) > $Null
+
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 250;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+				If($Text)
+				{
+					Line 3 "Name`t`t`t: " $Provider.Name
+					Line 3 "Status`t`t`t: " $FullProviderStatus
+					Line 3 "Type`t`t`t: " $VDIType
+					Line 3 "Description`t`t: " $Provider.Description
+					Line 3 "Provider Agent`t`t: " $Provider.VDIAgent
+					Line 3 "High availability`t: " $HAMode
+					If($VDIType -like "*azure*")
+					{
+						Line 3 "Tenant ID`t`t: " $Provider.VDIAzureCloudInfo.TenantID
+						Line 3 "Subscription ID`t`t: " $Provider.VDIAzureCloudInfo.SubscriptionID
+					}
+					Line 3 "Application ID`t`t: " $Provider.VDIUsername
+					Line 3 "Log level`t`t: " $ProviderStatus.LogLevel
+					Line 3 "Last modification by`t: " $Provider.AdminLastMod
+					Line 3 "Modified on`t`t: " $Provider.TimeLastMod.ToString()
+					Line 3 "Created by`t`t: " $Provider.AdminCreate
+					Line 3 "Created on`t`t: " $Provider.TimeCreate.ToString()
+					Line 3 "ID`t`t`t: " $Provider.Id.ToString()
+					Line 0 ""
+				}
+				If($HTML)
+				{
+					$rowdata = @()
+					$columnHeaders = @("Name",($Script:htmlsb),$Provider.Name,$htmlwhite)
+					$rowdata += @(,("Status",($Script:htmlsb),$FullProviderStatus,$htmlwhite))
+					$rowdata += @(,("Type",($Script:htmlsb),$VDIType,$htmlwhite))
+					$rowdata += @(,("Description",($Script:htmlsb),$Provider.Description,$htmlwhite))
+					$rowdata += @(,("Provider Agent",($Script:htmlsb),$Provider.VDIAgent,$htmlwhite))
+					If($VDIType -like "*azure*")
+					{
+						$rowdata += @(,("Tenant ID",($Script:htmlsb),$Provider.VDIAzureCloudInfo.TenantID,$htmlwhite))
+						$rowdata += @(,("Subscription ID",($Script:htmlsb),$Provider.VDIAzureCloudInfo.SubscriptionID,$htmlwhite))
+					}
+					$rowdata += @(,("Application ID",($Script:htmlsb),$Provider.VDIUsername,$htmlwhite))
+					$rowdata += @(,("Log level",($Script:htmlsb),$ProviderStatus.LogLevel,$htmlwhite))
+					$rowdata += @(,("Last modification by",($Script:htmlsb), $Provider.AdminLastMod,$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), $Provider.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Created by",($Script:htmlsb), $Provider.AdminCreate,$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), $Provider.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("Id",($Script:htmlsb),$Provider.Id.ToString(),$htmlwhite))
+
+					$msg = ""
+					$columnWidths = @("200","275")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+			}
+			
+			#General
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "General"
+			}
+			If($Text)
+			{
+				Line 3 "General"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			If(validobject $Provider PreferredBrokerId)
+			{
+				$HostPA = Get-RASBroker -Id $Provider.PreferredBrokerId -EA 0 4>$Null
+			}
+			Else
+			{
+				$HostPA = $Null
+				$DedicatedVDIAgent = $False
+			}
+			
+			If($? -and -$Null -ne $HostPA)
+			{
+				If(validobject $HostPA Server)
+				{
+					If($Provider.VDIAgent -eq $HostPa.Server)
+					{
+						$DedicatedVDIAgent = $False
+					}
+					Else
+					{
+						$DedicatedVDIAgent = $True
+					}
+				}
+				Else
+				{
+					$DedicatedVDIAgent = $False
+				}
+			}
+			ElseIf($? -and $Null -eq $HostPA)
+			{
+				$DedicatedVDIAgent = $False
+			}
+			Else
+			{
+				$DedicatedVDIAgent = $False
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Enable provider in site"; Value = $Provider.Enabled.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Type"; Value = $VDIType; }) > $Null
+				If($VDIType -eq "Azure")
+				{
+					$ScriptInformation.Add(@{Data = "Name"; Value = $Provider.Name; }) > $Null
+					$ScriptInformation.Add(@{Data = "Description"; Value = $Provider.Description; }) > $Null
+					$ScriptInformation.Add(@{Data = "Subscription details"; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Authentication URL"; Value = $Provider.VDIAzureCloudInfo.AuthenticationURL; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Management URL"; Value = $Provider.VDIAzureCloudInfo.ManagementURL; }) > $Null
+					$ScriptInformation.Add(@{Data = "     Resource URI"; Value = $Provider.VDIAzureCloudInfo.ResourceURI; }) > $Null
+					$ScriptInformation.Add(@{Data = "Tenant ID"; Value = $Provider.VDIAzureCloudInfo.TenantID; }) > $Null
+					$ScriptInformation.Add(@{Data = "Subscription ID"; Value = $Provider.VDIAzureCloudInfo.SubscriptionID; }) > $Null
+				}
+				Else
+				{
+					$ScriptInformation.Add(@{Data = "Host"; Value = $Provider.Server; }) > $Null
+					$ScriptInformation.Add(@{Data = "Port"; Value = $Provider.VDIPort.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Description"; Value = $Provider.Description; }) > $Null
+				}
+				$ScriptInformation.Add(@{Data = "Dedicated Provider Agent"; Value = $DedicatedVDIAgent.ToString(); }) > $Null
+				If($DedicatedVDIAgent)
+				{
+					$ScriptInformation.Add(@{Data = "Agent address"; Value = $Provider.VDIAgent; }) > $Null
+				}
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 4 "Enable provider in site`t`t: " $Provider.Enabled.ToString()
+				Line 4 "Type`t`t`t`t: " $VDIType
+				If($VDIType -eq "Azure")
+				{
+					Line 4 "Name`t`t`t`t: " $Provider.Name
+					Line 4 "Description`t`t`t: " $Provider.Description
+					Line 4 "Subscription details`t`t: " 
+					Line 5 "Authentication URL: " $Provider.VDIAzureCloudInfo.AuthenticationURL
+					Line 5 "Management URL`t  : " $Provider.VDIAzureCloudInfo.ManagementURL
+					Line 5 "Resource URI`t  : " $Provider.VDIAzureCloudInfo.ResourceURI
+					Line 4 "Tenant ID`t`t`t: " $Provider.VDIAzureCloudInfo.TenantID
+					Line 4 "Subscription ID`t`t`t: " $Provider.VDIAzureCloudInfo.SubscriptionID
+				}
+				Else
+				{
+					Line 4 "Host`t`t`t`t: " $Provider.Server
+					Line 4 "Port`t`t`t`t: " $Provider.VDIPort.ToString()
+					Line 4 "Description`t`t`t: " $Provider.Description
+				}
+				Line 4 "Dedicated Provider Agent`t: " $DedicatedVDIAgent.ToString()
+				If($DedicatedVDIAgent)
+				{
+					Line 4 "Agent address`t`t`t: " $Provider.VDIAgent
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Enable provider in site",($Script:htmlsb),$Provider.Enabled.ToString(),$htmlwhite)
+				$rowdata += @(,("Type",($Script:htmlsb),$VDIType,$htmlwhite))
+				If($VDIType -eq "Azure")
+				{
+					$rowdata += @(,( "Name",($Script:htmlsb), $Provider.Name,$htmlwhite))
+					$rowdata += @(,( "Description",($Script:htmlsb), $Provider.Description,$htmlwhite))
+					$rowdata += @(,( "Subscription details",($Script:htmlsb), "",$htmlwhite))
+					$rowdata += @(,( "     Authentication URL",($Script:htmlsb), $Provider.VDIAzureCloudInfo.AuthenticationURL,$htmlwhite))
+					$rowdata += @(,( "     Management URL",($Script:htmlsb), $Provider.VDIAzureCloudInfo.ManagementURL,$htmlwhite))
+					$rowdata += @(,( "     Resource URI",($Script:htmlsb), $Provider.VDIAzureCloudInfo.ResourceURI,$htmlwhite))
+					$rowdata += @(,( "Tenant ID",($Script:htmlsb), $Provider.VDIAzureCloudInfo.TenantID,$htmlwhite))
+					$rowdata += @(,( "Subscription ID",($Script:htmlsb), $Provider.VDIAzureCloudInfo.SubscriptionID,$htmlwhite))
+				}
+				Else
+				{
+					$rowdata += @(,("Host",($Script:htmlsb),$Provider.Server,$htmlwhite))
+					$rowdata += @(,("Port",($Script:htmlsb),$Provider.VDIPort.ToString(),$htmlwhite))
+					$rowdata += @(,("Description",($Script:htmlsb),$Provider.Description,$htmlwhite))
+				}
+				$rowdata += @(,("Dedicated Provider Agent",($Script:htmlsb),$DedicatedVDIAgent.ToString(),$htmlwhite))
+				If($DedicatedVDIAgent)
+				{
+					$rowdata += @(,("Agent address",($Script:htmlsb),$Provider.VDIAgent,$htmlwhite))
+				}
+
+				$msg = "General"
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+			
+			#Credentials
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Credentials"
+			}
+			If($Text)
+			{
+				Line 3 "Credentials"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				If($VDIType -eq "Azure")
+				{
+					$ScriptInformation.Add(@{Data = "Application ID"; Value = $Provider.VDIUsername; }) > $Null
+				}
+				Else
+				{
+					$ScriptInformation.Add(@{Data = "Username"; Value = $Provider.VDIUsername; }) > $Null
+				}
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				If($VDIType -eq "Azure")
+				{
+					Line 4 "Application ID: " $Provider.VDIUsername
+				}
+				Else
+				{
+					Line 4 "Username`t`t`t: " $Provider.VDIUsername
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				If($VDIType -eq "Azure")
+				{
+					$columnHeaders = @("Application ID",($Script:htmlsb),$Provider.VDIUsername,$htmlwhite)
+				}
+				Else
+				{
+					$columnHeaders = @("Username",($Script:htmlsb),$Provider.VDIUsername,$htmlwhite)
+				}
+
+				$msg = "Credentials"
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			#Agent Settings
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "Agent settings"
+			}
+			If($Text)
+			{
+				Line 3 "Agent settings"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			<#
+			Switch ($Provider.DragAndDropMode)
+			{
+				"Bidirectional"		{$VDIDragAndDrop = "Bidirectional"; 
+				$VDIAllowDragAndDrop = "True";
+				Break}
+				"Disabled"			{$VDIDragAndDrop = "Disabled"; 
+				$VDIAllowDragAndDrop = "False";
+				Break}
+				"ClientToServer"	{$VDIDragAndDrop = "Client to server only"; 
+				$VDIAllowDragAndDrop = "True";
+				Break}
+				"ServerToClient"	{$VDIDragAndDrop = "Server to client only"; 
+				$VDIAllowDragAndDrop = "True";
+				Break}
+				Default				{$VDIDragAndDrop = "Unable to determine Drag and drop: $($Provider.DragAndDropMode)"; 
+				$VDIAllowDragAndDrop = "False";
+				Break}
+			}
+			
+			#>
+			$VDIDragAndDrop = ""
+			$VDIAllowDragAndDrop = ""
+
+			If(validobject $Provider AllowURLAndMailRedirection)
+			{
+				Switch($Provider.AllowURLAndMailRedirection)
+				{
+					"Enabled"						{$VDIAllowClientURLMailRedirection = "Enabled"; 
+													 $ReplaceRegisteredApplication = "False";
+													 Break}
+					"Disabled"						{$VDIAllowClientURLMailRedirection = "Disabled"; 
+													 $ReplaceRegisteredApplication = "False";
+													 Break}
+					"EnabledWithAppRegistration"	{$VDIAllowClientURLMailRedirection = "Enabled";
+													 $ReplaceRegisteredApplication = "True";
+													 Break}
+					Default 						{$VDIAllowClientURLMailRedirection = "Unable to determine Allow CLient URL/Mail Redirection: $($Provider.AllowURLAndMailRedirection)"; 
+													 $ReplaceRegisteredApplication = "False";
+													 Break}
+				}
+			}
+			Else
+			{
+				$VDIAllowClientURLMailRedirection = ""
+				$ReplaceRegisteredApplication = "";
+			}
+			
+			If(validobject $Provider FileTransferMode)
+			{
+				Switch ($Provider.FileTransferMode)
+				{
+					"Bidirectional"		{$ProviderFileTransferMode = "Bidirectional"; Break}
+					"Disabled"			{$ProviderFileTransferMode = "Disabled"; Break}
+					"ClientToServer"	{$ProviderFileTransferMode = "Client to server only"; Break}
+					"ServerToClient"	{$ProviderFileTransferMode = "Server to client only"; Break}
+					Default				{$ProviderFileTransferMode = "Unable to determine File Transfer mode: $($Provider.FileTransferMode)"; Break}
+				}
+			}
+			Else
+			{
+				$ProviderFileTransferMode = ""
+			}
+
+			If(validobject $Provider FileTransferLocation)
+			{
+				If($Provider.FileTransferLocation -eq "")
+				{
+					$ProviderFileTransferLocation = "Default download location"
+				}
+				Else
+				{
+					$ProviderFileTransferLocation = $ProviderHost.FileTransferLocation
+				}
+			}
+			Else
+			{
+				$ProviderFileTransferLocation = ""
+			}
+
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Preferred Connection Broker"; Value = $Provider.VDIAgent; }) > $Null
+				$ScriptInformation.Add(@{Data = "Allow Client URL/Mail Redirection"; Value = $VDIAllowClientURLMailRedirection; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Replace registered application"; Value = $ReplaceRegisteredApplication; }) > $Null
+				If(validobject $Provider SupportShellURLNamespaceObjects)
+				{
+					$ScriptInformation.Add(@{Data = "     Support Windows Shell URL namespace objects"; Value = $Provider.SupportShellURLNamespaceObjects.ToString(); }) > $Null
+				}
+				$ScriptInformation.Add(@{Data = "Enable Drag and drop"; Value = $VDIAllowDragAndDrop; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Direction"; Value = $VDIDragAndDrop; }) > $Null
+				If(validobject $Provider AllowFileTransfer)
+				{
+					$ScriptInformation.Add(@{Data = "Allow file transfer command (Web (HTML5) and Chrome clients)"; Value = $Provider.AllowFileTransfer.ToString(); }) > $Null
+				}
+				$ScriptInformation.Add(@{Data = "     Configure File Transfer"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Direction"; Value = $ProviderFileTransferMode; }) > $Null
+				$ScriptInformation.Add(@{Data = "          Location"; Value = $ProviderFileTransferLocation; }) > $Null
+				If(validobject $Provider FileTransferLockLocation)
+				{
+					$ScriptInformation.Add(@{Data = "          Do not allow to change location"; Value = $Provider.FileTransferLockLocation.ToString(); }) > $Null
+				}
+				If(validobject $Provider EnableDriveRedirectionCache)
+				{
+					$ScriptInformation.Add(@{Data = "Enable drive redirection cache"; Value = $Provider.EnableDriveRedirectionCache.ToString(); }) > $Null
+				}
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 4 "Preferred Connection Broker`t`t`t`t: " $Provider.VDIAgent
+				Line 4 "Allow Client URL/Mail Redirection`t`t`t`t: " $VDIAllowClientURLMailRedirection
+				Line 5 "Replace registered application`t`t`t`t: " $ReplaceRegisteredApplication
+				If(validobject $Provider SupportShellURLNamespaceObjects)
+				{
+					Line 5 "Support Windows Shell URL namespace objects`t`t: " $Provider.SupportShellURLNamespaceObjects.ToString()
+				}
+				Line 4 "Enable Drag and drop`t`t`t`t`t`t: " $VDIAllowDragandDrop
+				Line 5 "Direction`t`t`t`t`t`t: " $VDIDragAndDrop
+				If(validobject $Provider AllowFileTransfer)
+				{
+					Line 4 "Allow file transfer command (Web (HTML5) and Chrome clients)`t: " $Provider.AllowFileTransfer.ToString()
+				}
+				Line 5 "Configure File Transfer"
+				Line 6 "Direction`t`t`t: " $ProviderFileTransferMode
+				Line 6 "Location`t`t`t: " $ProviderFileTransferLocation
+				If(validobject $Provider FileTransferLockLocation)
+				{
+					Line 6 "Do not allow to change location : " $Provider.FileTransferLockLocation.ToString()
+				}
+				If(validobject $Provider EnableDriveRedirectionCache)
+				{
+					Line 4 "Enable drive redirection cache`t`t`t`t`t: " $Provider.EnableDriveRedirectionCache.ToString()
+				}
+				
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Preferred Connection Broker",($Script:htmlsb),$Provider.VDIAgent,$htmlwhite)
+				$rowdata += @(,("Allow Client URL/Mail Redirection",($Script:htmlsb),$VDIAllowClientURLMailRedirection,$htmlwhite))
+				$rowdata += @(,("     Replace registered application",($Script:htmlsb),$ReplaceRegisteredApplication,$htmlwhite))
+				If(validobject $Provider SupportShellURLNamespaceObjects)
+				{
+					$rowdata += @(,("     Support Windows Shell URL namespace objects",($Script:htmlsb),$Provider.SupportShellURLNamespaceObjects.ToString(),$htmlwhite))
+				}
+				$rowdata += @(,("Enable Drag and drop",($Script:htmlsb),$VDIAllowDragAndDrop,$htmlwhite))
+				$rowdata += @(,("     Directon",($Script:htmlsb),$VDIDragAndDrop,$htmlwhite))
+				If(validobject $Provider AllowFileTransfer)
+				{
+					$rowdata += @(,("Allow file transfer command (Web (HTML5) and Chrome clients)",($Script:htmlsb),$Provider.AllowFileTransfer.ToString(),$htmlwhite))
+				}
+				$rowdata += @(,("     Configure File Transfer",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("          Direction",($Script:htmlsb),$ProviderFileTransferMode,$htmlwhite))
+				$rowdata += @(,("          Location",($Script:htmlsb),$ProviderFileTransferLocation,$htmlwhite))
+				If(validobject $Provider FileTransferLockLocation)
+				{
+					$rowdata += @(,("          Do not allow to change location",($Script:htmlsb),$Provider.FileTransferLockLocation.ToString(),$htmlwhite))
+				}
+				If(validobject $Provider EnableDriveRedirectionCache)
+				{
+					$rowdata += @(,("Enable drive redirection cache",($Script:htmlsb),$Provider.EnableDriveRedirectionCache.ToString(),$htmlwhite))
+				}
+				
+
+				$msg = "Agent settings"
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			#RDP Printer
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 4 0 "RDP printer"
+			}
+			If($Text)
+			{
+				Line 3 "RDP printer"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			If(validobject $Provider PrinterNameFormat)
+			{
+				Switch ($Provider.PrinterNameFormat)
+				{
+					"PrnFormat_PRN_CMP_SES"	{$ProviderPrinterNameFormat = "Printername (from Computername) in Session no."; Break}
+					"PrnFormat_SES_CMP_PRN"	{$ProviderPrinterNameFormat = "Session no. (Computername from) Printername"; Break}
+					"PrnFormat_PRN_REDSES"	{$ProviderPrinterNameFormat = "Printername (redirected Session no.)"; Break}
+					Default					{$ProviderPrinterNameFormat = "Unable to determine RDP Printer Name Format: $($Provider.PrinterNameFormat)"; Break}
+				}
+			}
+			Else
+			{
+				$ProviderPrinterNameFormat = ""
+			}
+			
+			If(validobject $Provider RemoveSessionNumberFromPrinterName)
+			{
+				$ProviderRemoveSessionNumberFromPrinter = $Provider.RemoveSessionNumberFromPrinterName.ToString()
+			}
+			Else
+			{
+				$ProviderRemoveSessionNumberFromPrinter = ""
+			}
+
+			If(validobject $Provider RemoveClientNameFromPrinterName)
+			{
+				$ProviderRemoveClientNameFromPrinter = $Provider.RemoveClientNameFromPrinterName.ToString()
+			}
+			Else
+			{
+				$ProviderRemoveClientNameFromPrinter = ""
+			}
+
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "RDP Printer Name Format"; Value = $ProviderPrinterNameFormat; }) > $Null
+				$ScriptInformation.Add(@{Data = "Remove session number from printer name"; Value = $ProviderRemoveSessionNumberFromPrinter; }) > $Null
+				If($Provider.RemoveSessionNumberFromPrinterName)
+				{
+					$ScriptInformation.Add(@{Data = "Remove client name from printer name"; Value = $ProviderRemoveClientNameFromPrinter; }) > $Null
+				}
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 4 "RDP Printer Name Format`t`t`t`t: " $ProviderPrinterNameFormat
+				Line 4 "Remove session number from printer name`t`t: " $ProviderRemoveSessionNumberFromPrinter
+				If($Provider.RemoveSessionNumberFromPrinterName)
+				{
+					Line 4 "Remove client name from printer name`t`t`t: " $ProviderRemoveClientNameFromPrinter
+				}
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("RDP Printer Name Format",($Script:htmlsb),$ProviderPrinterNameFormat,$htmlwhite)
+				$rowdata += @(,("Remove session number from printer name",($Script:htmlsb),$ProviderRemoveSessionNumberFromPrinter,$htmlwhite))
+				If($Provider.RemoveSessionNumberFromPrinterName)
+				{
+					$rowdata += @(,("Remove client name from printer name",($Script:htmlsb),$ProviderRemoveClientNameFromPrinter,$htmlwhite))
+				}
+
+				$msg = "RDP printer"
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+		}
 	}
 	
 	#Remote PCs are not in PoSH
