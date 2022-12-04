@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: December 3, 2022
+	LASTEDIT: December 5, 2022
 #>
 
 
@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.013'
+$script:MyVersion         = '3.00.014'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "12/03/2022"
+$tmpdate                  = [datetime] "12/05/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -12724,6 +12724,37 @@ Function OutputSite
 			}
 			Else
 			{
+				$TemplateProviderName = ""
+				$TemplateProviderType = ""
+			}
+
+			$TemplateVM = Get-RASVM -Id $RDSTemplate.VMId -ProviderId $RDSTemplate.ProviderId -EA 0 4>$Null
+			
+			If($? -and $Null -ne $TemplateVM)
+			{
+				<#
+					Values	        Description
+					Unknown	        The VM is in the 'Unknown' state
+					On	            The VM is powered on.
+					Off	            The VM is powered off
+					Paused	        The VM is already, or in the process of being, suspended
+					CloningFailed	Failed to clone the VM.
+					CloningCanceled	VM cloning was cancelled
+				#>
+				Switch($TemplateVM.State)
+				{
+					"Unknown"			{$TemplatePowerState = "Unknown"; Break}
+					"On"				{$TemplatePowerState = "Powered on"; Break}
+					"Off"				{$TemplatePowerState = "Powered off"; Break}
+					"Paused"			{$TemplatePowerState = "Paused"; Break}
+					"CloningFailed"		{$TemplatePowerState = "Cloning failed"; Break}
+					"CloningCanceled"	{$TemplatePowerState = "Cloning canceled"; Break}
+					Default				{$TemplatePowerState = "Unable to determine template VM power state: $($TemplateVM.State)"; Break}
+				}
+			}
+			Else
+			{
+				$TemplatePowerState = "Unknown"
 			}
 			
 			If($MSWord -or $PDF)
@@ -12732,7 +12763,7 @@ Function OutputSite
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Name"; Value = $RDSTemplate.Name; }) > $Null
 				#$ScriptInformation.Add(@{Data = "Status"; Value = "Can't find"; }) > $Null
-				#$ScriptInformation.Add(@{Data = "Power state"; Value = "Can't find"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Power state"; Value = $TemplatePowerState; }) > $Null
 				#$ScriptInformation.Add(@{Data = "Agent status"; Value = "Can't find"; }) > $Null
 				#$ScriptInformation.Add(@{Data = "Distribution"; Value = "Can't find"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Provider"; Value = $TemplateProviderName; }) > $Null
@@ -12765,7 +12796,7 @@ Function OutputSite
 			{
 				Line 2 "Name: " $RDSTemplate.Name
 				#Line 2 "Status`t`t`t: " "Can't find"
-				#Line 2 "Power state`t`t: " "Can't find"
+				Line 2 "Power state`t`t: " $TemplatePowerState
 				#Line 2 "Agent status`t`t: " "Can't find"
 				#Line 2 "Distribution`t`t: " "Can't find"
 				Line 2 "Provider`t`t: " $TemplateProviderName
@@ -12782,7 +12813,7 @@ Function OutputSite
 				$rowdata = @()
 				$columnHeaders = @("Name",($Script:htmlsb),$RDSTemplate.Name,$htmlwhite)
 				#$rowdata += @(,("Status",($Script:htmlsb),"Can't find",$htmlwhite))
-				#$rowdata += @(,("Power state",($Script:htmlsb),"Can't find",$htmlwhite))
+				$rowdata += @(,("Power state",($Script:htmlsb),$TemplatePowerState,$htmlwhite))
 				#$rowdata += @(,("Agent status",($Script:htmlsb),"Can't find",$htmlwhite))
 				#$rowdata += @(,("Distribution",($Script:htmlsb),"Can't find",$htmlwhite))
 				$rowdata += @(,("Provider",($Script:htmlsb),$TemplateProviderName,$htmlwhite))
@@ -15630,53 +15661,131 @@ Function OutputSite
 			{
 				ForEach($VDIPool in $VDIPools)
 				{
-					$ScriptInformation = New-Object System.Collections.ArrayList
-					$ScriptInformation.Add(@{Data = "Pools"; Value = ""; }) > $Null
-					$ScriptInformation.Add(@{Data = "  Name"; Value = $VDIPool.Name; }) > $Null
-					$ScriptInformation.Add(@{Data = "  Last modification by"; Value = $VDIPool.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "  Modified on"; Value = $VDIPool.TimeLastMod.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "  Created by"; Value = $VDIPool.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "  Created on"; Value = $VDIPool.TimeCreate.ToString(); }) > $Null
+					$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null 
 					
-					ForEach($Item in $VDIPool.Members)
+					If($? -and $Null -ne $VDIPoolMembers)
 					{
-						$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null
-						
-						If($? -and $Null -ne $VDIPoolMembers)
+						$VDIPoolMember = $VDIPoolMembers[0]
+						Switch($VDIPoolMember.Type)
 						{
-							$cnt = -1
-							ForEach($VDIPoolMember in $VDIPoolMembers)
-							{
-								Switch($VDIPoolMember.Type)
-								{
-									"ALLGUESTINHOST"		{$MemberType = "All Guest VMs in Host"; Break}
-									"ALLGUESTSONPROVIDER"	{$MemberType = "All Guest VMs on Provider"; Break}
-									"GUEST"					{$MemberType = "Guest VM"; Break}
-									"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
-									"TEMPLATEGUEST"			{$MemberType = "Template"; Break}
-									"UNKNOWN"				{$MemberType = "Unknown"; Break}
-									Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
-								}
-								$cnt++
-								If($cnt -eq 0)
-								{
-									$ScriptInformation.Add(@{Data = "    Members"; Value = "Name: $($VDIPoolMember.Name) Type: $MemberType"; }) > $Null
-								}
-								Else
-								{
-									$ScriptInformation.Add(@{Data = ""; Value = "Name: $($VDIPoolMember.Name) Type: $MemberType"; }) > $Null
-								}
-							}
-						}
-						ElseIf($? -and $Null -eq $VDIPoolMembers)
-						{
-							$ScriptInformation.Add(@{Data = "    Members"; Value = "None found"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = "    Members"; Value = "Unable to retrieve"; }) > $Null
+							"ALLGUESTINHOST"		{$MemberType = "All desktops in Provider"; Break}
+							"AllDesktopsInProvider"	{$MemberType = "All desktops in Provider"; Break}
+							"Desktop"				{$MemberType = "Guest"; Break}
+							"GUEST"					{$MemberType = "Guest"; Break}
+							"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
+							"TEMPLATEDesktop"		{$MemberType = "Template Desktop"; Break}
+							"TEMPLATEGUEST"			{$MemberType = "Template Desktop"; Break}
+							"UNKNOWN"				{$MemberType = "Unknown"; Break}
+							Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
 						}
 					}
+					Else
+					{
+						$MemberType = ""
+					}
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Name"; Value = $VDIPool.Name; }) > $Null
+					$ScriptInformation.Add(@{Data = "Enabled"; Value = $VDIPool.Enabled.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Description"; Value = $VDIPool.Description; }) > $Null
+					$ScriptInformation.Add(@{Data = "Members type"; Value = $MemberType; }) > $Null
+					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $VDIPool.AdminLastMod; }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = $VDIPool.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created by"; Value = $VDIPool.AdminCreate; }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = $VDIPool.TimeCreate.ToString(); }) > $Null
+					
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 250;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+					
+					#General
+					
+					WriteWordLine 4 0 "General"
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Enable pool in site"; Value = $VDIPool.Enabled.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Name"; Value = $VDIPool.Name; }) > $Null
+					$ScriptInformation.Add(@{Data = "Description"; Value = $VDIPool.Description; }) > $Null
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 250;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+					
+					#Members
+					
+					WriteWordLine 4 0 "Members"
+
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					If($VDIPool.Members.Count -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "Members"; Value = "There are no pool members"; }) > $Null
+					}
+					Else
+					{
+						ForEach($Item in $VDIPool.Members)
+						{
+							$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null
+							
+							If($? -and $Null -ne $VDIPoolMembers)
+							{
+								ForEach($VDIPoolMember in $VDIPoolMembers)
+								{
+									Switch($VDIPoolMember.Type)
+									{
+										"ALLGUESTINHOST"		{$MemberType = "All desktops in Provider"; Break}
+										"AllDesktopsInProvider"	{$MemberType = "All desktops in Provider"; Break}
+										"Desktop"				{$MemberType = "Guest"; Break}
+										"GUEST"					{$MemberType = "Guest"; Break}
+										"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
+										"TEMPLATEDesktop"		{$MemberType = "Template Desktop"; Break}
+										"TEMPLATEGUEST"			{$MemberType = "Template Desktop"; Break}
+										"UNKNOWN"				{$MemberType = "Unknown"; Break}
+										Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
+									}
+									$ScriptInformation.Add(@{Data = "Name: $($VDIPoolMember.Name)"; Value = "Type: $MemberType"; }) > $Null
+								}
+							}
+							ElseIf($? -and $Null -eq $VDIPoolMembers)
+							{
+								$ScriptInformation.Add(@{Data = "Members"; Value = "None found"; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = "Members"; Value = "Unable to retrieve"; }) > $Null
+							}
+						}
+					}
+
+					$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+					$ScriptInformation.Add(@{Data = "WildCard"; Value = $VDIPool.WildCard; }) > $Null
+
 					$Table = AddWordTable -Hashtable $ScriptInformation `
 					-Columns Data,Value `
 					-List `
@@ -15713,52 +15822,91 @@ Function OutputSite
 			{
 				ForEach($VDIPool in $VDIPools)
 				{
-					Line 3 "Pools"
-					Line 4 "Name`t`t: " $VDIPool.Name
-					Line 4 "Last modification by`t: " $VDIPool.AdminLastMod
-					Line 4 "Modified on`t`t: " $VDIPool.TimeLastMod.ToString()
-					Line 4 "Created by`t`t: " $VDIPool.AdminCreate
-					Line 4 "Created on`t`t: " $VDIPool.TimeCreate.ToString()
+					$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null 
 					
-					ForEach($Item in $VDIPool.Members)
+					If($? -and $Null -ne $VDIPoolMembers)
 					{
-						$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null
-						
-						If($? -and $Null -ne $VDIPoolMembers)
+						$VDIPoolMember = $VDIPoolMembers[0]
+						Switch($VDIPoolMember.Type)
 						{
-							$cnt = -1
-							ForEach($VDIPoolMember in $VDIPoolMembers)
-							{
-								Switch($VDIPoolMember.Type)
-								{
-									"ALLGUESTINHOST"		{$MemberType = "All Guest VMs in Host"; Break}
-									"ALLGUESTSONPROVIDER"	{$MemberType = "All Guest VMs on Provider"; Break}
-									"GUEST"					{$MemberType = "Guest VM"; Break}
-									"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
-									"TEMPLATEGUEST"			{$MemberType = "Template"; Break}
-									"UNKNOWN"				{$MemberType = "Unknown"; Break}
-									Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
-								}
-								$cnt++
-								If($cnt -eq 0)
-								{
-									Line 4 "Members`t`t: " "Name: $($VDIPoolMember.Name) Type: $MemberType"
-								}
-								Else
-								{
-									Line 6 "Name: $($VDIPoolMember.Name) Type: $MemberType"
-								}
-							}
-						}
-						ElseIf($? -and $Null -eq $VDIPoolMembers)
-						{
-							Line 4 "Members`t`t: " "None found"
-						}
-						Else
-						{
-							Line 4 "Members`t`t: " "Unable to retrieve"
+							"ALLGUESTINHOST"		{$MemberType = "All desktops in Provider"; Break}
+							"AllDesktopsInProvider"	{$MemberType = "All desktops in Provider"; Break}
+							"Desktop"				{$MemberType = "Guest"; Break}
+							"GUEST"					{$MemberType = "Guest"; Break}
+							"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
+							"TEMPLATEDesktop"		{$MemberType = "Template Desktop"; Break}
+							"TEMPLATEGUEST"			{$MemberType = "Template Desktop"; Break}
+							"UNKNOWN"				{$MemberType = "Unknown"; Break}
+							Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
 						}
 					}
+					Else
+					{
+						$MemberType = ""
+					}
+
+					Line 3 "Name`t`t`t: " $VDIPool.Name
+					Line 3 "Enabled`t`t`t: " $VDIPool.Enabled.ToString()
+					Line 3 "Description`t`t: " $VDIPool.Description
+					Line 3 "Members type`t`t: " $MemberType
+					Line 3 "Last modification by`t: " $VDIPool.AdminLastMod
+					Line 3 "Modified on`t`t: " $VDIPool.TimeLastMod.ToString()
+					Line 3 "Created by`t`t: " $VDIPool.AdminCreate
+					Line 3 "Created on`t`t: " $VDIPool.TimeCreate.ToString()
+					Line 0 ""
+					
+					#General
+					Line 3 "General"
+					Line 4 "Enable pool in site`t: " $VDIPool.Enabled.ToString()
+					Line 4 "Name`t`t`t: " $VDIPool.Name
+					Line 4 "Description`t`t: " $VDIPool.Description
+					Line 0 ""
+					
+					#Members
+					
+					Line 3 "Members"
+					If($VDIPool.Members.Count -eq 0)
+					{
+						Line 4 "Members: " "There are no pool members"
+					}
+					Else
+					{
+						ForEach($Item in $VDIPool.Members)
+						{
+							$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null
+							
+							If($? -and $Null -ne $VDIPoolMembers)
+							{
+								ForEach($VDIPoolMember in $VDIPoolMembers)
+								{
+									Switch($VDIPoolMember.Type)
+									{
+										"ALLGUESTINHOST"		{$MemberType = "All desktops in Provider"; Break}
+										"AllDesktopsInProvider"	{$MemberType = "All desktops in Provider"; Break}
+										"Desktop"				{$MemberType = "Guest"; Break}
+										"GUEST"					{$MemberType = "Guest"; Break}
+										"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
+										"TEMPLATEDesktop"		{$MemberType = "Template Desktop"; Break}
+										"TEMPLATEGUEST"			{$MemberType = "Template Desktop"; Break}
+										"UNKNOWN"				{$MemberType = "Unknown"; Break}
+										Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
+									}
+									Line 4 "Name: $($VDIPoolMember.Name) " "Type: $MemberType"
+								}
+							}
+							ElseIf($? -and $Null -eq $VDIPoolMembers)
+							{
+								Line 4 "Members: " "None found"
+							}
+							Else
+							{
+								Line 4 "Members: " "Unable to retrieve"
+							}
+						}
+					}
+					Line 0 ""
+					Line 4 "WildCard: " $VDIPool.WildCard
+					Line 0 ""
 				}
 				Line 0 ""
 			}
@@ -15779,13 +15927,38 @@ Function OutputSite
 			{
 				ForEach($VDIPool in $VDIPools)
 				{
+					$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null 
+					
+					If($? -and $Null -ne $VDIPoolMembers)
+					{
+						$VDIPoolMember = $VDIPoolMembers[0]
+						Switch($VDIPoolMember.Type)
+						{
+							"ALLGUESTINHOST"		{$MemberType = "All desktops in Provider"; Break}
+							"AllDesktopsInProvider"	{$MemberType = "All desktops in Provider"; Break}
+							"Desktop"				{$MemberType = "Guest"; Break}
+							"GUEST"					{$MemberType = "Guest"; Break}
+							"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
+							"TEMPLATEDesktop"		{$MemberType = "Template Desktop"; Break}
+							"TEMPLATEGUEST"			{$MemberType = "Template Desktop"; Break}
+							"UNKNOWN"				{$MemberType = "Unknown"; Break}
+							Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
+						}
+					}
+					Else
+					{
+						$MemberType = ""
+					}
+
 					$rowdata = @()
-					$columnHeaders = @("Pools",($Script:htmlsb),"",$htmlwhite)
-					$rowdata += @(,("  Name",($Script:htmlsb),$VDIPool.Name,$htmlwhite))
-					$rowdata += @(,("  Last modification by",($Script:htmlsb), $VDIPool.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("  Modified on",($Script:htmlsb), $VDIPool.TimeLastMod.ToString(),$htmlwhite))
-					$rowdata += @(,("  Created by",($Script:htmlsb), $VDIPool.AdminCreate,$htmlwhite))
-					$rowdata += @(,("  Created on",($Script:htmlsb), $VDIPool.TimeCreate.ToString(),$htmlwhite))
+					$columnHeaders = @("Name",($Script:htmlsb),$VDIPool.Name,$htmlwhite)
+					$rowdata += @(,("Enabled",($Script:htmlsb),$VDIPool.Enabled.ToString(),$htmlwhite))
+					$rowdata += @(,("Description",($Script:htmlsb),$VDIPool.Description,$htmlwhite))
+					$rowdata += @(,("Members type: ",($Script:htmlsb),$MemberType,$htmlwhite))
+					$rowdata += @(,("Last modification by",($Script:htmlsb), $VDIPool.AdminLastMod,$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), $VDIPool.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Created by",($Script:htmlsb), $VDIPool.AdminCreate,$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), $VDIPool.TimeCreate.ToString(),$htmlwhite))
 					
 					ForEach($Item in $VDIPool.Members)
 					{
@@ -15798,11 +15971,13 @@ Function OutputSite
 							{
 								Switch($VDIPoolMember.Type)
 								{
-									"ALLGUESTINHOST"		{$MemberType = "All Guest VMs in Host"; Break}
-									"ALLGUESTSONPROVIDER"	{$MemberType = "All Guest VMs on Provider"; Break}
-									"GUEST"					{$MemberType = "Guest VM"; Break}
+									"ALLGUESTINHOST"		{$MemberType = "All desktops in Provider"; Break}
+									"AllDesktopsInProvider"	{$MemberType = "All desktops in Provider"; Break}
+									"Desktop"				{$MemberType = "Guest"; Break}
+									"GUEST"					{$MemberType = "Guest"; Break}
 									"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
-									"TEMPLATEGUEST"			{$MemberType = "Template"; Break}
+									"TEMPLATEDesktop"		{$MemberType = "Template Desktop"; Break}
+									"TEMPLATEGUEST"			{$MemberType = "Template Desktop"; Break}
 									"UNKNOWN"				{$MemberType = "Unknown"; Break}
 									Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
 								}
@@ -15828,6 +16003,78 @@ Function OutputSite
 					}
 
 					$msg = ""
+					$columnWidths = @("200","275")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+
+					#General
+				
+					$rowdata = @()
+					$columnHeaders = @("Enable pool in site",($Script:htmlsb),$VDIPool.Enabled.ToString(),$htmlwhite)
+					$rowdata += @(,("Name",($Script:htmlsb),$VDIPool.Name,$htmlwhite))
+					$rowdata += @(,("Description",($Script:htmlsb),$VDIPool.Description,$htmlwhite))
+					
+					$msg = "General"
+					$columnWidths = @("200","275")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+
+					#Members
+			
+					$rowdata = @()
+					If($VDIPool.Members.Count -eq 0)
+					{
+						$columnHeaders = @("Members",($Script:htmlsb),"There are no pool members",$htmlwhite)
+					}
+					Else
+					{
+						ForEach($Item in $VDIPool.Members)
+						{
+							$VDIPoolMembers = Get-RASVDIPoolMember -SiteId $Site.Id -VDIPoolName $VDIPool.Name -EA 0 4>$Null
+							
+							If($? -and $Null -ne $VDIPoolMembers)
+							{
+								$cnt = -1
+								ForEach($VDIPoolMember in $VDIPoolMembers)
+								{
+									Switch($VDIPoolMember.Type)
+									{
+										"ALLGUESTINHOST"		{$MemberType = "All desktops in Provider"; Break}
+										"AllDesktopsInProvider"	{$MemberType = "All desktops in Provider"; Break}
+										"Desktop"				{$MemberType = "Guest"; Break}
+										"GUEST"					{$MemberType = "Guest"; Break}
+										"NATIVEPOOL"			{$MemberType = "Native Pool"; Break}
+										"TEMPLATEDesktop"		{$MemberType = "Template Desktop"; Break}
+										"TEMPLATEGUEST"			{$MemberType = "Template Desktop"; Break}
+										"UNKNOWN"				{$MemberType = "Unknown"; Break}
+										Default					{$MemberType = "Unable to determine Pool Member Type: $($VDIPoolMember.Type)"; Break}
+									}
+									$cnt++
+									If($cnt -eq 0)
+									{
+										$columnHeaders = @("Name: $($VDIPoolMember.Name)",($Script:htmlsb),"Type: $MemberType",$htmlwhite)
+									}
+									Else
+									{
+										$rowdata += @(,("Name: $($VDIPoolMember.Name)",($Script:htmlsb),"Type: $MemberType",$htmlwhite))
+									}
+								}
+							}
+							ElseIf($? -and $Null -eq $VDIPoolMembers)
+							{
+								$rowdata += @(,("Members",($Script:htmlsb),"None found",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("Members",($Script:htmlsb),"Unable to retrieve",$htmlwhite))
+							}
+						}
+					}
+					
+					$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+					$rowdata += @(,("WildCard",($Script:htmlsb),$VDIPool.WildCard,$htmlwhite))
+
+					$msg = "Members"
 					$columnWidths = @("200","275")
 					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 					WriteHTMLLine 0 0 ""
