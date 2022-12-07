@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: December 6, 2022
+	LASTEDIT: December 7, 2022
 #>
 
 
@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.016'
+$script:MyVersion         = '3.00.017'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "12/06/2022"
+$tmpdate                  = [datetime] "12/07/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -3952,7 +3952,7 @@ Function ProcessFarm
 
 Function OutputFarm
 {
-	Write-Verbose "$(Get-Date -Format G): `tOutput Farm"
+	Write-Verbose "$(Get-Date -Format G): Output Farm"
 	
 	If($MSWord -or $PDF)
 	{
@@ -4036,7 +4036,7 @@ Function OutputFarmSite
 {
 	Param([object]$Site)
 	
-	Write-Verbose "$(Get-Date -Format G): `t`tOutput Farm Site $($Site.Name)"
+	Write-Verbose "$(Get-Date -Format G): `tOutput Farm Site $($Site.Name)"
 	$SiteSettings = Get-RASSiteStatus -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
@@ -4378,7 +4378,7 @@ Function OutputSite
 {
 	Param([object]$Site)
 	
-	Write-Verbose "$(Get-Date -Format G): `tOutput Site $($Site.Name)"
+	Write-Verbose "$(Get-Date -Format G): Output Site $($Site.Name)"
 	$RDSHosts = Get-RASRDS -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
@@ -4437,7 +4437,7 @@ Function OutputSite
 			WriteHTMLLine 2 0 "RD Session Hosts"
 		}
 
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Hosts"
+		Write-Verbose "$(Get-Date -Format G): `tOutput RD Session Hosts"
 		ForEach($RDSHost in $RDSHosts)
 		{
 			$RDSStatus = Get-RASRDSStatus -Id $RDSHost.Id -EA 0 4>$Null
@@ -4553,7 +4553,7 @@ Function OutputSite
 		}
 	}
 
-	Write-Verbose "$(Get-Date -Format G): `t`tOutput Providers"
+	Write-Verbose "$(Get-Date -Format G): `tOutput Providers"
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Providers"
@@ -4719,7 +4719,7 @@ Function OutputSite
 		}
 	}
 	
-	Write-Verbose "$(Get-Date -Format G): `t`tOutput Secure Gateways"
+	Write-Verbose "$(Get-Date -Format G): `tOutput Secure Gateways"
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Secure Gateways"
@@ -4889,7 +4889,7 @@ Function OutputSite
 		}
 	}
 	
-	Write-Verbose "$(Get-Date -Format G): `t`tOutput Connection Brokers"
+	Write-Verbose "$(Get-Date -Format G): `tOutput Connection Brokers"
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Connection Brokers"
@@ -5064,6 +5064,107 @@ Function OutputSite
 		}
 	}
 	
+	Write-Verbose "$(Get-Date -Format G): `tOutput Enrollment Servers"
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 2 0 "Enrollment Servers"
+	}
+	If($Text)
+	{
+		Line 1 "Enrollment Servers"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 2 0 "Enrollment Servers"
+	}
+
+	$EnrollmentServers = Get-RASEnrollmentServer -Siteid $Site.Id -EA 0 4> $Null
+	
+	If(!$?)
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve Enrollment Servers for Site $($Site.Name)`
+		"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "Unable to retrieve Enrollment Servers for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve Enrollment Servers for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve Enrollment Servers for Site $($Site.Name)"
+		}
+	}
+	ElseIf($? -and $Null -eq $EnrollmentServers)
+	{
+		Write-Host "
+		No Enrollment Servers retrieved for Site $($Site.Name).`
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No Enrollment Servers retrieved for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "No Enrollment Servers retrieved for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No Enrollment Servers retrieved for Site $($Site.Name)"
+		}
+	}
+	Else
+	{
+		ForEach($EnrollmentServer in $EnrollmentServers)
+		{
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Name"; Value = $EnrollmentServer.Server; }) > $Null
+				$ScriptInformation.Add(@{Data = "Status"; Value = "Can't find"; }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 3 "Name`t`t`t: " $EnrollmentServer.Server
+				Line 3 "Status`t`t`t: " "Can't find"
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Name",($Script:htmlsb),$EnrollmentServer.Server,$htmlwhite)
+				$rowdata += @(,("Status",($Script:htmlsb),"Can't find",$htmlwhite))
+
+				$msg = ""
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+		}
+	}
+	
 	Write-Verbose "$(Get-Date -Format G): Output RD Session Hosts"
 	If($MSWord -or $PDF)
 	{
@@ -5121,7 +5222,6 @@ Function OutputSite
 	{
 		ForEach($RDSHost in $RDSHosts)
 		{
-			Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Host $($RDSHost.Server)"
 			$RDSStatus = Get-RASRDSStatus -Id $RDSHost.Id -EA 0 4>$Null
 			
 			If(!$?)
@@ -10272,7 +10372,7 @@ Function OutputSite
 		}
 	}
 
-	Write-Verbose "$(Get-Date -Format G): `tOutput RD Session Host Groups"
+	Write-Verbose "$(Get-Date -Format G): `tOutput RD Session Hosts Groups"
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Groups"
@@ -10329,8 +10429,6 @@ Function OutputSite
 	{
 		ForEach($RDSGroup in $RDSGroups)
 		{
-			Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Host Group $($RDSGroup.Name)"
-			
 			#Get the agent state for the group
 			$RDSGroupStatus = Get-RASRDSGroupStatus -Name $RDSGroup.Name -EA 0 4>$Null
 			
@@ -12715,7 +12813,6 @@ Function OutputSite
 	{
 		ForEach($RDSTemplate in $RDSTemplates)
 		{
-			Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Host Template $($RDSTemplate.Name)"
 			$TemplateProvider = Get-RASProvider -Id $RDSTemplate.ProviderId -EA 0 4>$Null
 			
 			If($? -and $Null -ne $TemplateProvider)
@@ -14985,7 +15082,6 @@ Function OutputSite
 	{
 		ForEach($RDSSchedule in $RDSSchedules)
 		{
-			Write-Verbose "$(Get-Date -Format G): `t`tOutput RD Session Host Scheduler $($RDSSchedule.Name)"
 			$Action = $RDSSchedule.Action
 			If($RDSSChedule.Action -eq "Reboot")
 			{
@@ -19834,6 +19930,8 @@ Function OutputSite
 		#Scheduler
 		#not in PoSH
 	}
+
+	#Remote PCs are not in PoSH
 	
 	#Providers
 	Write-Verbose "$(Get-Date -Format G): Output Providers"
@@ -19891,7 +19989,6 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Providers"
 		ForEach($Provider in $Providers)
 		{
 			$ProviderStatus = Get-RASProviderStatus -Id $Provider.Id -EA 0 4>$Null
@@ -20625,7 +20722,7 @@ Function OutputSite
 	
 	#Remote PCs are not in PoSH
 	
-	Write-Verbose "$(Get-Date -Format G): `tOutput Secure Gateways"
+	Write-Verbose "$(Get-Date -Format G): Output Secure Gateways"
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Secure Gateways"
@@ -20680,7 +20777,6 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Secure Gateways"
 		ForEach($SecureGateway in $SecureGateways)
 		{
 			$SecureGatewayStatus = Get-RASGatewayStatus -Id $SecureGateway.Id -EA 0 4>$Null
@@ -22354,6 +22450,7 @@ Function OutputSite
 		WriteHTMLLine 2 0 "Connection Brokers"
 	}
 
+	Write-Verbose "$(Get-Date -Format G): Output Connection Brokers"
 	$ConnectionBrokers = Get-RASBroker -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
@@ -22395,7 +22492,6 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Connection Brokers"
 		ForEach($ConnectionBroker in $ConnectionBrokers)
 		{
 			$ConnectionBrokerStatus = Get-RASBrokerStatus -Id $ConnectionBroker.Id -EA 0 4>$Null
@@ -22603,6 +22699,7 @@ Function OutputSite
 		WriteHTMLLine 2 0 "Enrollment Servers"
 	}
 
+	Write-Verbose "$(Get-Date -Format G): Output Enrollment Servers"
 	$EnrollmentServers = Get-RASEnrollmentServer -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
@@ -22644,7 +22741,6 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Enrollment Servers"
 		ForEach($EnrollmentServer in $EnrollmentServers)
 		{
 			If($MSWord -or $PDF)
@@ -22789,8 +22885,6 @@ Function OutputSite
 	}
 	
 	#HALB
-	$HALBs = Get-RASHALB -Siteid $Site.Id -EA 0 4> $Null 
-
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "HALB"
@@ -22803,6 +22897,9 @@ Function OutputSite
 	{
 		WriteHTMLLine 2 0 "HALB"
 	}
+
+	Write-Verbose "$(Get-Date -Format G): Output HALB"
+	$HALBs = Get-RASHALB -Siteid $Site.Id -EA 0 4> $Null 
 
 	If(!$?)
 	{
@@ -22844,7 +22941,7 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput HALB"
+		Write-Verbose "$(Get-Date -Format G): `tOutput Virtual Servers"
 		ForEach($HALB in $HALBs)
 		{
 			$HALBStatusResult = Get-RASHALBStatus -Name $HALB.Name -EA 0 4> $Null 
@@ -23461,6 +23558,7 @@ Function OutputSite
 			}
 #>
 
+			Write-Verbose "$(Get-Date -Format G): `tOutput Devices"
 			If($MSWord -or $PDF)
 			{
 				WriteWordLine 4 0 "Devices"
@@ -23693,6 +23791,7 @@ Function OutputSite
 		WriteHTMLLine 2 0 "Themes"
 	}
 
+	Write-Verbose "$(Get-Date -Format G): Output Themes"
 	$Themes = Get-RASTheme -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
@@ -23734,7 +23833,6 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Themes"
 		ForEach($Theme in $Themes)
 		{
 			$ThemePostLogonMessage        = $Theme.PostLogonMessage.Split("`n")
@@ -25317,6 +25415,7 @@ Function OutputSite
 		WriteHTMLLine 2 0 "Certificates"
 	}
 
+	Write-Verbose "$(Get-Date -Format G): Output Certificates"
 	$Certs = Get-RASCertificate -Siteid $Site.Id -EA 0 4> $Null
 	
 	If(!$?)
@@ -25358,7 +25457,6 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Certificates"
 		ForEach($Cert in $Certs)
 		{
 			If($MSWord -or $PDF)
@@ -25608,10 +25706,6 @@ Function OutputSite
 
 	#Settings
 	
-	#Auditing - not in PoSH
-
-	#Global logging - not in PoSH
-
 	If($MSWord -or $PDF)
 	{
 		WriteWordLine 2 0 "Settings"
@@ -25625,6 +25719,7 @@ Function OutputSite
 		WriteHTMLLine 2 0 "Settings"
 	}
 
+	Write-Verbose "$(Get-Date -Format G): Output Settings"
 	$FarmSettings = Get-RASFarmSettings -SiteId $Site.Id -ea 0 4>$Null
 	
 	If(!$?)
@@ -25666,9 +25761,12 @@ Function OutputSite
 	}
 	Else
 	{
-		Write-Verbose "$(Get-Date -Format G): `t`tOutput Settings"
 	}
 	
+	#Auditing - not in PoSH
+
+	#Global logging - not in PoSH
+
 	<#RASFarmSettings	
 		Dropped Properties	ExcludeDirectRDP
 							ExcludeDirectRDPForVDI
@@ -25679,95 +25777,261 @@ Function OutputSite
 							ReplicateURLRedirection
 							URLBlackList
 							TokenValidationTime
-
-	If($MSWord -or $PDF)
+	#>
+	Write-Verbose "$(Get-Date -Format G): `tOutput URL redirection"
+	
+	$URLRedirectionSettings = Get-RASURLRedirectionSettings -Siteid $Site.Id -EA 0 4> $Null
+	
+	If(!$?)
 	{
-		WriteWordLine 3 0 "URL redirection"
-		$ScriptInformation = New-Object System.Collections.ArrayList
-		$ScriptInformation.Add(@{Data = "Do not redirect the following URLs"; Value = ""; }) > $Null
-		$cnt = -1
-		ForEach($Item in $FarmSettings.URLBlacklist)
+		Write-Warning "
+		`n
+		Unable to retrieve URL Redirection settings for Site $($Site.Name)`
+		"
+		If($MSWord -or $PDF)
 		{
-			$cnt++
-			
-			If($Cnt -eq 0)
+			WriteWordLine 0 0 "Unable to retrieve URL Redirection settings for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve URL Redirection settings for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve URL Redirection settings for Site $($Site.Name)"
+		}
+	}
+	ElseIf($? -and $Null -eq $URLRedirectionSettings)
+	{
+		Write-Host "
+		No URL Redirection settings retrieved for Site $($Site.Name).`
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No URL Redirection settings retrieved for Site $($Site.Name)"
+		}
+		If($Text)
+		{
+			Line 0 "No URL Redirection settings retrieved for Site $($Site.Name)"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No URL Redirection settings retrieved for Site $($Site.Name)"
+		}
+	}
+	Else
+	{
+		If($URLRedirectionSettings.URLs.Count -eq 0)
+		{
+			If($URLRedirectionSettings.DefaultAction -eq "Redirect")
 			{
-				$ScriptInformation.Add(@{Data = "     Url"; Value = $Item; }) > $Null
+				$URLAction = "Redirect"
 			}
 			Else
 			{
-				$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+				$URLAction = "Do not redirect"
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 3 0 "URL redirection"
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "URL"; Value = "*"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enabled"; Value = "True"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Action"; Value = $URLAction; }) > $Null
+				$ScriptInformation.Add(@{Data = "ID"; Value = "0"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $URLRedirectionSettings.Replicate.ToString(); }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 2 "URL redirection"
+				Line 3 "URL: " "*"
+				Line 3 "Enabled: " "True"
+				Line 3 "Action: " $URLAction
+				Line 3 "ID: " "0"
+				Line 3 "Settings are replicated to all Sites: " $URLRedirectionSettings.Replicate.ToString()
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 3 0 "URL redirection"
+				$rowdata = @()
+				$columnHeaders = @("URL",($Script:htmlsb),"*",$htmlwhite)
+				$rowdata += @(,("URL",($Script:htmlsb), "*",$htmlwhite))
+				$rowdata += @(,("Enabled",($Script:htmlsb), "True",$htmlwhite))
+				$rowdata += @(,("Action",($Script:htmlsb), $URLAction,$htmlwhite))
+				$rowdata += @(,("ID",($Script:htmlsb), "0",$htmlwhite))
+				$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb), $URLRedirectionSettings.Replicate.ToString(),$htmlwhite))
+
+				$msg = ""
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+
+				WriteHTMLLine 0 0 ""
 			}
 		}
-		$ScriptInformation.Add(@{Data = "Settings are replicated to all Sitess"; Value = $FarmSettings.ReplicateURLRedirection.ToString(); }) > $Null
-
-		$Table = AddWordTable -Hashtable $ScriptInformation `
-		-Columns Data,Value `
-		-List `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
-
-		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-		$Table.Columns.Item(1).Width = 200;
-		$Table.Columns.Item(2).Width = 250;
-
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-		FindWordDocumentEnd
-		$Table = $Null
-		WriteWordLine 0 0 ""
-	}
-	If($Text)
-	{
-		Line 2 "URL redirection"
-		Line 3 "Do not redirect the following URLs`t: "
-		$cnt = -1
-		ForEach($Item in $FarmSettings.URLBlacklist)
+		Else
 		{
-			$cnt++
-			
-			If($Cnt -eq 0)
+			If($URLRedirectionSettings.DefaultAction -eq "Redirect")
 			{
-				Line 7 "     Url: " $Item
+				$URLAction = "Redirect"
 			}
 			Else
 			{
-				Line 8 "  " $Item
+				$URLAction = "Do not redirect"
 			}
-		}
-		Line 3 "Settings are replicated to all Sites`t: " $FarmSettings.ReplicateURLRedirection.ToString()
-		Line 0 ""
-	}
-	If($HTML)
-	{
-		WriteHTMLLine 3 0 "URL redirection"
-		$rowdata = @()
-		$columnHeaders = @("Do not redirect the following URLs",($Script:htmlsb),"",$htmlwhite)
-		$cnt = -1
-		ForEach($Item in $FarmSettings.URLBlacklist)
-		{
-			$cnt++
+
+			$URLList = New-Object System.Collections.ArrayList
 			
-			If($Cnt -eq 0)
+			$obj = @{	
+				URL      = "*"
+				Enabled  = "True"
+				Priority = "4294967295"
+				Action   = $URLAction
+				ID       = "0"
+			}			
+			$Null = $URLList.Add($obj)
+			
+			ForEach($item in $URLRedirectionSettings.URLs)
 			{
-				$rowdata += @(,("     URL",($Script:htmlsb),$Item,$htmlwhite))
+				$Result = Get-RASURLRedirectionEntry -Siteid $Site.Id -Id $item.Id -EA 0 4> $Null
+				
+				If($item.Action -eq "Redirect")
+				{
+					$URLAction = "Redirect"
+				}
+				Else
+				{
+					$URLAction = "Do not redirect"
+				}
+
+				$obj = @{	
+					URL      = $item.URL
+					Enabled  = $item.Enabled.ToString()
+					Priority = $item.Priority.ToString()
+					Action   = $URLAction
+					ID       = $item.Id.ToString()
+				}			
+				$Null = $URLList.Add($obj)
 			}
-			Else
+			
+			$URLList = $URLList | Sort-Object Priority
+			
+			If($MSWord -or $PDF)
 			{
-				$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
+				WriteWordLine 3 0 "URL redirection"
+				$Table = AddWordTable -Hashtable $URLList `
+				-Columns URL, Enabled, Action, ID `
+				-Headers "URL", "Enabled", "Action", "ID" `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 250;
+				$Table.Columns.Item(2).Width = 50;
+				$Table.Columns.Item(3).Width = 100;
+				$Table.Columns.Item(4).Width = 50;
+				
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $URLRedirectionSettings.Replicate.ToString(); }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 250;
+				$Table.Columns.Item(2).Width = 50;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 2 "URL redirection"
+				Line 0 ""
+				Line 2 "URL                                                 Enabled  Action           ID "
+				Line 2 "================================================================================="
+				#		https://www.somereallylongurl.com/somelongsitename  False    Do not redirect  999
+				#		12345678901234567890123456789012345678901234567890SS1234567SS123456789012345SS123
+				ForEach($item in $URLList)
+				{
+					Line 2 ( "{0,-50}  {1,-7}  {2,-15}  {3,-3}" -f $item.URL, $item.Enabled, $item.Action, $item.ID)
+				}
+				Line 0 ""
+				Line 2 "Settings are replicated to all Sites: " $URLRedirectionSettings.Replicate.ToString()
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 3 0 "URL redirection"
+				$rowdata = @()
+				ForEach($item in $URLList)
+				{
+					$rowdata += @(,(
+						$item.URL,$htmlwhite,
+						$item.Enabled,$htmlwhite,
+						$item.Action,$htmlwhite,
+						$item.ID,$htmlwhite
+						))
+				}
+
+				$columnHeaders = @(
+				"URL",($Script:htmlsb),
+				"Enabled",($Script:htmlsb),
+				"Action",($Script:htmlsb),
+				"ID",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("250","50","100","50")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+
+				$rowdata = @()
+				$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$URLRedirectionSettings.Replicate.ToString(),$htmlwhite)
+
+				$msg = ""
+				$columnWidths = @("250","50")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+
+				WriteHTMLLine 0 0 ""
 			}
 		}
-		$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FarmSettings.ReplicateURLRedirection.ToString(),$htmlwhite))
-
-		$msg = ""
-		$columnWidths = @("200","275")
-		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-
-		WriteHTMLLine 0 0 ""
 	}
-	#>	
+
+
 	$RASNotificationHandlers = Get-RASNotification -SiteId $Site.Id -EA 0 4>$Null
 	
 	If(!($?))
