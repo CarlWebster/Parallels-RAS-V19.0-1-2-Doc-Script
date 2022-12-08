@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: December 7, 2022
+	LASTEDIT: December 8, 2022
 #>
 
 
@@ -596,9 +596,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.017'
+$script:MyVersion         = '3.00.018'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "12/07/2022"
+$tmpdate                  = [datetime] "12/08/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -4065,11 +4065,9 @@ Function OutputFarmSite
 	}
 	ElseIf($? -and $Null -eq $SiteSettings)
 	{
-		Write-Warning "
-		`n
-		No Site Status retrieved for Site $Site.Name.`
-		`n
-		"
+		Write-Host "
+	No Site Status retrieved for Site $Site.Name.`
+		" -ForegroundColor White
 		$PrimaryPublishingAgent = "N/A"
 		If($Site.LicensingSite)
 		{
@@ -4403,7 +4401,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $RDSHosts)
 	{
 		Write-Host "
-		No RD Session Hosts retrieved for Site $($Site.Name).
+	No RD Session Hosts retrieved for Site $($Site.Name).
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -4591,7 +4589,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $Providers)
 	{
 		Write-Host "
-		No Providers retrieved for Site $($Site.Name).`
+	No Providers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -4757,7 +4755,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $SecureGateways)
 	{
 		Write-Host "
-		No Secure Gateways retrieved for Site $($Site.Name).`
+	No Secure Gateways retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -4927,7 +4925,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $ConnectionBrokers)
 	{
 		Write-Host "
-		No Connection Brokers retrieved for Site $($Site.Name).`
+	No Connection Brokers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -5102,7 +5100,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $EnrollmentServers)
 	{
 		Write-Host "
-		No Enrollment Servers retrieved for Site $($Site.Name).`
+	No Enrollment Servers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -5203,7 +5201,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $RDSHosts)
 	{
 		Write-Host "
-		No RD Session Hosts retrieved for Site $($Site.Name).`
+	No RD Session Hosts retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -10410,7 +10408,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $RDSGroups)
 	{
 		Write-Host "
-		No RD Session Host Groups retrieved for Site $($Site.Name).`
+	No RD Session Host Groups retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -12794,7 +12792,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $RDSTemplates)
 	{
 		Write-Host "
-		No RD Session Hosts Templates retrieved for Site $($Site.Name).`
+	No RD Session Hosts Templates retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -15063,7 +15061,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $RDSSchedules)
 	{
 		Write-Host "
-		No RD Session Host Scheduler retrieved for Site $($Site.Name).`
+	No RD Session Host Scheduler retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -15719,7 +15717,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $VDIHosts)
 	{
 		Write-Host "
-		No VDI retrieved for Site $($Site.Name).`
+	No VDI retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -16208,7 +16206,7 @@ Function OutputSite
 		ElseIf($? -and $Null -eq $VDITemplates)
 		{
 			Write-Host "
-			No VDI Templates retrieved for Site $($Site.Name).`
+	No VDI Templates retrieved for Site $($Site.Name).`
 			" -ForegroundColor White
 			If($MSWord -or $PDF)
 			{
@@ -19972,7 +19970,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $Providers)
 	{
 		Write-Host "
-		No Providers retrieved for Site $($Site.Name).`
+	No Providers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -20760,7 +20758,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $SecureGateways)
 	{
 		Write-Host "
-		No Secure Gateways retrieved for Site $($Site.Name).`
+	No Secure Gateways retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -22475,7 +22473,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $ConnectionBrokers)
 	{
 		Write-Host "
-		No Connection Brokers retrieved for Site $($Site.Name).`
+	No Connection Brokers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -22724,7 +22722,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $EnrollmentServers)
 	{
 		Write-Host "
-		No Enrollment Servers retrieved for Site $($Site.Name).`
+	No Enrollment Servers retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -23062,7 +23060,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "     IPv6"; Value = $HALB.VirtualIPV6; }) > $Null
 				$ScriptInformation.Add(@{Data = "     Prefix"; Value = $HALB.PrefixIPV6; }) > $Null
 				$ScriptInformation.Add(@{Data = "Settings"; Value = ""; }) > $Null
-				$ScriptInformation.Add(@{Data = "     LB Gateway Payload"; Value = $HALB.EnableGWPayload.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "     LB Gateway Payload"; Value = $HALB.EnableGatewayPayload.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "     LB SSL Payload"; Value = $HALB.EnableSSLPayload.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "     Device Management"; Value = $HALB.EnableDeviceManagement.ToString(); }) > $Null
 
@@ -23097,7 +23095,7 @@ Function OutputSite
 				Line 4 "IPv6`t`t`t: " $HALB.VirtualIPV6
 				Line 4 "Prefix`t`t`t: " $HALB.PrefixIPV6
 				Line 3 "Settings"
-				Line 4 "LB Gateway Payload`t: " $HALB.EnableGWPayload.ToString()
+				Line 4 "LB Gateway Payload`t: " $HALB.EnableGatewayPayload.ToString()
 				Line 4 "LB SSL Payload`t`t: " $HALB.EnableSSLPayload.ToString()
 				Line 4 "Device Management`t: " $HALB.EnableDeviceManagement.ToString()
 				Line 0 ""
@@ -23116,7 +23114,7 @@ Function OutputSite
 				$rowdata += @(,("     IPv6",($Script:htmlsb), $HALB.VirtualIPV6,$htmlwhite))
 				$rowdata += @(,("     Prefix",($Script:htmlsb), $HALB.PrefixIPV6,$htmlwhite))
 				$rowdata += @(,("Settings",($Script:htmlsb), "",$htmlwhite))
-				$rowdata += @(,("     LB Gateway Payload",($Script:htmlsb), $HALB.EnableGWPayload.ToString(),$htmlwhite))
+				$rowdata += @(,("     LB Gateway Payload",($Script:htmlsb), $HALB.EnableGatewayPayload.ToString(),$htmlwhite))
 				$rowdata += @(,("     LB SSL Payload",($Script:htmlsb), $HALB.EnableSSLPayload.ToString(),$htmlwhite))
 				$rowdata += @(,("     Device Management",($Script:htmlsb), $HALB.EnableDeviceManagement.ToString(),$htmlwhite))
 
@@ -23289,14 +23287,14 @@ Function OutputSite
 			{
 				"SSLOffloading"		{$HALBSSLMode = "SSL Offloading"; Break}
 				"SSLPassthrough"	{$HALBSSLMode = "Passthrough"; Break}
-				Default				{$HALBSSLMode = "Unable to etermine SSL Mode: $($HALB.SSLConfig.SSLMode)"; Break}
+				Default				{$HALBSSLMode = "Unable to determine SSL Mode: $($HALB.SSLConfig.SSLMode)"; Break}
 			}
 			
 			If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
 			{
 				Switch($HALB.SSLConfig.MinSSLVersion)
 				{
-					"SSLv2"		{$HALBSSLAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
+					#"SSLv2"		{$HALBSSLAcceptedSSLVersions = "SSL v2 - TLS v1.2 (Weak)"; Break}
 					"SSLv3"		{$HALBSSLAcceptedSSLVersions = "SSL v3 - TLS v1.2"; Break}
 					"TLSv1"		{$HALBSSLAcceptedSSLVersions = "TLS v1.0 - TLS v1.2"; Break}
 					"TLSv1_1"	{$HALBSSLAcceptedSSLVersions = "TLS v1.1 - TLS v1.2"; Break}
@@ -23503,7 +23501,7 @@ Function OutputSite
 				FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "600"
 				WriteHTMLLine 0 0 ""
 			}
-<#
+
 			If($MSWord -or $PDF)
 			{
 				WriteWordLine 4 0 "Device Manager"
@@ -23520,7 +23518,7 @@ Function OutputSite
 			If($MSWord -or $PDF)
 			{
 				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Port"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "Port"; Value = "20009"; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -23542,13 +23540,13 @@ Function OutputSite
 			}
 			If($Text)
 			{
-				Line 3 "Port: "
+				Line 3 "Port: 20009"
 				Line 0 ""
 			}
 			If($HTML)
 			{
 				$rowdata = @()
-				$columnHeaders = @("Port",($Script:htmlsb),"",$htmlwhite)
+				$columnHeaders = @("Port",($Script:htmlsb),"20009",$htmlwhite)
 				$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 
 				$msg = "Device Manager"
@@ -23556,7 +23554,6 @@ Function OutputSite
 				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 				WriteHTMLLine 0 0 ""
 			}
-#>
 
 			Write-Verbose "$(Get-Date -Format G): `tOutput Devices"
 			If($MSWord -or $PDF)
@@ -23694,11 +23691,11 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Enable RDP UPD tunneling"; Value = $HALB.EnableUDPTunneling.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Maximum TCP connections"; Value = $HALB.MaxTCPConnections.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Client inactivity timeout (s)"; Value = $HALB.ClientIdleTimeout.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Gateway connection timeout (s)"; Value = $HALB.GWConnectionTimeout.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Gateway connection timeout (s)"; Value = $HALB.GatewayConnectionTimeout.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Client connection queue timeout (s)"; Value = $HALB.ClientQueueTimeout.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Gateway inactivity timeout (s)"; Value = $HALB.GatewayIdleTimeout.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Amount of TCP connections per second"; Value = $HALB.SessionsRate.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Gateways health check intervals (s)"; Value = $HALB.GWHealthCheckInterval.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Gateways health check intervals (s)"; Value = $HALB.GatewayHealthCheckInterval.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "VRRP virtual router ID"; Value = $HALB.VirtualRouterID.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "VRRP authentication password"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "VRRP broadcast interval (m)"; Value = $HALB.VrrpBroadcastInterval.ToString(); }) > $Null
@@ -23732,11 +23729,11 @@ Function OutputSite
 				Line 3 "Enable RDP UPD tunneling`t`t: " $HALB.EnableUDPTunneling.ToString()
 				Line 3 "Maximum TCP connections`t`t`t: " $HALB.MaxTCPConnections.ToString()
 				Line 3 "Client inactivity timeout (s)`t`t: " $HALB.ClientIdleTimeout.ToString()
-				Line 3 "Gateway connection timeout (s)`t`t: " $HALB.GWConnectionTimeout.ToString()
+				Line 3 "Gateway connection timeout (s)`t`t: " $HALB.GatewayConnectionTimeout.ToString()
 				Line 3 "Client connection queue timeout (s)`t: " $HALB.ClientQueueTimeout.ToString()
 				Line 3 "Gateway inactivity timeout (s)`t`t: " $HALB.GatewayIdleTimeout.ToString()
 				Line 3 "Amount of TCP connections per second`t: " $HALB.SessionsRate.ToString()
-				Line 3 "Gateways health check intervals (s)`t: " $HALB.GWHealthCheckInterval.ToString()
+				Line 3 "Gateways health check intervals (s)`t: " $HALB.GatewayHealthCheckInterval.ToString()
 				Line 3 "VRRP virtual router ID`t`t`t: " $HALB.VirtualRouterID.ToString()
 				Line 3 "VRRP authentication password`t`t: " 
 				Line 3 "VRRP broadcast interval (m)`t`t: " $HALB.VrrpBroadcastInterval.ToString()
@@ -23754,11 +23751,11 @@ Function OutputSite
 				$columnHeaders = @("Enable RDP UPD tunneling",($Script:htmlsb),$HALB.EnableUDPTunneling.ToString(),$htmlwhite)
 				$rowdata += @(,("Maximum TCP connections",($Script:htmlsb),$HALB.MaxTCPConnections.ToString(),$htmlwhite))
 				$rowdata += @(,("Client inactivity timeout (s)",($Script:htmlsb),$HALB.ClientIdleTimeout.ToString(),$htmlwhite))
-				$rowdata += @(,("Gateway connection timeout (s)",($Script:htmlsb),$HALB.GWConnectionTimeout.ToString(),$htmlwhite))
+				$rowdata += @(,("Gateway connection timeout (s)",($Script:htmlsb),$HALB.GatewayConnectionTimeout.ToString(),$htmlwhite))
 				$rowdata += @(,("Client connection queue timeout (s)",($Script:htmlsb),$HALB.ClientQueueTimeout.ToString(),$htmlwhite))
 				$rowdata += @(,("Gateway inactivity timeout (s)",($Script:htmlsb),$HALB.GatewayIdleTimeout.ToString(),$htmlwhite))
 				$rowdata += @(,("Amount of TCP connections per second",($Script:htmlsb),$HALB.SessionsRate.ToString(),$htmlwhite))
-				$rowdata += @(,("Gateways health check intervals (s)",($Script:htmlsb),$HALB.GWHealthCheckInterval.ToString(),$htmlwhite))
+				$rowdata += @(,("Gateways health check intervals (s)",($Script:htmlsb),$HALB.GatewayHealthCheckInterval.ToString(),$htmlwhite))
 				$rowdata += @(,("VRRP virtual router ID",($Script:htmlsb),$HALB.VirtualRouterID.ToString(),$htmlwhite))
 				$rowdata += @(,("VRRP authentication password",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("VRRP broadcast interval (m)",($Script:htmlsb),$HALB.VrrpBroadcastInterval.ToString(),$htmlwhite))
@@ -23816,7 +23813,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $Themes)
 	{
 		Write-Host "
-		No Themes retrieved for Site $($Site.Name).`
+	No Themes retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -25440,7 +25437,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $Certs)
 	{
 		Write-Host "
-		No Certificates retrieved for Site $($Site.Name).`
+	No Certificates retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -25459,14 +25456,33 @@ Function OutputSite
 	{
 		ForEach($Cert in $Certs)
 		{
+			Switch($Cert.Type)
+			{
+				"Imported"		{$CertType = "Imported"; Break}
+				"LetsEncrypt"	{$CertType = "Let`'s Encrypt"; Break}
+				"Request"		{$CertType = "Request"; Break}
+				"SelfSigned"	{$CertType = "Sel-signed"; Break}
+				Default			{$CertType = "Unable to determine certificate type: $($Cert.Type)"; Break}
+			}
+			
+			Switch($Cert.Usage)
+			{
+				"Gateway, HALB"	{$CertUsage = "Secure Gateway, HALB "}
+				"Gateway"		{$CertUsage = "Secure Gateway "}
+				"HALB"			{$CertUsage = "HALB "}
+				"None"			{$CertUsage = "None "}
+				Default			{$CertUsage = "Unable to determine certificate usage: $($Cert.Usage)"; Break}
+			}
+			
 			If($MSWord -or $PDF)
 			{
 				WriteWordLine 3 0 "Certificate $($Cert.Name)"
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Name"; Value = $Cert.Name; }) > $Null
+				$ScriptInformation.Add(@{Data = "Type"; Value = $CertType; }) > $Null
 				$ScriptInformation.Add(@{Data = "Status"; Value = $Cert.Status.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Expiration date"; Value = $Cert.ExpirationDate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Usage"; Value = $Cert.Usage; }) > $Null
+				$ScriptInformation.Add(@{Data = "Usage"; Value = $CertUsage; }) > $Null
 				$ScriptInformation.Add(@{Data = "Common name"; Value = $Cert.CommonName; }) > $Null
 				
 				$cnt=-1
@@ -25512,9 +25528,10 @@ Function OutputSite
 			{
 				Line 2 "Certificate $($Cert.Name)"
 				Line 3 "Name`t`t`t: " $Cert.Name
+				Line 3 "Type`t`t`t: " $CertType
 				Line 3 "Status`t`t`t: " $Cert.Status.ToString()
 				Line 3 "Expiration date`t`t: " $Cert.ExpirationDate
-				Line 3 "Usage`t`t`t: " $Cert.Usage
+				Line 3 "Usage`t`t`t: " $CertUsage
 				Line 3 "Common name`t`t: " $Cert.CommonName
 				
 				$cnt=-1
@@ -25545,9 +25562,10 @@ Function OutputSite
 				WriteHTMLLine 3 0 "Certificate $CertName"
 				$rowdata = @()
 				$columnHeaders = @("Name",($Script:htmlsb),$CertName,$htmlwhite)
+				$rowdata += @(,("Type",($Script:htmlsb),$CertType,$htmlwhite))
 				$rowdata += @(,("Status",($Script:htmlsb),$Cert.Status.ToString(),$htmlwhite))
 				$rowdata += @(,("Expiration date",($Script:htmlsb),$Cert.ExpirationDate,$htmlwhite))
-				$rowdata += @(,("Usage",($Script:htmlsb),$Cert.Usage,$htmlwhite))
+				$rowdata += @(,("Usage",($Script:htmlsb),$CertUsage,$htmlwhite))
 				$rowdata += @(,("Common name",($Script:htmlsb),$Cert.CommonName,$htmlwhite))
 				
 				$cnt=-1
@@ -25595,7 +25613,9 @@ Function OutputSite
 				"KeySize1024"		{$KeySize = "1024"; Break}
 				"KeySize2048"		{$KeySize = "2048"; Break}
 				"KeySize4096"		{$KeySize = "4096"; Break}
-				"KeySizeUnknown"	{$KeySize = ""; Break}
+				"KeySize3072"		{$KeySize = "3072"; Break}
+				"KeySize521"		{$KeySize = "521"; Break}
+				"KeySizeUnknown"	{$KeySize = "Unknown"; Break}
 				Default				{$KeySize = "Unable to determine certificate key size: $($Cert.KeySize)"; Break}
 			}
 			
@@ -25605,7 +25625,8 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Name"; Value = $Cert.Name; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $Cert.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Usage"; Value = $Cert.Usage; }) > $Null
-				$ScriptInformation.Add(@{Data = "State"; Value = $Cert.Status.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Type"; Value = $CertType; }) > $Null
+				$ScriptInformation.Add(@{Data = "Status"; Value = $Cert.Status.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Key size"; Value = $KeySize; }) > $Null
 				$ScriptInformation.Add(@{Data = "Expiration date"; Value = $Cert.ExpirationDate; }) > $Null
 				$ScriptInformation.Add(@{Data = "Common name"; Value = $Cert.CommonName; }) > $Null
@@ -25648,7 +25669,8 @@ Function OutputSite
 				Line 3 "Name`t`t`t: " $Cert.Name
 				Line 3 "Description`t`t: " $Cert.Description
 				Line 3 "Usage`t`t`t: " $Cert.Usage
-				Line 3 "State`t`t`t: " $Cert.Status.ToString()
+				Line 3 "Type`t`t`t: " $CertType
+				Line 3 "Status`t`t`t: " $Cert.Status.ToString()
 				Line 3 "Key size`t`t: " $KeySize
 				Line 3 "Expiration date`t`t: " $Cert.ExpirationDate
 				Line 3 "Common name`t`t: " $Cert.CommonName
@@ -25676,7 +25698,8 @@ Function OutputSite
 				$columnHeaders = @("Name",($Script:htmlsb),$Cert.Name.Replace("<","").Replace(">",""),$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$Cert.Description,$htmlwhite))
 				$rowdata += @(,("Usage",($Script:htmlsb),$Cert.Usage,$htmlwhite))
-				$rowdata += @(,("State",($Script:htmlsb),$Cert.Status.ToString(),$htmlwhite))
+				$rowdata += @(,("Type",($Script:htmlsb),$CertType,$htmlwhite))
+				$rowdata += @(,("Status",($Script:htmlsb),$Cert.Status.ToString(),$htmlwhite))
 				$rowdata += @(,("Key size",($Script:htmlsb),$KeySize,$htmlwhite))
 				$rowdata += @(,("Expiration date",($Script:htmlsb),$Cert.ExpirationDate,$htmlwhite))
 				$rowdata += @(,("Common name",($Script:htmlsb),$Cert.CommonName,$htmlwhite))
@@ -25744,7 +25767,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $FarmSettings)
 	{
 		Write-Host "
-		No Settings retrieved for Site $($Site.Name).`
+	No Settings retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -25804,7 +25827,7 @@ Function OutputSite
 	ElseIf($? -and $Null -eq $URLRedirectionSettings)
 	{
 		Write-Host "
-		No URL Redirection settings retrieved for Site $($Site.Name).`
+	No URL Redirection settings retrieved for Site $($Site.Name).`
 		" -ForegroundColor White
 		If($MSWord -or $PDF)
 		{
@@ -25901,7 +25924,7 @@ Function OutputSite
 
 			$URLList = New-Object System.Collections.ArrayList
 			
-			$obj = @{	
+			$obj = [PSCustomObject]@{	
 				URL      = "*"
 				Enabled  = "True"
 				Priority = "4294967295"
@@ -25923,7 +25946,7 @@ Function OutputSite
 					$URLAction = "Do not redirect"
 				}
 
-				$obj = @{	
+				$obj = [PSCustomObject]@{	
 					URL      = $item.URL
 					Enabled  = $item.Enabled.ToString()
 					Priority = $item.Priority.ToString()
@@ -25937,8 +25960,20 @@ Function OutputSite
 			
 			If($MSWord -or $PDF)
 			{
+				[System.Collections.Hashtable[]] $URLListWordTable = @();
+				ForEach($URL in $URLList)
+				{
+					$URLListWordTable += @{
+						URL      = $URL.URL;
+						Enabled  = $URL.Enabled;
+						Priority = $URL.Priority;
+						Action   = $URL.Action;
+						ID       = $URL.Id;
+					}						
+				}
+				
 				WriteWordLine 3 0 "URL redirection"
-				$Table = AddWordTable -Hashtable $URLList `
+				$Table = AddWordTable -Hashtable $URLListWordTable `
 				-Columns URL, Enabled, Action, ID `
 				-Headers "URL", "Enabled", "Action", "ID" `
 				-Format $wdTableGrid `
@@ -26222,21 +26257,24 @@ Function OutputSite
 		If($MSWord -or $PDF)
 		{
 			WriteWordLine 3 0 "Features"
-			WriteWordLine 4 0 "FSLogix"
 			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "Deployment method"; Value = $FSLogixDeploymentSettingsDeploymentMethod; }) > $Null
+			$ScriptInformation.Add(@{Data = "FSLogix"; Value = ""; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Deployment method"; Value = $FSLogixDeploymentSettingsDeploymentMethod; }) > $Null
 			If($FSLogixDeploymentSettings.InstallType -eq "Online")
 			{
-				$ScriptInformation.Add(@{Data = "URL"; Value = $FSLogixDeploymentSettingsInstallOnlineURL; }) > $Null
+				$ScriptInformation.Add(@{Data = "     URL"; Value = $FSLogixDeploymentSettingsInstallOnlineURL; }) > $Null
 			}
 			ElseIf($FSLogixDeploymentSettings.InstallType -eq "NetworkDrive")
 			{
-				$ScriptInformation.Add(@{Data = ""; Value = $FSLogixDeploymentSettingsNetworkDrivePath; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Install from a network share"; Value = $FSLogixDeploymentSettingsNetworkDrivePath; }) > $Null
 			}
 			ElseIf($FSLogixDeploymentSettings.InstallType -eq "UploadInstall")
 			{
-				$ScriptInformation.Add(@{Data = ""; Value = $FSLogixDeploymentSettingsInstallerFileName; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Push from a Connection Broker"; Value = $FSLogixDeploymentSettingsInstallerFileName; }) > $Null
 			}
+			$ScriptInformation.Add(@{Data = "Azure Virtual Desktop"; Value = ""; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Enable Azure Virtual Desktop management"; Value = "Can't find"; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Client feature set"; Value = "Can't find"; }) > $Null
 			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
 			
 			$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -26261,42 +26299,50 @@ Function OutputSite
 		{
 			Line 2 "Features"
 			Line 3 "FSLogix"
-			Line 4 "Deployment method`t`t`t`t`t: " $FSLogixDeploymentSettingsDeploymentMethod
+			Line 4 "Deployment method`t`t`t: " $FSLogixDeploymentSettingsDeploymentMethod
 			If($FSLogixDeploymentSettings.InstallType -eq "Online")
 			{
-				Line 4 "URL`t`t`t`t`t`t`t: " $FSLogixDeploymentSettingsInstallOnlineURL
+				Line 4 "URL`t`t`t`t`t: " $FSLogixDeploymentSettingsInstallOnlineURL
 			}
 			ElseIf($FSLogixDeploymentSettings.InstallType -eq "NetworkDrive")
 			{
-				Line 11 ": " $FSLogixDeploymentSettingsNetworkDrivePath
+				Line 4 "Install from a network share`t`t: " $FSLogixDeploymentSettingsNetworkDrivePath
 			}
 			ElseIf($FSLogixDeploymentSettings.InstallType -eq "UploadInstall")
 			{
-				Line 11 ": " $FSLogixDeploymentSettingsInstallerFileName
+				Line 4 "Push from a Connection Broker`t`t: " $FSLogixDeploymentSettingsInstallerFileName
 			}
-			Line 4 "Settings are replicated to all Sites`t`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
+			Line 3 "Azure Virtual Desktop"
+			Line 4 "Enable Azure Virtual Desktop management`t: " "Can't find"
+			Line 4 "Client feature set`t`t`t: " "Can't find"
+			Line 3 "Settings are replicated to all Sites`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
+			Line 0 ""
 		}
 		If($HTML)
 		{
 			WriteHTMLLine 3 0 "Features"
 			$rowdata = @()
-			$columnHeaders = @("Deployment method",($Script:htmlsb),$FSLogixDeploymentSettingsDeploymentMethod,$htmlwhite)
+			$columnHeaders = @("FSLogix",($Script:htmlsb),"",$htmlwhite)
+			$rowdata += @(,("     Deployment method",($Script:htmlsb),$FSLogixDeploymentSettingsDeploymentMethod,$htmlwhite))
 			If($FSLogixDeploymentSettings.InstallType -eq "Online")
 			{
-				$rowdata += @(,("URL",($Script:htmlsb),$FSLogixDeploymentSettingsInstallOnlineURL,$htmlwhite))
+				$rowdata += @(,("     URL",($Script:htmlsb),$FSLogixDeploymentSettingsInstallOnlineURL,$htmlwhite))
 			}
 			ElseIf($FSLogixDeploymentSettings.InstallType -eq "NetworkDrive")
 			{
-				$rowdata += @(,("",($Script:htmlsb),$FSLogixDeploymentSettingsNetworkDrivePath,$htmlwhite))
+				$rowdata += @(,("     Install from a network share",($Script:htmlsb),$FSLogixDeploymentSettingsNetworkDrivePath,$htmlwhite))
 			}
 			ElseIf($FSLogixDeploymentSettings.InstallType -eq "UploadInstall")
 			{
-				$rowdata += @(,("",($Script:htmlsb),$FSLogixDeploymentSettingsInstallerFileName,$htmlwhite))
+				$rowdata += @(,("     Push from a Connection Broker",($Script:htmlsb),$FSLogixDeploymentSettingsInstallerFileName,$htmlwhite))
 			}
+			$rowdata += @(,("Azure Virtual Desktop",($Script:htmlsb),"",$htmlwhite))
+			$rowdata += @(,("     Enable Azure Virtual Desktop management",($Script:htmlsb),"Can't find",$htmlwhite))
+			$rowdata += @(,("     Client feature set",($Script:htmlsb),"Can't find",$htmlwhite))
 			$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
 					
-			$msg = "FSLogix"
-			$columnWidths = @("200","250")
+			$msg = ""
+			$columnWidths = @("250","225")
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
 		}
@@ -46031,7 +46077,7 @@ Function OutputRASNotificationScripts
 			$rowdata += @(,("User name",($Script:htmlsb),$RASNotificationScript.Username,$htmlwhite))
 
 			$msg = ""
-			$columnWidths = @("200","225")
+			$columnWidths = @("250","225")
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
 		}
@@ -46057,17 +46103,15 @@ Function OutputRASClientSettings
 		WriteWordLine 3 0 "Client settings"
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ScriptInformation.Add(@{Data = "Published application icons"; Value = ""; }) > $Null
-		$ScriptInformation.Add(@{Data = "     Resolution:"; Value = ""; }) > $Null
 		If($RASClientSettings.SendHDIcons)
 		{
-			$ScriptInformation.Add(@{Data = "          High resolution icons (uses more network bandwidth)"; Value = ""; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Resolution"; Value = "High resolution icons (uses more network bandwidth)"; }) > $Null
 		}
 		Else
 		{
-			$ScriptInformation.Add(@{Data = "          Standard resolution icons"; Value = ""; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Resolution"; Value = "Standard resolution icons"; }) > $Null
 		}
-		$ScriptInformation.Add(@{Data = "     Overlay:"; Value = ""; }) > $Null
-		$ScriptInformation.Add(@{Data = "          $($RASClientSettings.EnableOverlayIcons.ToString())"; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = "     Overlay:"; Value = $RASClientSettings.EnableOverlayIcons.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Password notifications"; Value = ""; }) > $Null
 		$ScriptInformation.Add(@{Data = "     Show password expiration reminder"; Value = $RASClientSettings.ShowPasswordExpiry.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $RASClientSettings.ReplicateSendHDIcons.ToString(); }) > $Null
@@ -46095,17 +46139,15 @@ Function OutputRASClientSettings
 	{
 		Line 2 "Client settings"
 		Line 3 "Published application icons"
-		Line 4 "Resolution:"
 		If($RASClientSettings.SendHDIcons)
 		{
-			Line 5 "High resolution (uses more network bandwidth)"
+			Line 4 "Resolution`t: " "High resolution (uses more network bandwidth)"
 		}
 		Else
 		{
-			Line 5 "Standard resolution"
+			Line 4 "Resolution`t: " "Standard resolution"
 		}
-		Line 4 "Overlay:"
-		Line 5 "Enable overlay icon`t : " $RASClientSettings.EnableOverlayIcons.ToString()
+		Line 4 "Overlay`t`t: " $RASClientSettings.EnableOverlayIcons.ToString()
 		LIne 3 "Password notifications"
 		Line 4 "Show password expiration reminder: " $RASClientSettings.ShowPasswordExpiry.ToString()
 		Line 3 "Settings are replicated to all Sites`t : " $RASClientSettings.ReplicateSendHDIcons.ToString()
@@ -46116,23 +46158,21 @@ Function OutputRASClientSettings
 		WriteHTMLLine 3 0 "Client settings"
 		$rowdata = @()
 		$columnHeaders = @("Published application icons",($Script:htmlsb),"S",$htmlwhite)
-		$rowdata += @(,("     Resolution:",($Script:htmlsb),"",$htmlwhite))
 		If($RASClientSettings.SendHDIcons)
 		{
-			$rowdata += @(,("          High resolution (uses more network bandwidth)",($Script:htmlsb),"",$htmlwhite))
+			$rowdata += @(,("     Resolution:",($Script:htmlsb),"High resolution (uses more network bandwidth)",$htmlwhite))
 		}
 		Else
 		{
-			$rowdata += @(,("          Standard resolution",($Script:htmlsb),"",$htmlwhite))
+			$rowdata += @(,("     Resolution:",($Script:htmlsb),"Standard resolution",$htmlwhite))
 		}
-		$rowdata += @(,("     Overlay:",($Script:htmlsb),"",$htmlwhite))
-		$rowdata += @(,("          $($RASClientSettings.EnableOverlayIcons.ToString())",($Script:htmlsb),"",$htmlwhite))
+		$rowdata += @(,("     Overlay:",($Script:htmlsb),$RASClientSettings.EnableOverlayIcons.ToString(),$htmlwhite))
 		$rowdata += @(,("Password notifications",($Script:htmlsb),"",$htmlwhite))
 		$rowdata += @(,("     Show password expiration reminder",($Script:htmlsb),$RASClientSettings.ShowPasswordExpiry.ToString(),$htmlwhite))
 		$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$RASClientSettings.ReplicateSendHDIcons.ToString(),$htmlwhite))
 
 		$msg = ""
-		$columnWidths = @("200","275")
+		$columnWidths = @("250","225")
 		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 
 		WriteHTMLLine 0 0 ""
