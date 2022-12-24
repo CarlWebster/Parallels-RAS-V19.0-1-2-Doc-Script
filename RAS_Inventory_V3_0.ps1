@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: December 8, 2022
+	LASTEDIT: December 24, 2022
 #>
 
 
@@ -534,6 +534,12 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 #
+# .019
+#	Added Connection Brokers/Auto-promotion
+#	Added to Secure Gateway/Network "Only allow Let's Encrypt verification"
+#	Added Video Capture Devices policy settings
+#	Comment out FSLogix replicate settings as I don't see them in the console now
+#	Removed policy properties that no longer exist
 
 Function AbortScript
 {
@@ -596,9 +602,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.018'
+$script:MyVersion         = '3.00.019'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "12/08/2022"
+$tmpdate                  = [datetime] "12/24/2022"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -6115,7 +6121,7 @@ Function OutputSite
 							$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 							$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 							$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-							$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+							#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 							
 							Switch ($FSLogixSettings.LocationType)
 							{
@@ -6394,7 +6400,7 @@ Function OutputSite
 								$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 								$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 								$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-								$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+								#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 								
 								Switch ($FSLogixSettings.LocationType)
 								{
@@ -6626,7 +6632,7 @@ Function OutputSite
 								$FSLogixDeploymentSettingsInstallOnlineURL      = "None"
 								$FSLogixDeploymentSettingsNetworkDrivePath      = "None"
 								$FSLogixDeploymentSettingsInstallerFileName     = "None"
-								$FSLogixDeploymentSettingsReplicate             = $False
+								#$FSLogixDeploymentSettingsReplicate             = $False
 								$FSLogixLocationType                            = "None"
 								$FSLogixLocationOfProfileDisks                  = @()
 								$FSLogixProfileDiskFormat                       = "None"
@@ -6732,7 +6738,7 @@ Function OutputSite
 					$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 					$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 					$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-					$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+					#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 					
 					Switch ($FSLogixSettings.LocationType)
 					{
@@ -7012,7 +7018,7 @@ Function OutputSite
 				$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 				$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 				$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-				$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+				#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 				
 				Switch ($FSLogixSettings.LocationType)
 				{
@@ -7307,7 +7313,7 @@ Function OutputSite
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = $FSLogixDeploymentSettingsInstallerFileName; }) > $Null
 					}
-					$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
+					#$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
 					$ScriptInformation.Add(@{Data = "Settings"; Value = ""; }) > $Null
 					$ScriptInformation.Add(@{Data = "     Location type"; Value = $FSLogixLocationType; }) > $Null
 					
@@ -7577,7 +7583,7 @@ Function OutputSite
 					{
 						Line 11 ": " $FSLogixDeploymentSettingsInstallerFileName
 					}
-					Line 4 "Settings are replicated to all Sites`t`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
+					#Line 4 "Settings are replicated to all Sites`t`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
 					Line 4 "Settings"
 					Line 5 "Location type`t`t`t`t`t: " $FSLogixLocationType
 					
@@ -7837,7 +7843,7 @@ Function OutputSite
 					{
 						$rowdata += @(,("",($Script:htmlsb),$FSLogixDeploymentSettingsInstallerFileName,$htmlwhite))
 					}
-					$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
+					#$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
 					$rowdata += @(,("Settings",($Script:htmlsb),"",$htmlwhite))
 					$rowdata += @(,("     Location type",($Script:htmlsb),$FSLogixLocationType,$htmlwhite))
 					
@@ -11149,7 +11155,7 @@ Function OutputSite
 					$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 					$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 					$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-					$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+					#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 
 					Switch ($FSLogixSettings.LocationType)
 					{
@@ -11381,7 +11387,7 @@ Function OutputSite
 					$FSLogixDeploymentSettingsInstallOnlineURL      = "None"
 					$FSLogixDeploymentSettingsNetworkDrivePath      = "None"
 					$FSLogixDeploymentSettingsInstallerFileName     = "None"
-					$FSLogixDeploymentSettingsReplicate             = $False
+					#$FSLogixDeploymentSettingsReplicate             = $False
 					$FSLogixLocationType                            = "None"
 					$FSLogixLocationOfProfileDisks                  = @()
 					$FSLogixProfileDiskFormat                       = "None"
@@ -11486,7 +11492,7 @@ Function OutputSite
 				$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 				$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 				$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-				$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+				#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 				
 				Switch ($FSLogixSettings.LocationType)
 				{
@@ -11782,7 +11788,7 @@ Function OutputSite
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = $FSLogixDeploymentSettingsInstallerFileName; }) > $Null
 					}
-					$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
+					#$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
 					$ScriptInformation.Add(@{Data = "Settings"; Value = ""; }) > $Null
 					$ScriptInformation.Add(@{Data = "     Location type"; Value = $FSLogixLocationType; }) > $Null
 					
@@ -12052,7 +12058,7 @@ Function OutputSite
 					{
 						Line 10 ": " $FSLogixDeploymentSettingsInstallerFileName
 					}
-					Line 3 "Settings are replicated to all Sites`t`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
+					#Line 3 "Settings are replicated to all Sites`t`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
 					Line 3 "Settings"
 					Line 4 "Location type`t`t`t`t`t: " $FSLogixLocationType
 					
@@ -12313,7 +12319,7 @@ Function OutputSite
 					{
 						$rowdata += @(,("",($Script:htmlsb),$FSLogixDeploymentSettingsInstallerFileName,$htmlwhite))
 					}
-					$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
+					#$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
 					$rowdata += @(,("Settings",($Script:htmlsb),"",$htmlwhite))
 					$rowdata += @(,("     Location type",($Script:htmlsb),$FSLogixLocationType,$htmlwhite))
 					
@@ -15093,64 +15099,48 @@ Function OutputSite
 				}
 			}
 
-			<#If($Action -eq "Reboot - Drain Mode")
+			If($Action -eq "Reboot - Drain Mode")
 			{
-				Switch ($RDSSchedule.CompleteRebootInSecs)
+				If(validObject $RDSSchedule CompleteRebootInSecs)
 				{
-					600		{$TimeDuration = "10 minutes"; Break}
-					900		{$TimeDuration = "15 minutes"; Break}
-					1800	{$TimeDuration = "30 minutes"; Break}
-					2700	{$TimeDuration = "45 minutes"; Break}
-					3600	{$TimeDuration = "1 hour"; Break}
-					7200	{$TimeDuration = "2 hours"; Break}
-					10800	{$TimeDuration = "3 hours"; Break}
-					Default	{$TimeDuration = "Unable to determine Complete in seconds: $($RDSSchedule.CompleteRebootInSecs)"; Break}
+					Switch ($RDSSchedule.CompleteRebootInSecs)
+					{
+						600		{$TimeDuration = "10 minutes"; Break}
+						900		{$TimeDuration = "15 minutes"; Break}
+						1800	{$TimeDuration = "30 minutes"; Break}
+						2700	{$TimeDuration = "45 minutes"; Break}
+						3600	{$TimeDuration = "1 hour"; Break}
+						7200	{$TimeDuration = "2 hours"; Break}
+						10800	{$TimeDuration = "3 hours"; Break}
+						Default	{$TimeDuration = "Unable to determine Complete in seconds: $($RDSSchedule.CompleteRebootInSecs)"; Break}
+					}
+				}
+				Else
+				{
+					$TimeDuration = ""
 				}
 				
-				Switch ($RDSSchedule.ForceRebootAfterSecs)
+				If(validObject $RDSSchedule ForceRebootAfterSecs)
 				{
-					900		{$ForceRebootTime = "15 minutes"; Break}
-					1800	{$ForceRebootTime = "30 minutes"; Break}
-					2700	{$ForceRebootTime = "45 minutes"; Break}
-					3600	{$ForceRebootTime = "1 hour"; Break}
-					7200	{$ForceRebootTime = "2 hours"; Break}
-					10800	{$ForceRebootTime = "3 hours"; Break}
-					21600	{$ForceRebootTime = "6 hours"; Break}
-					43200	{$ForceRebootTime = "12 hours"; Break}
-					86400	{$ForceRebootTime = "1 day"; Break}
-					Default	{$ForceRebootTime = "Unable to determine Force reboot after seconds: $($RDSSchedule.ForceRebootAfterSecs)"; Break}
+					Switch ($RDSSchedule.ForceRebootAfterSecs)
+					{
+						900		{$ForceRebootTime = "15 minutes"; Break}
+						1800	{$ForceRebootTime = "30 minutes"; Break}
+						2700	{$ForceRebootTime = "45 minutes"; Break}
+						3600	{$ForceRebootTime = "1 hour"; Break}
+						7200	{$ForceRebootTime = "2 hours"; Break}
+						10800	{$ForceRebootTime = "3 hours"; Break}
+						21600	{$ForceRebootTime = "6 hours"; Break}
+						43200	{$ForceRebootTime = "12 hours"; Break}
+						86400	{$ForceRebootTime = "1 day"; Break}
+						Default	{$ForceRebootTime = "Unable to determine Force reboot after seconds: $($RDSSchedule.ForceRebootAfterSecs)"; Break}
+					}
 				}
-			}#>
-			<#RDSSchedItem	
-			Dropped Properties	DurationInSecs
-								EndDateTime
-								DisableAction
-			#>
-			<#ElseIf($Action -eq "Disable")
-			{
-				Switch ($RDSSchedule.DurationInSecs)
+				Else
 				{
-					600		{$TimeDuration = "10 minutes"; Break}
-					900		{$TimeDuration = "15 minutes"; Break}
-					1800	{$TimeDuration = "30 minutes"; Break}
-					2700	{$TimeDuration = "45 minutes"; Break}
-					3600	{$TimeDuration = "1 hour"; Break}
-					7200	{$TimeDuration = "2 hours"; Break}
-					10800	{$TimeDuration = "3 hours"; Break}
-					21600	{$TimeDuration = "6 hours"; Break}
-					43200	{$TimeDuration = "12 hours"; Break}
-					86400	{$TimeDuration = "1 day"; Break}
-					Default	{$TimeDuration = "Unable to determine Duration in seconds: $($RDSSchedule.DurationInSecs)"; Break}
+					$ForceRebootTime = ""
 				}
-				
-				Switch ($RDSSchedule.DisableAction)
-				{
-					"KeepSessionState"			{$OnDisable = "Keep current sessions state"; Break}
-					"DisconnectActiveSessions"	{$OnDisable = "Disconnect any active session"; Break}
-					"ResetAllSessions"			{$OnDisable = "Reset all sessions"; Break}
-					Default						{$OnDisable = "Unable to determine On disable: $($RDSSchedule.DisableAction)"; Break}
-				}
-			}#>
+			}
 			
 			Switch ($RDSSchedule.Repeat)
 			{
@@ -15440,14 +15430,14 @@ Function OutputSite
 				$ScriptInformation = New-Object System.Collections.ArrayList
 				$ScriptInformation.Add(@{Data = "Date"; Value = $RDSSchedule.StartDateTime.ToShortDateString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Start"; Value = $RDSSchedule.StartDateTime.ToShortTimeString(); }) > $Null
-				<#If($Action -eq "Reboot - Drain Mode")
+				If($Action -eq "Reboot - Drain Mode")
 				{
 					$ScriptInformation.Add(@{Data = "Complete in"; Value = $TimeDuration  ; }) > $Null
 				}
 				ElseIf($Action -eq "Disable")
 				{
 					$ScriptInformation.Add(@{Data = "Duration"; Value = $TimeDuration; }) > $Null
-				}#>
+				}
 				$ScriptInformation.Add(@{Data = "Recur"; Value = $Repeat; }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -15472,14 +15462,14 @@ Function OutputSite
 			{
 				Line 3 "Date`t`t`t`t: " $RDSSchedule.StartDateTime.ToShortDateString()
 				Line 3 "Start`t`t`t`t: " $RDSSchedule.StartDateTime.ToShortTimeString()
-				<#If($Action -eq "Reboot - Drain Mode")
+				If($Action -eq "Reboot - Drain Mode")
 				{
 					Line 3 "Complete in`t`t`t: " $TimeDuration
 				}
 				ElseIf($Action -eq "Disable")
 				{
 					Line 3 "Duration`t`t`t: " $TimeDuration
-				}#>
+				}
 				Line 3 "Recur`t`t`t`t: " $Repeat
 				Line 0 ""
 			}
@@ -15488,14 +15478,14 @@ Function OutputSite
 				$rowdata = @()
 				$columnHeaders = @("Date",($Script:htmlsb),$RDSSchedule.StartDateTime.ToShortDateString(),$htmlwhite)
 				$rowdata += @(,("Start",($Script:htmlsb),$RDSSchedule.StartDateTime.ToShortTimeString(),$htmlwhite))
-				<#If($Action -eq "Reboot - Drain Mode")
+				If($Action -eq "Reboot - Drain Mode")
 				{
 					$rowdata += @(,("Complete in",($Script:htmlsb),$TimeDuration,$htmlwhite))
 				}
 				ElseIf($Action -eq "Disable")
 				{
 					$rowdata += @(,("Duration",($Script:htmlsb),$TimeDuration,$htmlwhite))
-				}#>
+				}
 				$rowdata += @(,("Recur",($Script:htmlsb),$Repeat,$htmlwhite))
 
 				$msg = "Trigger"
@@ -15550,10 +15540,10 @@ Function OutputSite
 				{
 					$ScriptInformation.Add(@{Data = "Enable Drain Mode"; Value = $RDSSchedule.DrainMode.ToString(); }) > $Null
 				}
-				<#If($Action -eq "Reboot - Drain Mode")
+				If($Action -eq "Reboot - Drain Mode")
 				{
 					$ScriptInformation.Add(@{Data = "Force server reboot after"; Value = $ForceRebootTime; }) > $Null
-				}#>
+				}
 				If($Action -like "Reboot*")
 				{
 					$ScriptInformation.Add(@{Data = "Enforce schedule for currently inactive RD Session Host"; Value = $RDSSchedule.EnforceOnInactive.ToString(); }) > $Null
@@ -15611,10 +15601,10 @@ Function OutputSite
 				{
 					Line 3 "Enable Drain Mode`t`t: " $RDSSchedule.DrainMode.ToString()
 				}
-				<#If($Action -eq "Reboot - Drain Mode")
+				If($Action -eq "Reboot - Drain Mode")
 				{
 					Line 3 "Force server reboot after`t: " $ForceRebootTime
-				}#>
+				}
 				If($Action -like "Reboot*")
 				{
 					Line 3 "Enforce schedule for currently"
@@ -15657,10 +15647,10 @@ Function OutputSite
 				{
 					$rowdata += @(,("Enable Drain Mode",($Script:htmlsb),$RDSSchedule.DrainMode.ToString(),$htmlwhite))
 				}
-				<#If($Action -eq "Reboot - Drain Mode")
+				If($Action -eq "Reboot - Drain Mode")
 				{
 					$rowdata += @(,("Force server reboot after",($Script:htmlsb),$ForceRebootTime,$htmlwhite))
-				}#>
+				}
 				If($Action -like "Reboot*")
 				{
 					$rowdata += @(,("Enforce schedule for currently inactive RD Session Host",($Script:htmlsb),$RDSSchedule.EnforceOnInactive.ToString(),$htmlwhite))
@@ -16642,7 +16632,7 @@ Function OutputSite
 						$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 						$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 						$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-						$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+						#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 
 						Switch ($FSLogixSettings.LocationType)
 						{
@@ -16866,7 +16856,7 @@ Function OutputSite
 						$FSLogixDeploymentSettingsInstallOnlineURL      = "None"
 						$FSLogixDeploymentSettingsNetworkDrivePath      = "None"
 						$FSLogixDeploymentSettingsInstallerFileName     = "None"
-						$FSLogixDeploymentSettingsReplicate             = $False
+						#$FSLogixDeploymentSettingsReplicate             = $False
 						$FSLogixLocationType                            = "None"
 						$FSLogixLocationOfProfileDisks                  = @()
 						$FSLogixProfileDiskFormat                       = "None"
@@ -16934,7 +16924,7 @@ Function OutputSite
 					$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 					$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 					$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-					$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+					#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 					
 					Switch ($FSLogixSettings.LocationType)
 					{
@@ -17176,7 +17166,7 @@ Function OutputSite
 						{
 							$ScriptInformation.Add(@{Data = ""; Value = $FSLogixDeploymentSettingsInstallerFileName; }) > $Null
 						}
-						$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
+						#$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
 						$ScriptInformation.Add(@{Data = "Settings"; Value = ""; }) > $Null
 						$ScriptInformation.Add(@{Data = "     Location type"; Value = $FSLogixLocationType; }) > $Null
 						
@@ -17406,7 +17396,7 @@ Function OutputSite
 						{
 							Line 10 ": " $FSLogixDeploymentSettingsInstallerFileName
 						}
-						Line 3 "Settings are replicated to all Sites`t`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
+						#Line 3 "Settings are replicated to all Sites`t`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
 						Line 3 "Settings"
 						Line 4 "Location type`t`t`t`t`t: " $FSLogixLocationType
 						
@@ -17614,7 +17604,7 @@ Function OutputSite
 						{
 							$rowdata += @(,("",($Script:htmlsb),$FSLogixDeploymentSettingsInstallerFileName,$htmlwhite))
 						}
-						$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
+						#$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
 						$rowdata += @(,("Settings",($Script:htmlsb),"",$htmlwhite))
 						$rowdata += @(,("     Location type",($Script:htmlsb),$FSLogixLocationType,$htmlwhite))
 						
@@ -20424,29 +20414,32 @@ Function OutputSite
 				#Nothing
 			}
 			
-			<#
-			Switch ($Provider.DragAndDropMode)
+			If(validObject $Provider DragAndDropMode)
 			{
-				"Bidirectional"		{$VDIDragAndDrop = "Bidirectional"; 
-				$VDIAllowDragAndDrop = "True";
-				Break}
-				"Disabled"			{$VDIDragAndDrop = "Disabled"; 
-				$VDIAllowDragAndDrop = "False";
-				Break}
-				"ClientToServer"	{$VDIDragAndDrop = "Client to server only"; 
-				$VDIAllowDragAndDrop = "True";
-				Break}
-				"ServerToClient"	{$VDIDragAndDrop = "Server to client only"; 
-				$VDIAllowDragAndDrop = "True";
-				Break}
-				Default				{$VDIDragAndDrop = "Unable to determine Drag and drop: $($Provider.DragAndDropMode)"; 
-				$VDIAllowDragAndDrop = "False";
-				Break}
+				Switch ($Provider.DragAndDropMode)
+				{
+					"Bidirectional"		{$VDIDragAndDrop = "Bidirectional"; 
+					$VDIAllowDragAndDrop = "True";
+					Break}
+					"Disabled"			{$VDIDragAndDrop = "Disabled"; 
+					$VDIAllowDragAndDrop = "False";
+					Break}
+					"ClientToServer"	{$VDIDragAndDrop = "Client to server only"; 
+					$VDIAllowDragAndDrop = "True";
+					Break}
+					"ServerToClient"	{$VDIDragAndDrop = "Server to client only"; 
+					$VDIAllowDragAndDrop = "True";
+					Break}
+					Default				{$VDIDragAndDrop = "Unable to determine Drag and drop: $($Provider.DragAndDropMode)"; 
+					$VDIAllowDragAndDrop = "False";
+					Break}
+				}
 			}
-			
-			#>
-			$VDIDragAndDrop = ""
-			$VDIAllowDragAndDrop = ""
+			Else
+			{
+				$VDIDragAndDrop = ""
+				$VDIAllowDragAndDrop = ""
+			}
 
 			If(validobject $Provider AllowURLAndMailRedirection)
 			{
@@ -21527,6 +21520,7 @@ Function OutputSite
 				{
 					$SecureGatewayEnableRASSecureClientGatewayPort             = $SecureGatewayDefaults.EnableGatewayPort.ToString()
 					$SecureGatewayRASSecureClientGatewayPort                   = $SecureGatewayDefaults.GatewayPort.ToString()
+					$SecureGatewayOnlyAllowLetsEncryptVerification             = $SecureGatewayDefaults.OnlyAllowAcmeHttp.ToString()
 					$SecureGatewayEnableRDPPort                                = $SecureGatewayDefaults.EnableRDP.ToString()
 					$SecureGatewayRDPPort                                      = $SecureGatewayDefaults.RDPPort.ToString()
 					$SecureGatewayEnableBroadcastRASSecureClientGatewayAddress = $SecureGatewayDefaults.Broadcast.ToString()
@@ -21541,6 +21535,7 @@ Function OutputSite
 					#unable to retrieve default, use built-in default values
 					$SecureGatewayEnableRASSecureClientGatewayPort             = "True"
 					$SecureGatewayRASSecureClientGatewayPort                   = "80"
+					$SecureGatewayOnlyAllowLetsEncryptVerification             = "False"
 					$SecureGatewayEnableRDPPort                                = "False"
 					$SecureGatewayEnableBroadcastRASSecureClientGatewayAddress = "True"
 					$SecureGatewayEnableRDPUPDDataTunneling                    = "True"
@@ -21556,6 +21551,7 @@ Function OutputSite
 				#get the settings configured for this GW
 				$SecureGatewayEnableRASSecureClientGatewayPort             = $SecureGateway.EnableGatewayPort.ToString()
 				$SecureGatewayRASSecureClientGatewayPort                   = $SecureGateway.GatewayPort.ToString()
+				$SecureGatewayOnlyAllowLetsEncryptVerification             = $SecureGateway.OnlyAllowAcmeHttp.ToString()
 				$SecureGatewayEnableRDPPort                                = $SecureGateway.EnableRDP.ToString()
 				$SecureGatewayRDPPort                                      = $SecureGateway.RDPPort.ToString()
 				$SecureGatewayEnableBroadcastRASSecureClientGatewayAddress = $SecureGateway.Broadcast.ToString()
@@ -21572,7 +21568,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Inherit default settings"; Value = $SecureGateway.InheritDefaultNetworkSettings.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Enable Secure Gateway Port"; Value = $SecureGatewayEnableRASSecureClientGatewayPort; }) > $Null
 				$ScriptInformation.Add(@{Data = "Secure Gateway Port"; Value = $SecureGatewayRASSecureClientGatewayPort; }) > $Null
-				$ScriptInformation.Add(@{Data = "  Only allow Let's Encrypt verification"; Value = "Can't find"; }) > $Null
+				$ScriptInformation.Add(@{Data = "Only allow Let's Encrypt verification"; Value = $SecureGatewayOnlyAllowLetsEncryptVerification; }) > $Null
 				$ScriptInformation.Add(@{Data = "Enable RDP Port"; Value = $SecureGatewayEnableRDPPort; }) > $Null
 				$ScriptInformation.Add(@{Data = "RDP Port"; Value = $SecureGatewayRDPPort; }) > $Null
 				$ScriptInformation.Add(@{Data = "Enable Broadcast RAS Secure Client Gateway Address"; Value = $SecureGatewayEnableBroadcastRASSecureClientGatewayAddress; }) > $Null
@@ -21604,7 +21600,7 @@ Function OutputSite
 				Line 3 "Inherit default settings`t`t: " $SecureGateway.InheritDefaultNetworkSettings.ToString()
 				Line 3 "Enable Secure Gateway Port`t`t: " $SecureGatewayEnableRASSecureClientGatewayPort
 				Line 3 "Secure Gateway Port`t`t`t: " $SecureGatewayRASSecureClientGatewayPort
-				Line 3 "  Only allow Let's Encrypt verification`t: " "Can't find"
+				Line 3 "Only allow Let's Encrypt verification`t: " $SecureGatewayOnlyAllowLetsEncryptVerification
 				Line 3 "Enable RDP Port`t`t`t`t: " $SecureGatewayEnableRDPPort
 				Line 3 "RDP Port`t`t`t`t: " $SecureGatewayRDPPort
 				Line 3 "Enable Broadcast Secure Gateway Address`t: " $SecureGatewayEnableBroadcastRASSecureClientGatewayAddress
@@ -21620,7 +21616,7 @@ Function OutputSite
 				$columnHeaders = @("Inherit default settings",($Script:htmlsb),$SecureGateway.InheritDefaultNetworkSettings.ToString(),$htmlwhite)
 				$rowdata += @(,("Enable Secure Gateway Port",($Script:htmlsb),$SecureGatewayEnableRASSecureClientGatewayPort,$htmlwhite))
 				$rowdata += @(,("Secure Gateway Port",($Script:htmlsb),$SecureGatewayRASSecureClientGatewayPort,$htmlwhite))
-				$rowdata += @(,("  Only allow Let's Encrypt verification: ",($Script:htmlsb),"Can't find",$htmlwhite))
+				$rowdata += @(,("Only allow Let's Encrypt verification",($Script:htmlsb),$SecureGatewayOnlyAllowLetsEncryptVerification,$htmlwhite))
 				$rowdata += @(,("Enable RDP Port",($Script:htmlsb),$SecureGatewayEnableRDPPort,$htmlwhite))
 				$rowdata += @(,("RDP Port",($Script:htmlsb),$SecureGatewayRDPPort,$htmlwhite))
 				$rowdata += @(,("Enable Broadcast RAS Secure Client Gateway Address",($Script:htmlsb),$SecureGatewayEnableBroadcastRASSecureClientGatewayAddress,$htmlwhite))
@@ -22679,6 +22675,108 @@ Function OutputSite
 				$columnWidths = @("200","275")
 				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 				WriteHTMLLine 0 0 ""
+			}
+
+			#Auto-promotion
+			$ConnectionBrokerAutoPromotion = Get-RASBrokerAutoPromotionSettings -SiteId $Site.Id -EA 0 4>$Null
+			
+			If(!$?)
+			{
+				Write-Warning "
+				`n
+				Unable to retrieve Auto-promotion for Site $($Site.Id) for Site $($Site.Id)`
+				"
+				If($MSWord -or $PDF)
+				{
+					WriteWordLine 0 0 "Unable to retrieve Auto-promotion for Site $($Site.Id)"
+				}
+				If($Text)
+				{
+					Line 0 "Unable to retrieve Auto-promotion for Site $($Site.Id)"
+				}
+				If($HTML)
+				{
+					WriteHTMLLine 0 0 "Unable to retrieve Auto-promotion for Site $($Site.Id)"
+				}
+			}
+			ElseIf($? -and $Null -eq $ConnectionBrokerStatus)
+			{
+				Write-Host "
+				No data retrieved for Auto-promotion for Site $($Site.Id)`
+				" -ForegroundColor White
+				If($MSWord -or $PDF)
+				{
+					WriteWordLine 0 0 "No data retrieved for Auto-promotion for Site $($Site.Id)"
+				}
+				If($Text)
+				{
+					Line 0 "No data retrieved for Auto-promotion for Site $($Site.Id)"
+				}
+				If($HTML)
+				{
+					WriteHTMLLine 0 0 "No data retrieved for Auto-promotion for Site $($Site.Id)"
+				}
+			}
+			Else
+			{
+				If($MSWord -or $PDF)
+				{
+					WriteWordLine 3 0 "Auto-promotion"
+					$ScriptInformation = New-Object System.Collections.ArrayList
+					$ScriptInformation.Add(@{Data = "Auto-promotion Enabled"; Value = $ConnectionBrokerAutoPromotion.Enabled.ToString(); }) > $Null
+					If($ConnectionBrokerAutoPromotion.Enabled)
+					{
+						$ScriptInformation.Add(@{Data = "Enable auto-promotion after (minutes)"; Value = $ConnectionBrokerAutoPromotion.AutoPromoteAfterMins.ToString(); }) > $Null
+						$ScriptInformation.Add(@{Data = "Enable fallback"; Value = $ConnectionBrokerAutoPromotion.FailbackEnabled.ToString(); }) > $Null
+						$ScriptInformation.Add(@{Data = "Replicate settings"; Value = $ConnectionBrokerAutoPromotion.Replicate.ToString(); }) > $Null
+					}
+					
+					$Table = AddWordTable -Hashtable $ScriptInformation `
+					-Columns Data,Value `
+					-List `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 250;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+				If($Text)
+				{
+					Line 2 "Auto-promotion"
+					Line 3 "Auto-promotion Enabled: " $ConnectionBrokerAutoPromotion.Enabled.ToString()
+					If($ConnectionBrokerAutoPromotion.Enabled)
+					{
+						Line 3 "Enable auto-promotion after (minutes): " $ConnectionBrokerAutoPromotion.AutoPromoteAfterMins.ToString()
+						Line 3 "Enable fallback: " $ConnectionBrokerAutoPromotion.FailbackEnabled.ToString()
+						Line 3 "Replicate settings: " $ConnectionBrokerAutoPromotion.Replicate.ToString()
+					}
+					Line 0 ""
+				}
+				If($HTML)
+				{
+					WriteHTMLLine 3 0 "Auto-promotion"
+					$rowdata = @()
+					$columnHeaders = @("Auto-promotion Enabled",($Script:htmlsb),$ConnectionBrokerAutoPromotion.Enabled.ToString(),$htmlwhite)
+					If($ConnectionBrokerAutoPromotion.Enabled)
+					{
+						$rowdata += @(,("Enable auto-promotion after (minutes)",($Script:htmlsb),$ConnectionBrokerAutoPromotion.AutoPromoteAfterMins.ToString(),$htmlwhite))
+						$rowdata += @(,("Enable fallback",($Script:htmlsb),$ConnectionBrokerAutoPromotion.FailbackEnabled.ToString(),$htmlwhite))
+						$rowdata += @(,("Replicate settings",($Script:htmlsb),$ConnectionBrokerAutoPromotion.Replicate.ToString(),$htmlwhite))
+					}
+					$msg = ""
+					$columnWidths = @("200","275")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
 			}
 		}
 	}
@@ -26252,7 +26350,7 @@ Function OutputSite
 		$FSLogixDeploymentSettingsInstallOnlineURL  = $FSLogixDeploymentSettings.InstallOnlineURL
 		$FSLogixDeploymentSettingsNetworkDrivePath  = $FSLogixDeploymentSettings.NetworkDrivePath
 		$FSLogixDeploymentSettingsInstallerFileName = $FSLogixDeploymentSettings.InstallerFileName
-		$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
+		#$FSLogixDeploymentSettingsReplicate         = $FSLogixDeploymentSettings.Replicate
 		
 		If($MSWord -or $PDF)
 		{
@@ -26272,10 +26370,11 @@ Function OutputSite
 			{
 				$ScriptInformation.Add(@{Data = "     Push from a Connection Broker"; Value = $FSLogixDeploymentSettingsInstallerFileName; }) > $Null
 			}
-			$ScriptInformation.Add(@{Data = "Azure Virtual Desktop"; Value = ""; }) > $Null
-			$ScriptInformation.Add(@{Data = "     Enable Azure Virtual Desktop management"; Value = "Can't find"; }) > $Null
-			$ScriptInformation.Add(@{Data = "     Client feature set"; Value = "Can't find"; }) > $Null
-			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
+			#not available yet
+			#$ScriptInformation.Add(@{Data = "Azure Virtual Desktop"; Value = ""; }) > $Null
+			#$ScriptInformation.Add(@{Data = "     Enable Azure Virtual Desktop management"; Value = "Can't find"; }) > $Null
+			#$ScriptInformation.Add(@{Data = "     Client feature set"; Value = "Can't find"; }) > $Null
+			#$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $FSLogixDeploymentSettingsReplicate.ToString(); }) > $Null
 			
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
@@ -26312,10 +26411,11 @@ Function OutputSite
 			{
 				Line 4 "Push from a Connection Broker`t`t: " $FSLogixDeploymentSettingsInstallerFileName
 			}
-			Line 3 "Azure Virtual Desktop"
-			Line 4 "Enable Azure Virtual Desktop management`t: " "Can't find"
-			Line 4 "Client feature set`t`t`t: " "Can't find"
-			Line 3 "Settings are replicated to all Sites`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
+			#not available yet
+			#Line 3 "Azure Virtual Desktop"
+			#Line 4 "Enable Azure Virtual Desktop management`t: " "Can't find"
+			#Line 4 "Client feature set`t`t`t: " "Can't find"
+			#Line 3 "Settings are replicated to all Sites`t`t: " $FSLogixDeploymentSettingsReplicate.ToString()
 			Line 0 ""
 		}
 		If($HTML)
@@ -26336,10 +26436,11 @@ Function OutputSite
 			{
 				$rowdata += @(,("     Push from a Connection Broker",($Script:htmlsb),$FSLogixDeploymentSettingsInstallerFileName,$htmlwhite))
 			}
-			$rowdata += @(,("Azure Virtual Desktop",($Script:htmlsb),"",$htmlwhite))
-			$rowdata += @(,("     Enable Azure Virtual Desktop management",($Script:htmlsb),"Can't find",$htmlwhite))
-			$rowdata += @(,("     Client feature set",($Script:htmlsb),"Can't find",$htmlwhite))
-			$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
+			#not available yet
+			#$rowdata += @(,("Azure Virtual Desktop",($Script:htmlsb),"",$htmlwhite))
+			#$rowdata += @(,("     Enable Azure Virtual Desktop management",($Script:htmlsb),"Can't find",$htmlwhite))
+			#$rowdata += @(,("     Client feature set",($Script:htmlsb),"Can't find",$htmlwhite))
+			#$rowdata += @(,("Settings are replicated to all Sites",($Script:htmlsb),$FSLogixDeploymentSettingsReplicate.ToString(),$htmlwhite))
 					
 			$msg = ""
 			$columnWidths = @("250","225")
@@ -27387,7 +27488,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -27599,7 +27700,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -27841,7 +27942,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -28129,7 +28230,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -28355,7 +28456,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -28619,7 +28720,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -28919,7 +29020,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -29135,7 +29236,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -29520,7 +29621,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -30102,7 +30203,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -30504,7 +30605,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -30974,7 +31075,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -31376,7 +31477,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -31654,7 +31755,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -31983,7 +32084,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -32297,7 +32398,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -32531,7 +32632,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -32821,7 +32922,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -33130,7 +33231,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -33357,7 +33458,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -33734,7 +33835,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -34352,7 +34453,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -34751,7 +34852,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -35232,7 +35333,7 @@ Function OutputPublishingSettings
 						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
 					}
@@ -35634,7 +35735,7 @@ Function OutputPublishingSettings
 						Line 10 "  macOS"
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						Line 10 "  RAS Web Portal"
 					}
@@ -35912,7 +36013,7 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
 					}
 					
-					If($PubItem.AllowedOSes.WebPortal)
+					If($PubItem.AllowedOSes.WebClient)
 					{
 						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
 					}
@@ -36104,30 +36205,6 @@ Function OutputPubItemFilters
 				$Table = $Null
 				WriteWordLine 0 0 ""
 			}
-
-			If(validObject $PubItem UserFilterReplicate)
-			{
-				$ScriptInformation = New-Object System.Collections.ArrayList
-				$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.UserFilterReplicate.ToString(); }) > $Null
-
-				$Table = AddWordTable -Hashtable $ScriptInformation `
-				-Columns Data,Value `
-				-List `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitFixed;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Columns.Item(1).Width = 200;
-				$Table.Columns.Item(2).Width = 100;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
 		}
 		
 		If(!($PubItem.ClientFilterEnabled))
@@ -36168,27 +36245,6 @@ Function OutputPubItemFilters
 				$Table = $Null
 				WriteWordLine 0 0 ""
 			}
-
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.ClientFilterReplicate.ToString(); }) > $Null
-
-			$Table = AddWordTable -Hashtable $ScriptInformation `
-			-Columns Data,Value `
-			-List `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
-
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-			$Table.Columns.Item(1).Width = 200;
-			$Table.Columns.Item(2).Width = 100;
-
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
 		}
 		If(!($PubItem.OSFilterEnabled))
 		{
@@ -36246,7 +36302,7 @@ Function OutputPubItemFilters
 				$ScriptInformation.Add(@{Data = "macOS"; Value = "Disabled"; }) > $Null
 			}
 			
-			If($PubItem.AllowedOSes.WebPortal)
+			If($PubItem.AllowedOSes.WebClient)
 			{
 				$ScriptInformation.Add(@{Data = "User Portal (Web Client)"; Value = "Enabled"; }) > $Null
 			}
@@ -36281,27 +36337,6 @@ Function OutputPubItemFilters
 
 			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
 			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
-
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.OSFilterReplicate.ToString(); }) > $Null
-
-			$Table = AddWordTable -Hashtable $ScriptInformation `
-			-Columns Data,Value `
-			-List `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
-
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-			$Table.Columns.Item(1).Width = 200;
-			$Table.Columns.Item(2).Width = 100;
 
 			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -36404,27 +36439,6 @@ Function OutputPubItemFilters
 					WriteWordLine 0 0 ""
 				}
 			}
-
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.IPFilterReplicate.ToString(); }) > $Null
-
-			$Table = AddWordTable -Hashtable $ScriptInformation `
-			-Columns Data,Value `
-			-List `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
-
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-			$Table.Columns.Item(1).Width = 200;
-			$Table.Columns.Item(2).Width = 100;
-
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
 		}
 		
 		If(!($PubItem.MACFilterEnabled))
@@ -36465,27 +36479,6 @@ Function OutputPubItemFilters
 				$Table = $Null
 				WriteWordLine 0 0 ""
 			}
-
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$ScriptInformation.Add(@{Data = "Settings are replicated to all Sites"; Value = $PubItem.MACFilterReplicate.ToString(); }) > $Null
-
-			$Table = AddWordTable -Hashtable $ScriptInformation `
-			-Columns Data,Value `
-			-List `
-			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitFixed;
-
-			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-			$Table.Columns.Item(1).Width = 200;
-			$Table.Columns.Item(2).Width = 100;
-
-			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-			FindWordDocumentEnd
-			$Table = $Null
-			WriteWordLine 0 0 ""
 		}
 		
 		If(!($PubItem.GatewayFilterEnabled))
@@ -36554,12 +36547,6 @@ Function OutputPubItemFilters
 				Line 3 ("{0,$NegativeMaxLength} {1,-5} {2,-45}" -f $item.Account,$item.Type,$item.Sid)
 			}
 			Line 0 ""
-
-			If(validObject $PubItem UserFilterReplicate)
-			{
-				Line 3 "Settings are replicated to all Sites: " $PubItem.UserFilterReplicate.ToString()
-				Line 0 ""
-			}
 		}
 		
 		If(!($PubItem.ClientFilterEnabled))
@@ -36578,9 +36565,6 @@ Function OutputPubItemFilters
 			{
 				Line 3 ("{0,-15}" -f $item)
 			}
-			Line 0 ""
-
-			Line 3 "Settings are replicated to all Sites: " $PubItem.ClientFilterReplicate.ToString()
 			Line 0 ""
 		}
 		
@@ -36641,7 +36625,7 @@ Function OutputPubItemFilters
 				Line 3 "macOS`t`t: " "Disabled"
 			}
 			
-			If($PubItem.AllowedOSes.WebPortal)
+			If($PubItem.AllowedOSes.WebClient)
 			{
 				Line 3 "RAS Web Portal`t: " "Enabled"
 			}
@@ -36667,9 +36651,6 @@ Function OutputPubItemFilters
 			{
 				Line 3 "Wyse`t`t: " "Disabled"
 			}
-			Line 0 ""
-
-			Line 3 "Settings are replicated to all Sites: " $PubItem.OSFilterReplicate.ToString()
 			Line 0 ""
 		}
 		
@@ -36742,9 +36723,6 @@ Function OutputPubItemFilters
 				
 				Line 0 ""
 			}
-
-			Line 3 "Settings are replicated to all Sites: " $PubItem.IPFilterReplicate.ToString()
-			Line 0 ""
 		}
 		
 		If(!($PubItem.MACFilterEnabled))
@@ -36764,9 +36742,6 @@ Function OutputPubItemFilters
 			{
 				Line 3 ("{0,-12}" -f $item)
 			}
-			Line 0 ""
-
-			Line 3 "Settings are replicated to all Sites: " $PubItem.MACFilterReplicate.ToString()
 			Line 0 ""
 		}
 		
@@ -36820,17 +36795,6 @@ Function OutputPubItemFilters
 			$msg = "Allow the following Users:"
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
 			WriteHTMLLine 0 0 ""
-
-			If(validObject $PubItem UserFilterReplicate)
-			{
-				$rowdata = @()
-				$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$PubItem.UserFilterReplicate.ToString(),$htmlwhite)
-
-				$msg = ""
-				$columnWidths = @("183","100")
-				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-				WriteHTMLLine 0 0 ""
-			}
 		}
 		
 		If(!($PubItem.ClientFilterEnabled))
@@ -36855,14 +36819,6 @@ Function OutputPubItemFilters
 
 			$msg = "Allow the following Clients:"
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
-			WriteHTMLLine 0 0 ""
-
-			$rowdata = @()
-			$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$PubItem.ClientFilterReplicate.ToString(),$htmlwhite)
-
-			$msg = ""
-			$columnWidths = @("183","100")
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
 		}
 		If(!($PubItem.OSFilterEnabled))
@@ -36920,7 +36876,7 @@ Function OutputPubItemFilters
 				$rowdata += @(,("macOS",($Script:htmlsb),"Disabled",$htmlwhite))
 			}
 			
-			If($PubItem.AllowedOSes.WebPortal)
+			If($PubItem.AllowedOSes.WebClient)
 			{
 				$rowdata += @(,("User Portal (Web Client)",($Script:htmlsb),"Enabled",$htmlwhite))
 			}
@@ -36949,14 +36905,6 @@ Function OutputPubItemFilters
 			
 			$msg = "Allow access to clients running on the following operating system:"
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
-			WriteHTMLLine 0 0 ""
-
-			$rowdata = @()
-			$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$PubItem.OSFilterReplicate.ToString(),$htmlwhite)
-
-			$msg = ""
-			$columnWidths = @("183","100")
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
 		}
 		
@@ -37037,14 +36985,6 @@ Function OutputPubItemFilters
 				}
 			}
 			WriteHTMLLine 0 0 ""
-
-			$rowdata = @()
-			$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$PubItem.IPFilterReplicate.ToString(),$htmlwhite)
-
-			$msg = ""
-			$columnWidths = @("183","100")
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
-			WriteHTMLLine 0 0 ""
 		}
 		
 		If(!($PubItem.MACFilterEnabled))
@@ -37070,14 +37010,6 @@ Function OutputPubItemFilters
 
 			$msg = ""
 			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
-			WriteHTMLLine 0 0 ""
-
-			$rowdata = @()
-			$columnHeaders = @("Settings are replicated to all Sites",($Script:htmlsb),$PubItem.MACFilterReplicate.ToString(),$htmlwhite)
-
-			$msg = ""
-			$columnWidths = @("183","100")
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
 		}
 		
@@ -41036,10 +40968,12 @@ Function OutputPoliciesDetails
 	{
 		Write-Verbose "$(Get-Date -Format G): `t`t`tProcessing Policy $($Policy.Name)"
 		
-		<#$ClientOptions   = $Policy.ClientPolicy.ClientOptions
-		$ControlSettings = $Policy.ClientPolicy.ControlSettings
-		$Redirection     = $Policy.ClientPolicy.Redirection
-		$Session         = $Policy.ClientPolicy.Session#>
+		<#
+			$ClientOptions   = $Policy.ClientPolicy.ClientOptions
+			$ControlSettings = $Policy.ClientPolicy.ControlSettings
+			$Redirection     = $Policy.ClientPolicy.Redirection
+			$Session         = $Policy.ClientPolicy.Session
+		#>
 
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tPolicy"
 		If($MSWord -or $PDF)
@@ -42577,7 +42511,80 @@ Function OutputPoliciesDetails
 		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Video capture devices"
-		#can't find
+		<#
+			$policy.ClientPolicy.Session.VideoCaptureDevices
+			Enabled                   : True
+			EnableCameras             : True
+			DynamicCameras            : True
+			VideoCaptureUseAllDevices : True
+			CamerasIDs                : {*}
+			
+			Type	        Name	                        Description
+			List<String>	CamerasIDs		                Redirect to all available devices
+			Boolean	        DynamicCameras		            If box is checked allow the use of other devices that are plugged in later
+			Boolean	        EnableCameras		            If box is checked allow devices redirection
+			Boolean	        Enabled		                    Whether Devices policy is enabled or not
+			Boolean	        VideoCaptureUseAllDevices		Use all devices that are available
+		#>
+		If($Policy.ClientPolicy.Session.VideoCaptureDevices.Enabled)
+		{
+			$txt = "Session/Local devices and resources/Video capture devices/Allow devices redirection"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.VideoCaptureDevices.EnableCameras.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.VideoCaptureDevices.EnableCameras.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.VideoCaptureDevices.EnableCameras.ToString()
+			}
+
+			$txt = "Session/Local devices and resources/Video capture devices/Use all devices available"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.VideoCaptureDevices.VideoCaptureUseAllDevices.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.VideoCaptureDevices.VideoCaptureUseAllDevices.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.VideoCaptureDevices.VideoCaptureUseAllDevices.ToString()
+			}
+
+			$txt = "Session/Local devices and resources/Video capture devices/Use also devices I plug in later"
+			If($MSWord -or $PDF)
+			{
+				$SettingsWordTable += @{
+				Text = $txt;
+				Value = $Policy.ClientPolicy.Session.VideoCaptureDevices.DynamicCameras.ToString();
+				}
+			}
+			If($HTML)
+			{
+				$rowdata += @(,(
+				$txt,$htmlbold,
+				$Policy.ClientPolicy.Session.VideoCaptureDevices.DynamicCameras.ToString(),$htmlwhite))
+			}
+			If($Text)
+			{
+				OutputPolicySetting $txt $Policy.ClientPolicy.Session.VideoCaptureDevices.DynamicCameras.ToString()
+			}
+		}
 		
 		Write-Verbose "$(Get-Date -Format G): `t`t`t`tSession/Local devices and resources/Ports"
 		If($Policy.ClientPolicy.Session.Ports.Enabled)
@@ -42813,18 +42820,18 @@ Function OutputPoliciesDetails
 				{
 					$SettingsWordTable += @{
 					Text = $txt;
-					Value = $Policy.ClientPolicy.Session.Performance..ToString();
+					Value = $Policy.ClientPolicy.Session.Performance.ToString();
 					}
 				}
 				If($HTML)
 				{
 					$rowdata += @(,(
 					$txt,$htmlbold,
-					$Policy.ClientPolicy.Session.Performance..ToString(),$htmlwhite))
+					$Policy.ClientPolicy.Session.Performance.ToString(),$htmlwhite))
 				}
 				If($Text)
 				{
-					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance..ToString()
+					OutputPolicySetting $txt $Policy.ClientPolicy.Session.Performance.ToString()
 				}#>
 
 				$txt = "Session/Experience/Performance/Performance/Themes"
