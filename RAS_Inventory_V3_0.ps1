@@ -18,7 +18,7 @@
 	You do NOT have to run this script on a server running RAS. This script was developed 
 	and run from a Windows 10 VM.
 
-	Word and PDF document includes a Cover Page, Table of Contents, and Footer.
+	Word and PDF documents include a Cover Page, Table of Contents, and Footer.
 	Includes support for the following language versions of Microsoft Word:
 		Catalan
 		Chinese
@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.00
 	AUTHOR: Carl Webster
-	LASTEDIT: December 24, 2022
+	LASTEDIT: Mrch 25, 2023
 #>
 
 
@@ -533,13 +533,20 @@ Param(
 #Version 1.0 released to the community on 5-August-2020
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
+
+#Version 3.00 25-Mar-2023
 #
-# .019
 #	Added Connection Brokers/Auto-promotion
 #	Added to Secure Gateway/Network "Only allow Let's Encrypt verification"
 #	Added Video Capture Devices policy settings
+#	Changed "Keep existing VRRP/keepalive settings" to "Keep existing VRRP/keepalived settings" for HALB Properties/Advanced
 #	Comment out FSLogix replicate settings as I don't see them in the console now
 #	Removed policy properties that no longer exist
+#	
+#	There are over 1500 differences between the last 2.5 script update and this new 3.00.
+#		The HTML diff file is over 25MB in size. 
+#		If you really want to see all the changes between 2.5 and 3.0, look at the diff file in GitHub.
+#
 
 Function AbortScript
 {
@@ -602,9 +609,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00.019'
+$script:MyVersion         = '3.00'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "12/24/2022"
+$tmpdate                  = [datetime] "03/25/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -23802,7 +23809,7 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "VRRP advertisement interval (s)"; Value = $HALB.VrrpAdvertInterval.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Enable OS updates"; Value = $HALB.OSUpdate.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Keep existing load balancing settings"; Value = $HALB.KeepLBProxyConfig.ToString(); }) > $Null
-				$ScriptInformation.Add(@{Data = "Keep existing VRRP/keepalive settings"; Value = $HALB.KeepVRRPConfig.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Keep existing VRRP/keepalived settings"; Value = $HALB.KeepVRRPConfig.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
 				-Columns Data,Value `
@@ -23840,7 +23847,7 @@ Function OutputSite
 				Line 3 "VRRP advertisement interval (s)`t`t: " $HALB.VrrpAdvertInterval.ToString()
 				Line 3 "Enable OS updates`t`t`t: " $HALB.OSUpdate.ToString()
 				Line 3 "Keep existing load balancing settings`t: " $HALB.KeepLBProxyConfig.ToString()
-				Line 3 "Keep existing VRRP/keepalive settings`t: " $HALB.KeepVRRPConfig.ToString()
+				Line 3 "Keep existing VRRP/keepalived settings`t: " $HALB.KeepVRRPConfig.ToString()
 				Line 0 ""
 			}
 			If($HTML)
@@ -23862,7 +23869,7 @@ Function OutputSite
 				$rowdata += @(,("VRRP advertisement interval (s)",($Script:htmlsb),$HALB.VrrpAdvertInterval.ToString(),$htmlwhite))
 				$rowdata += @(,("Enable OS updates",($Script:htmlsb),$HALB.OSUpdate.ToString(),$htmlwhite))
 				$rowdata += @(,("Keep existing load balancing settings",($Script:htmlsb),$HALB.KeepLBProxyConfig.ToString(),$htmlwhite))
-				$rowdata += @(,("Keep existing VRRP/keepalive settings",($Script:htmlsb),$HALB.KeepVRRPConfig.ToString(),$htmlwhite))
+				$rowdata += @(,("Keep existing VRRP/keepalived settings",($Script:htmlsb),$HALB.KeepVRRPConfig.ToString(),$htmlwhite))
 
 				$msg = "Advanced"
 				$columnWidths = @("200","400")

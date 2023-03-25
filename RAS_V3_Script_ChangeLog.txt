@@ -1,0 +1,22 @@
+#webster@carlwebster.com
+#@carlwebster on Twitter
+#http://www.CarlWebster.com
+#Created on February 9, 2018
+
+#Version 1.0 released to the community on 5-August-2020
+#Work on 2.0 started on 20-Sep-2020
+#Work on 3.0 started on 15-Nov-2022
+
+#Version 3.00 25-Mar-2023
+#
+#	Added Connection Brokers/Auto-promotion
+#	Added to Secure Gateway/Network "Only allow Let's Encrypt verification"
+#	Added Video Capture Devices policy settings
+#	Changed "Keep existing VRRP/keepalive settings" to "Keep existing VRRP/keepalived settings" for HALB Properties/Advanced
+#	Comment out FSLogix replicate settings as I don't see them in the console now
+#	Removed policy properties that no longer exist
+#	
+#	There are over 1500 differences between the last 2.5 script update and this new 3.00.
+#		The HTML diff file is over 25MB in size. 
+#		If you really want to see all the changes between 2.5 and 3.0, look at the diff file in GitHub.
+#
