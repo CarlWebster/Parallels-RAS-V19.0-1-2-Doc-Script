@@ -11,7 +11,7 @@ Creates an output file named Parallels_RAS.<fileextension>.
 You do NOT have to run this script on a server running RAS. This script was developed 
 and run from a Windows 10 VM.
 
-Word and PDF document includes a Cover Page, Table of Contents and Footer.
+Word and PDF documents include a Cover Page, Table of Contents and Footer.
 Includes support for the following language versions of Microsoft Word:
 	Catalan
 	Chinese
