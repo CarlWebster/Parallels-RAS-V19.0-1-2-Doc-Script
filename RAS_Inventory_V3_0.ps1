@@ -420,9 +420,9 @@
 	text document.
 .NOTES
 	NAME: RAS_Inventory_V3.0.ps1
-	VERSION: 3.00
+	VERSION: 3.01
 	AUTHOR: Carl Webster
-	LASTEDIT: Mrch 25, 2023
+	LASTEDIT: April 7, 2023
 #>
 
 
@@ -534,6 +534,17 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.01
+#	In Function OutputPublishingSettings, add AVDApp and AVDDesktop to WVDApp and WVDDesktop
+#	In Function OutputRASMailboxSettings, added the missing enum fixed in 19.2
+#		YesTLS12IfAvailable	- Use TLS 1.2 if available
+#	In Function OutputSite, add code to handle the different types of Registry Optimizations
+#		REG_DWORD
+#		REG_EXPAND_SZ
+#		REG_MULTI_SZ
+#		REG_QWORD
+#		REG_SZ
+#
 #Version 3.00 25-Mar-2023
 #
 #	Added Connection Brokers/Auto-promotion
@@ -609,9 +620,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.00'
+$script:MyVersion         = '3.01'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "03/25/2023"
+$tmpdate                  = [datetime] "04/07/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -8748,13 +8759,49 @@ Function OutputSite
 
 					ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
 					{
-						$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
-						$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
-						$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
-						$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType; }) > $Null
-						$ScriptInformation.Add(@{Data = "Data"; Value = $item.DWORDValue; }) > $Null
-						$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
-						$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+						{
+							$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+							$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+							$ScriptInformation.Add(@{Data = "Data"; Value = $item.StringValue; }) > $Null
+							$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+						{
+							$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+							$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+							$ScriptInformation.Add(@{Data = "Data"; Value = $item.DWORDValue; }) > $Null
+							$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+						{
+							$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+							$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+							$cnt = -1
+							$TmpArray = $item.StringValue.Split("`r")
+							ForEach($SubItem in $TmpArray)
+							{
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									$ScriptInformation.Add(@{Data = "Type"; Value = $SubItem; }) > $Null
+								}
+								Else
+								{
+									$ScriptInformation.Add(@{Data = ""; Value = $SubItem; }) > $Null
+								}
+							}
+							$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						}
 					}
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -9354,8 +9401,43 @@ Function OutputSite
 					#		Increase service startup timeouts         Modify  99999999999999999999  REG_EXPAND_SZ  99999999999999999999  HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Disk
 					ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
 					{
-						Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
-						$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType, $item.DWORDValue, "$($item.HiveType)\$($item.Path)")
+						If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+						{
+							Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+							$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.StringValue, "$($item.HiveType)\$($item.Path)")
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+						{
+							Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+							$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.DWORDValue, "$($item.HiveType)\$($item.Path)")
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+						{
+							#If($item.StringValue.Count -eq 1)
+							#{
+							#	Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+							#	$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.StringValue.ToString(), "$($item.HiveType)\$($item.Path)")
+							#}
+							#Else
+							#{
+								$cnt = -1
+								$TmpArray = $item.StringValue.Split("`r")
+								ForEach($SubItem in $TmpArray)
+								{
+									$cnt++
+									
+									If($cnt -eq 0)
+									{
+										Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+										$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $SubItem, "$($item.HiveType)\$($item.Path)")
+									}
+									Else
+									{
+										Line 17 "       " $SubItem
+									}
+								}
+							#}
+						}
 					}
 					Line 0 ""
 				}
@@ -9846,14 +9928,39 @@ Function OutputSite
 
 					ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
 					{
-						$rowdata += @(,(
-							$item.DisplayName,$htmlwhite,
-							$item.Action,$htmlwhite,
-							$item.RegistryName,$htmlwhite,
-							$item.RegType,$htmlwhite,
-							$item.DWORDValue,$htmlwhite,
-							"$($item.HiveType)\$($item.Path)",$htmlwhite)
-						)
+						If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+						{
+							$rowdata += @(,(
+								$item.DisplayName,$htmlwhite,
+								$item.Action,$htmlwhite,
+								$item.RegistryName,$htmlwhite,
+								$item.RegType.ToString(),$htmlwhite,
+								$item.StringValue,$htmlwhite,
+								"$($item.HiveType)\$($item.Path)",$htmlwhite)
+							)
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+						{
+							$rowdata += @(,(
+								$item.DisplayName,$htmlwhite,
+								$item.Action,$htmlwhite,
+								$item.RegistryName,$htmlwhite,
+								$item.RegType.ToString(),$htmlwhite,
+								$item.DWORDValue,$htmlwhite,
+								"$($item.HiveType)\$($item.Path)",$htmlwhite)
+							)
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+						{
+							$rowdata += @(,(
+								$item.DisplayName,$htmlwhite,
+								$item.Action,$htmlwhite,
+								$item.RegistryName,$htmlwhite,
+								$item.RegType.ToString(),$htmlwhite,
+								$item.StringValue.ToString(),$htmlwhite,
+								"$($item.HiveType)\$($item.Path)",$htmlwhite)
+							)
+						}
 					}
 
 					$columnHeaders = @(
@@ -13807,13 +13914,50 @@ Function OutputSite
 
 					ForEach($item in $RDSTemplate.Optimization.Registry.RegistryList)
 					{
-						$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
-						$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
-						$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
-						$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType; }) > $Null
-						$ScriptInformation.Add(@{Data = "Data"; Value = $item.DWORDValue; }) > $Null
-						$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
-						$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+						{
+							$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+							$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+							$ScriptInformation.Add(@{Data = "Data"; Value = $item.StringValue; }) > $Null
+							$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+						{
+							$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+							$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+							$ScriptInformation.Add(@{Data = "Data"; Value = $item.DWORDValue; }) > $Null
+							$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+						{
+							$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+							$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+							$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+							$cnt = -1
+							$TmpArray = $item.StringValue.Split("`r")
+							ForEach($SubItem in $TmpArray)
+							{
+								$cnt++
+								
+								If($cnt -eq 0)
+								{
+									$ScriptInformation.Add(@{Data = "Type"; Value = $SubItem; }) > $Null
+								}
+								Else
+								{
+									$ScriptInformation.Add(@{Data = ""; Value = $SubItem; }) > $Null
+								}
+							}
+							$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+						}
 					}
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -14284,10 +14428,45 @@ Function OutputSite
 					Line 6 "========================================================================================================================================================================="
 					#		1234567890123456789012345678901234567890SS123456SS12345678901234567890SS1234567890123SS12345678901234567890SS123456789012345678901234567890123456789012345678901234567890
 					#		Increase service startup timeouts         Modify  99999999999999999999  REG_EXPAND_SZ  99999999999999999999  HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Disk
-					ForEach($item in $RDSTemplate.Optimization.Registry.RegistryList)
+					ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
 					{
-						Line 6 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
-						$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType, $item.DWORDValue, "$($item.HiveType)\$($item.Path)")
+						If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+						{
+							Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+							$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.StringValue, "$($item.HiveType)\$($item.Path)")
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+						{
+							Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+							$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.DWORDValue, "$($item.HiveType)\$($item.Path)")
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+						{
+							#If($item.StringValue.Count -eq 1)
+							#{
+							#	Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+							#	$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.StringValue.ToString(), "$($item.HiveType)\$($item.Path)")
+							#}
+							#Else
+							#{
+								$cnt = -1
+								$TmpArray = $item.StringValue.Split("`r")
+								ForEach($SubItem in $TmpArray)
+								{
+									$cnt++
+									
+									If($cnt -eq 0)
+									{
+										Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+										$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $SubItem, "$($item.HiveType)\$($item.Path)")
+									}
+									Else
+									{
+										Line 17 "       " $SubItem
+									}
+								}
+							#}
+						}
 					}
 					Line 0 ""
 				}
@@ -14745,14 +14924,39 @@ Function OutputSite
 
 					ForEach($item in $RDSTemplate.Optimization.Registry.RegistryList)
 					{
-						$rowdata += @(,(
-							$item.DisplayName,$htmlwhite,
-							$item.Action,$htmlwhite,
-							$item.RegistryName,$htmlwhite,
-							$item.RegType,$htmlwhite,
-							$item.DWORDValue,$htmlwhite,
-							"$($item.HiveType)\$($item.Path)",$htmlwhite)
-						)
+						If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+						{
+							$rowdata += @(,(
+								$item.DisplayName,$htmlwhite,
+								$item.Action,$htmlwhite,
+								$item.RegistryName,$htmlwhite,
+								$item.RegType.ToString(),$htmlwhite,
+								$item.StringValue,$htmlwhite,
+								"$($item.HiveType)\$($item.Path)",$htmlwhite)
+							)
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+						{
+							$rowdata += @(,(
+								$item.DisplayName,$htmlwhite,
+								$item.Action,$htmlwhite,
+								$item.RegistryName,$htmlwhite,
+								$item.RegType.ToString(),$htmlwhite,
+								$item.DWORDValue,$htmlwhite,
+								"$($item.HiveType)\$($item.Path)",$htmlwhite)
+							)
+						}
+						ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+						{
+							$rowdata += @(,(
+								$item.DisplayName,$htmlwhite,
+								$item.Action,$htmlwhite,
+								$item.RegistryName,$htmlwhite,
+								$item.RegType.ToString(),$htmlwhite,
+								$item.StringValue.ToString(),$htmlwhite,
+								"$($item.HiveType)\$($item.Path)",$htmlwhite)
+							)
+						}
 					}
 
 					$columnHeaders = @(
@@ -18430,13 +18634,50 @@ Function OutputSite
 
 						ForEach($item in $VDITemplate.Optimization.Registry.RegistryList)
 						{
-							$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
-							$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
-							$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
-							$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType; }) > $Null
-							$ScriptInformation.Add(@{Data = "Data"; Value = $item.DWORDValue; }) > $Null
-							$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
-							$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+							{
+								$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+								$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+								$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+								$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+								$ScriptInformation.Add(@{Data = "Data"; Value = $item.StringValue; }) > $Null
+								$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
+							ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+							{
+								$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+								$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+								$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+								$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+								$ScriptInformation.Add(@{Data = "Data"; Value = $item.DWORDValue; }) > $Null
+								$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
+							ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+							{
+								$ScriptInformation.Add(@{Data = "Registry"; Value = $item.DisplayName; }) > $Null
+								$ScriptInformation.Add(@{Data = "Action"; Value = $item.Action; }) > $Null
+								$ScriptInformation.Add(@{Data = "Value"; Value = $item.RegistryName; }) > $Null
+								$ScriptInformation.Add(@{Data = "Type"; Value = $item.RegType.ToString(); }) > $Null
+								$cnt = -1
+								$TmpArray = $item.StringValue.Split("`r")
+								ForEach($SubItem in $TmpArray)
+								{
+									$cnt++
+									
+									If($cnt -eq 0)
+									{
+										$ScriptInformation.Add(@{Data = "Type"; Value = $SubItem; }) > $Null
+									}
+									Else
+									{
+										$ScriptInformation.Add(@{Data = ""; Value = $SubItem; }) > $Null
+									}
+								}
+								$ScriptInformation.Add(@{Data = "Path"; Value = "$($item.HiveType)\$($item.Path)"; }) > $Null
+								$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+							}
 						}
 
 						$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -18907,10 +19148,45 @@ Function OutputSite
 						Line 6 "========================================================================================================================================================================="
 						#		1234567890123456789012345678901234567890SS123456SS12345678901234567890SS1234567890123SS12345678901234567890SS123456789012345678901234567890123456789012345678901234567890
 						#		Increase service startup timeouts         Modify  99999999999999999999  REG_EXPAND_SZ  99999999999999999999  HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Disk
-						ForEach($item in $VDITemplate.Optimization.Registry.RegistryList)
+						ForEach($item in $RDSHost.Optimization.Registry.RegistryList)
 						{
-							Line 6 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
-							$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType, $item.DWORDValue, "$($item.HiveType)\$($item.Path)")
+							If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+							{
+								Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+								$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.StringValue, "$($item.HiveType)\$($item.Path)")
+							}
+							ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+							{
+								Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+								$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.DWORDValue, "$($item.HiveType)\$($item.Path)")
+							}
+							ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+							{
+								#If($item.StringValue.Count -eq 1)
+								#{
+								#	Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+								#	$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $item.StringValue.ToString(), "$($item.HiveType)\$($item.Path)")
+								#}
+								#Else
+								#{
+									$cnt = -1
+									$TmpArray = $item.StringValue.Split("`r")
+									ForEach($SubItem in $TmpArray)
+									{
+										$cnt++
+										
+										If($cnt -eq 0)
+										{
+											Line 7 ( "{0,-40}  {1,-6}  {2,-20}  {3,-13}  {4,-20}  {5,-60}" -f `
+											$item.DisplayName, $item.Action, $item.RegistryName, $item.RegType.ToString(), $SubItem, "$($item.HiveType)\$($item.Path)")
+										}
+										Else
+										{
+											Line 17 "       " $SubItem
+										}
+									}
+								#}
+							}
 						}
 						Line 0 ""
 					}
@@ -19368,14 +19644,39 @@ Function OutputSite
 
 						ForEach($item in $VDITemplate.Optimization.Registry.RegistryList)
 						{
-							$rowdata += @(,(
-								$item.DisplayName,$htmlwhite,
-								$item.Action,$htmlwhite,
-								$item.RegistryName,$htmlwhite,
-								$item.RegType,$htmlwhite,
-								$item.DWORDValue,$htmlwhite,
-								"$($item.HiveType)\$($item.Path)",$htmlwhite)
-							)
+							If($item.RegType.ToString() -eq "REG_SZ" -or $item.RegType.ToString() -eq "REG_EXPAND_SZ")
+							{
+								$rowdata += @(,(
+									$item.DisplayName,$htmlwhite,
+									$item.Action,$htmlwhite,
+									$item.RegistryName,$htmlwhite,
+									$item.RegType.ToString(),$htmlwhite,
+									$item.StringValue,$htmlwhite,
+									"$($item.HiveType)\$($item.Path)",$htmlwhite)
+								)
+							}
+							ElseIf($item.RegType.ToString() -eq "REG_DWORD" -or $item.RegType.ToString() -eq "REG_QWORD")
+							{
+								$rowdata += @(,(
+									$item.DisplayName,$htmlwhite,
+									$item.Action,$htmlwhite,
+									$item.RegistryName,$htmlwhite,
+									$item.RegType.ToString(),$htmlwhite,
+									$item.DWORDValue,$htmlwhite,
+									"$($item.HiveType)\$($item.Path)",$htmlwhite)
+								)
+							}
+							ElseIf($item.RegType.ToString() -eq "REG_MULTI_SZ")
+							{
+								$rowdata += @(,(
+									$item.DisplayName,$htmlwhite,
+									$item.Action,$htmlwhite,
+									$item.RegistryName,$htmlwhite,
+									$item.RegType.ToString(),$htmlwhite,
+									$item.StringValue.ToString(),$htmlwhite,
+									"$($item.HiveType)\$($item.Path)",$htmlwhite)
+								)
+							}
 						}
 
 						$columnHeaders = @(
@@ -26945,8 +27246,8 @@ Function OutputPublishingSettings
 	RDSDesktop
 	VDIApp
 	VDIDesktop
-	WVDApp
-	WVDDesktop
+	WVDApp and AVDApp
+	WVDDesktop and AVDDesktop
 	#>
 
 	#Get the published items default settings
@@ -33559,7 +33860,7 @@ Function OutputPublishingSettings
 				$DefaultReplicateShortcutSettings
 			}
 		}
-		ElseIf($PubItem.Type -eq "WVDApp")
+		ElseIf($PubItem.Type -eq "WVDApp" -or ($PubItem.Type -eq "AVDApp")
 		{
 			Switch ($PubItem.ConCurrentLicenses)
 			{
@@ -35115,7 +35416,7 @@ Function OutputPublishingSettings
 				WriteHTMLLine 0 0 ""
 			}
 		}
-		ElseIf($PubItem.Type -eq "WVDDesktop")
+		ElseIf($PubItem.Type -eq "WVDDesktop" -or $PubItem.Type -eq "AVDDesktop")
 		{
 			$DesktopSize = "Unable to determine"
 			If($PubItem.DesktopSize -eq "FullScreen")
@@ -36541,17 +36842,24 @@ Function OutputPubItemFilters
 		{
 			Line 3 "User filtering is enabled"
 			Line 3 "Allow the following Users:"
-			Line 0 ""
-			
-			$maxLength = ($PubItem.AllowedUsers.Account | Measure-Object -Property length -Maximum).Maximum
-			$NegativeMaxLength = $maxLength * -1
-			Line 3 "User" -nonewline
-			Line 0 (" " * ($maxLength - 3)) -nonewline
-			LIne 0 "Type  SID"
-			Line 3 ("=" * ($maxLength + 1 + 6 + 45)) # $maxLength, space, "Type" plus 2 spaces, length of SID
-			ForEach($item in $PubItem.AllowedUsers)
+			If($PubItem.AllowedUsers.Count -gt 0)
 			{
-				Line 3 ("{0,$NegativeMaxLength} {1,-5} {2,-45}" -f $item.Account,$item.Type,$item.Sid)
+				Line 0 ""
+				
+				$maxLength = ($PubItem.AllowedUsers.Account | Measure-Object -Property length -Maximum).Maximum
+				$NegativeMaxLength = $maxLength * -1
+				Line 3 "User" -nonewline
+				Line 0 (" " * ($maxLength - 3)) -nonewline
+				LIne 0 "Type  SID"
+				Line 3 ("=" * ($maxLength + 1 + 6 + 45)) # $maxLength, space, "Type" plus 2 spaces, length of SID
+				ForEach($item in $PubItem.AllowedUsers)
+				{
+					Line 3 ("{0,$NegativeMaxLength} {1,-5} {2,-45}" -f $item.Account,$item.Type,$item.Sid)
+				}
+			}
+			Else
+			{
+				Line 0 "There are no users configured"
 			}
 			Line 0 ""
 		}
@@ -45370,11 +45678,12 @@ Function OutputRASMailboxSettings
 	
 	Switch ($RASMailboxSettings.UseTLS)
 	{
-		"YesIfAvailable"	{$RASMailboxSettingsUseTLS = "Use TLS/SSL if available"; Break}
-		"Yes"				{$RASMailboxSettingsUseTLS = "Use TLS/SSL"; Break}
-		"No"				{$RASMailboxSettingsUseTLS = "Do not use"; Break}
-		"3"					{$RASMailboxSettingsUseTLS = "Use TLS 1.2 if available"; Break}
-		Default				{$RASMailboxSettingsUseTLS = "Unable to determine TLS/SSL setting: $($RASMailboxSettings.UseTLS)"; Break}
+		"YesIfAvailable"		{$RASMailboxSettingsUseTLS = "Use TLS/SSL if available"; Break}
+		"Yes"					{$RASMailboxSettingsUseTLS = "Use TLS/SSL"; Break}
+		"No"					{$RASMailboxSettingsUseTLS = "Do not use"; Break}
+		"3"						{$RASMailboxSettingsUseTLS = "Use TLS 1.2 if available"; Break}
+		"YesTLS12IfAvailable"	{$RASMailboxSettingsUseTLS = "Use TLS 1.2 if available"; Break} #fixed in 19.2, added in 3.01
+		Default					{$RASMailboxSettingsUseTLS = "Unable to determine TLS/SSL setting: $($RASMailboxSettings.UseTLS)"; Break}
 	}
 	
 	If($MSWord -or $PDF)
