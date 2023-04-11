@@ -422,7 +422,7 @@
 	NAME: RAS_Inventory_V3.0.ps1
 	VERSION: 3.01
 	AUTHOR: Carl Webster
-	LASTEDIT: April 7, 2023
+	LASTEDIT: April 11, 2023
 #>
 
 
@@ -534,8 +534,11 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
-#Version 3.01
-#	In Function OutputPublishingSettings, add AVDApp and AVDDesktop to WVDApp and WVDDesktop
+#Version 3.01 11-Apr-2023
+#	Change all Created and Modified dates to match the output formatting in the console
+#	In Function OutputPublishingSettings:
+#		Add AVDApp and AVDDesktop to WVDApp and WVDDesktop
+#		If Preferred Routing is not enabled, added "Preferred routing is disabled"
 #	In Function OutputRASMailboxSettings, added the missing enum fixed in 19.2
 #		YesTLS12IfAvailable	- Use TLS 1.2 if available
 #	In Function OutputSite, add code to handle the different types of Registry Optimizations
@@ -622,7 +625,7 @@ $Error.Clear()
 $Script:emailCredentials  = $Null
 $script:MyVersion         = '3.01'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "04/07/2023"
+$tmpdate                  = [datetime] "04/11/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -4153,9 +4156,9 @@ Function OutputFarmSite
 		$ScriptInformation.Add(@{Data = "Description"; Value = $Description; }) > $Null
 		$ScriptInformation.Add(@{Data = "ID"; Value = $ID; }) > $Null
 		$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Site.AdminLastMod; }) > $Null
-		$ScriptInformation.Add(@{Data = "Modified on"; Value = $Site.TimeLastMod.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $Site.TimeLastMod); }) > $Null
 		$ScriptInformation.Add(@{Data = "Created by"; Value = $Site.AdminCreate; }) > $Null
-		$ScriptInformation.Add(@{Data = "Created on"; Value = $Site.TimeCreate.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $Site.TimeCreate); }) > $Null
 
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
@@ -4184,9 +4187,9 @@ Function OutputFarmSite
 		Line 1 "Description`t`t : " $Description
 		Line 1 "ID`t`t`t : " $ID
 		Line 1 "Last modification by`t : " $Site.AdminLastMod
-		Line 1 "Modified on`t`t : " $Site.TimeLastMod.ToString()
+		Line 1 "Modified on`t`t : " (Get-Date -UFormat "%c" $Site.TimeLastMod)
 		Line 1 "Created by`t`t : " $Site.AdminCreate
-		Line 1 "Created on`t`t : " $Site.TimeCreate.ToString()
+		Line 1 "Created on`t`t : " (Get-Date -UFormat "%c" $Site.TimeCreate)
 		Line 0 ""
 	}
 	If($HTML)
@@ -4199,9 +4202,9 @@ Function OutputFarmSite
 		$rowdata += @(,("Description",($Script:htmlsb),$Description,$htmlwhite))
 		$rowdata += @(,("ID",($Script:htmlsb),$ID,$htmlwhite))
 		$rowdata += @(,("Last modification by",($Script:htmlsb), $Site.AdminLastMod,$htmlwhite))
-		$rowdata += @(,("Modified on",($Script:htmlsb), $Site.TimeLastMod.ToString(),$htmlwhite))
+		$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $Site.TimeLastMod),$htmlwhite))
 		$rowdata += @(,("Created by",($Script:htmlsb), $Site.AdminCreate,$htmlwhite))
-		$rowdata += @(,("Created on",($Script:htmlsb), $Site.TimeCreate.ToString(),$htmlwhite))
+		$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $Site.TimeCreate),$htmlwhite))
 
 		$msg = ""
 		$columnWidths = @("200","275")
@@ -5368,9 +5371,9 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Log level"; Value = $RDSStatus.LogLevel; }) > $Null
 					$ScriptInformation.Add(@{Data = "Agent version"; Value = $RDSStatus.AgentVer; }) > $Null
 					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $RDSHost.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $RDSHost.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $RDSHost.TimeLastMod); }) > $Null
 					$ScriptInformation.Add(@{Data = "Created by"; Value = $RDSHost.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $RDSHost.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $RDSHost.TimeCreate); }) > $Null
 					$ScriptInformation.Add(@{Data = "ID"; Value = $RDSHost.Id.ToString(); }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -5403,9 +5406,9 @@ Function OutputSite
 					Line 3 "Log level`t`t: " $RDSStatus.LogLevel
 					Line 3 "Agent version`t`t: " $RDSStatus.AgentVer
 					Line 3 "Last modification by`t: " $RDSHost.AdminLastMod
-					Line 3 "Modified on`t`t: " $RDSHost.TimeLastMod.ToString()
+					Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $RDSHost.TimeLastMod)
 					Line 3 "Created by`t`t: " $RDSHost.AdminCreate
-					Line 3 "Created on`t`t: " $RDSHost.TimeCreate.ToString()
+					Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $RDSHost.TimeCreate)
 					Line 3 "ID`t`t`t: " $RDSHost.Id.ToString()
 					Line 0 ""
 				}
@@ -5422,9 +5425,9 @@ Function OutputSite
 					$rowdata += @(,("Log level",($Script:htmlsb),$RDSStatus.LogLevel,$htmlwhite))
 					$rowdata += @(,("Agent version",($Script:htmlsb),$RDSStatus.AgentVer,$htmlwhite))
 					$rowdata += @(,("Last modification by",($Script:htmlsb), $RDSHost.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $RDSHost.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $RDSHost.TimeLastMod),$htmlwhite))
 					$rowdata += @(,("Created by",($Script:htmlsb), $RDSHost.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $RDSHost.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $RDSHost.TimeCreate),$htmlwhite))
 					$rowdata += @(,("ID",($Script:htmlsb),$RDSHost.Id.ToString(),$htmlwhite))
 
 					$msg = ""
@@ -10568,9 +10571,9 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Description"; Value = $RDSGroup.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Status"; Value = $RDSGroupAgentState; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $RDSGroup.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $RDSGroup.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $RDSGroup.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $RDSGroup.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $RDSGroup.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $RDSGroup.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "ID"; Value = $RDSGroup.Id.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -10598,9 +10601,9 @@ Function OutputSite
 				Line 2 "Description`t`t: " $RDSGroup.Description
 				Line 2 "Status`t`t`t: " $RDSGroupAgentState
 				Line 2 "Last modification by`t: " $RDSGroup.AdminLastMod
-				Line 2 "Modified on`t`t: " $RDSGroup.TimeLastMod.ToString()
+				Line 2 "Modified on`t`t: " (Get-Date -UFormat "%c" $RDSGroup.TimeLastMod)
 				Line 2 "Created by`t`t: " $RDSGroup.AdminCreate
-				Line 2 "Created on`t`t: " $RDSGroup.TimeCreate.ToString()
+				Line 2 "Created on`t`t: " (Get-Date -UFormat "%c" $RDSGroup.TimeCreate)
 				Line 2 "ID`t`t`t: " $RDSGroup.Id.ToString()
 				Line 0 ""
 			}
@@ -10613,9 +10616,9 @@ Function OutputSite
 				$rowdata += @(,("Description",($Script:htmlsb),$RDSGroup.Description,$htmlwhite))
 				$rowdata += @(,("Status",($Script:htmlsb),$RDSGroupAgentState,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $RDSGroup.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $RDSGroup.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $RDSGroup.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $RDSGroup.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $RDSGroup.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $RDSGroup.TimeCreate),$htmlwhite))
 				$rowdata += @(,("ID",($Script:htmlsb),$RDSGroup.Id.ToString(),$htmlwhite))
 
 				$msg = ""
@@ -12985,9 +12988,9 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Provider"; Value = $TemplateProviderName; }) > $Null
 				$ScriptInformation.Add(@{Data = "Provider type"; Value = $TemplateProviderType; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $RDSTemplate.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $RDSTemplate.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $RDSTemplate.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $RDSTemplate.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $RDSTemplate.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $RDSTemplate.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "ID"; Value = $RDSTemplate.Id.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -13018,9 +13021,9 @@ Function OutputSite
 				Line 2 "Provider`t`t: " $TemplateProviderName
 				Line 2 "Provider type`t`t: " $TemplateProviderType
 				Line 2 "Last modification by`t: " $RDSTemplate.AdminLastMod
-				Line 2 "Modified on`t`t: " $RDSTemplate.TimeLastMod.ToString()
+				Line 2 "Modified on`t`t: " (Get-Date -UFormat "%c" $RDSTemplate.TimeLastMod)
 				Line 2 "Created by`t`t: " $RDSTemplate.AdminCreate
-				Line 2 "Created on`t`t: " $RDSTemplate.TimeCreate.ToString()
+				Line 2 "Created on`t`t: " (Get-Date -UFormat "%c" $RDSTemplate.TimeCreate)
 				Line 2 "ID`t`t`t: " $RDSTemplate.Id.ToString()
 				Line 0 ""
 			}
@@ -13035,9 +13038,9 @@ Function OutputSite
 				$rowdata += @(,("Provider",($Script:htmlsb),$TemplateProviderName,$htmlwhite))
 				$rowdata += @(,("Provider type",($Script:htmlsb),$TemplateProviderType,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $RDSTemplate.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $RDSTemplate.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $RDSTemplate.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $RDSTemplate.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $RDSTemplate.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $RDSTemplate.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Id",($Script:htmlsb),$RDSTemplate.Id.ToString(),$htmlwhite))
 
 				$msg = ""
@@ -15428,9 +15431,9 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Repeat"; Value = $Repeat; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $RDSSchedule.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $RDSSchedule.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $RDSSchedule.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $RDSSchedule.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $RDSSchedule.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $RDSSchedule.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $RDSSchedule.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "ID"; Value = $RDSSchedule.Id.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -15474,9 +15477,9 @@ Function OutputSite
 				Line 2 "Repeat`t`t`t: " $Repeat
 				Line 2 "Description`t`t: " $RDSSchedule.Description
 				Line 2 "Last modification by`t: " $RDSSchedule.AdminLastMod
-				Line 2 "Modified on`t`t: " $RDSSchedule.TimeLastMod.ToString()
+				Line 2 "Modified on`t`t: " (Get-Date -UFormat "%c" $RDSSchedule.TimeLastMod)
 				Line 2 "Created by`t`t: " $RDSSchedule.AdminCreate
-				Line 2 "Created on`t`t: " $RDSSchedule.TimeCreate.ToString()
+				Line 2 "Created on`t`t: " (Get-Date -UFormat "%c" $RDSSchedule.TimeCreate)
 				Line 2 "ID`t`t`t: " $RDSSchedule.Id.ToString()
 				Line 0 ""
 			}
@@ -15505,9 +15508,9 @@ Function OutputSite
 				$rowdata += @(,("Repeat",($Script:htmlsb),$Repeat,$htmlwhite))
 				$rowdata += @(,("Description",($Script:htmlsb),$RDSSchedule.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb),$RDSSchedule.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb),$RDSSchedule.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb),(Get-Date -UFormat "%c" $RDSSchedule.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb),$RDSSchedule.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb),$RDSSchedule.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb),(Get-Date -UFormat "%c" $RDSSchedule.TimeCreate),$htmlwhite))
 				$rowdata += @(,("ID",($Script:htmlsb),$RDSSchedule.Id.ToString(),$htmlwhite))
 
 				$msg = ""
@@ -15976,9 +15979,9 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Description"; Value = $VDIPool.Description; }) > $Null
 					$ScriptInformation.Add(@{Data = "Members type"; Value = $MemberType; }) > $Null
 					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $VDIPool.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $VDIPool.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $VDIPool.TimeLastMod); }) > $Null
 					$ScriptInformation.Add(@{Data = "Created by"; Value = $VDIPool.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $VDIPool.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $VDIPool.TimeCreate); }) > $Null
 					
 					$Table = AddWordTable -Hashtable $ScriptInformation `
 					-Columns Data,Value `
@@ -16138,9 +16141,9 @@ Function OutputSite
 					Line 3 "Description`t`t: " $VDIPool.Description
 					Line 3 "Members type`t`t: " $MemberType
 					Line 3 "Last modification by`t: " $VDIPool.AdminLastMod
-					Line 3 "Modified on`t`t: " $VDIPool.TimeLastMod.ToString()
+					Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $VDIPool.TimeLastMod)
 					Line 3 "Created by`t`t: " $VDIPool.AdminCreate
-					Line 3 "Created on`t`t: " $VDIPool.TimeCreate.ToString()
+					Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $VDIPool.TimeCreate)
 					Line 0 ""
 					
 					#General
@@ -16246,9 +16249,9 @@ Function OutputSite
 					$rowdata += @(,("Description",($Script:htmlsb),$VDIPool.Description,$htmlwhite))
 					$rowdata += @(,("Members type: ",($Script:htmlsb),$MemberType,$htmlwhite))
 					$rowdata += @(,("Last modification by",($Script:htmlsb), $VDIPool.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $VDIPool.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $VDIPool.TimeLastMod),$htmlwhite))
 					$rowdata += @(,("Created by",($Script:htmlsb), $VDIPool.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $VDIPool.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $VDIPool.TimeCreate),$htmlwhite))
 					
 					ForEach($Item in $VDIPool.Members)
 					{
@@ -16492,9 +16495,9 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Provider"; Value = $TemplateProviderName; }) > $Null
 					$ScriptInformation.Add(@{Data = "Provider type"; Value = $TemplateProviderType; }) > $Null
 					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $VDITemplate.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $VDITemplate.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $VDITemplate.TimeLastMod); }) > $Null
 					$ScriptInformation.Add(@{Data = "Created by"; Value = $VDITemplate.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $VDITemplate.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $VDITemplate.TimeCreate); }) > $Null
 					$ScriptInformation.Add(@{Data = "ID"; Value = $VDITemplate.Id.ToString(); }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -16525,9 +16528,9 @@ Function OutputSite
 					Line 3 "Provider`t`t: " $TemplateProviderName
 					Line 3 "Provider type`t`t: " $TemplateProviderType
 					Line 3 "Last modification by`t: " $VDITemplate.AdminLastMod
-					Line 3 "Modified on`t`t: " $VDITemplate.TimeLastMod.ToString()
+					Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $VDITemplate.TimeLastMod)
 					Line 3 "Created by`t`t: " $VDITemplate.AdminCreate
-					Line 3 "Created on`t`t: " $VDITemplate.TimeCreate.ToString()
+					Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $VDITemplate.TimeCreate)
 					Line 3 "ID`t`t`t: " $VDITemplate.Id.ToString()
 					Line 0 ""
 				}
@@ -16542,9 +16545,9 @@ Function OutputSite
 					$rowdata += @(,("Provider",($Script:htmlsb),$TemplateProviderName,$htmlwhite))
 					$rowdata += @(,("Provider type",($Script:htmlsb),$TemplateProviderType,$htmlwhite))
 					$rowdata += @(,("Last modification by",($Script:htmlsb), $VDITemplate.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $VDITemplate.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $VDITemplate.TimeLastMod),$htmlwhite))
 					$rowdata += @(,("Created by",($Script:htmlsb), $VDITemplate.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $VDITemplate.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $VDITemplate.TimeCreate),$htmlwhite))
 					$rowdata += @(,("Id",($Script:htmlsb),$VDITemplate.Id.ToString(),$htmlwhite))
 
 					$msg = ""
@@ -20376,9 +20379,9 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Application ID"; Value = $Provider.VDIUsername; }) > $Null
 					$ScriptInformation.Add(@{Data = "Log level"; Value = $ProviderStatus.LogLevel; }) > $Null
 					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Provider.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $Provider.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $Provider.TimeLastMod); }) > $Null
 					$ScriptInformation.Add(@{Data = "Created by"; Value = $Provider.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $Provider.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $Provider.TimeCreate); }) > $Null
 					$ScriptInformation.Add(@{Data = "ID"; Value = $Provider.Id.ToString(); }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -20421,9 +20424,9 @@ Function OutputSite
 					Line 3 "Application ID`t`t: " $Provider.VDIUsername
 					Line 3 "Log level`t`t: " $ProviderStatus.LogLevel
 					Line 3 "Last modification by`t: " $Provider.AdminLastMod
-					Line 3 "Modified on`t`t: " $Provider.TimeLastMod.ToString()
+					Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $Provider.TimeLastMod)
 					Line 3 "Created by`t`t: " $Provider.AdminCreate
-					Line 3 "Created on`t`t: " $Provider.TimeCreate.ToString()
+					Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $Provider.TimeCreate)
 					Line 3 "ID`t`t`t: " $Provider.Id.ToString()
 					Line 0 ""
 				}
@@ -20449,9 +20452,9 @@ Function OutputSite
 					$rowdata += @(,("Application ID",($Script:htmlsb),$Provider.VDIUsername,$htmlwhite))
 					$rowdata += @(,("Log level",($Script:htmlsb),$ProviderStatus.LogLevel,$htmlwhite))
 					$rowdata += @(,("Last modification by",($Script:htmlsb), $Provider.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $Provider.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $Provider.TimeLastMod),$htmlwhite))
 					$rowdata += @(,("Created by",($Script:htmlsb), $Provider.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $Provider.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $Provider.TimeCreate),$htmlwhite))
 					$rowdata += @(,("Id",($Script:htmlsb),$Provider.Id.ToString(),$htmlwhite))
 
 					$msg = ""
@@ -21272,9 +21275,9 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Certificate"; Value = $SecureGatewayCertificates; }) > $Null
 					$ScriptInformation.Add(@{Data = "Log level"; Value = $SecureGatewayStatus.LogLevel; }) > $Null
 					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $SecureGateway.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $SecureGateway.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $SecureGateway.TimeLastMod); }) > $Null
 					$ScriptInformation.Add(@{Data = "Created by"; Value = $SecureGateway.AdminCreate.ToString(); }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $SecureGateway.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $SecureGateway.TimeCreate); }) > $Null
 					$ScriptInformation.Add(@{Data = "ID"; Value = $SecureGateway.Id.ToString(); }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -21305,9 +21308,9 @@ Function OutputSite
 					Line 3 "Certificate`t`t: " $SecureGatewayCertificates
 					Line 3 "Log level`t`t: " $SecureGatewayStatus.LogLevel
 					Line 3 "Last modification by`t: " $SecureGateway.AdminLastMod
-					Line 3 "Modified on`t`t: " $SecureGateway.TimeLastMod.ToString()
+					Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $SecureGateway.TimeLastMod)
 					Line 3 "Created by`t`t: " $SecureGateway.AdminCreate.ToString()
-					Line 3 "Created on`t`t: " $SecureGateway.TimeCreate.ToString()
+					Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $SecureGateway.TimeCreate)
 					Line 3 "ID`t`t`t: " $SecureGateway.Id.ToString()
 					Line 0 ""
 				}
@@ -21322,9 +21325,9 @@ Function OutputSite
 					$rowdata += @(,("Certificate",($Script:htmlsb),$SecureGatewayCertificates,$htmlwhite))
 					$rowdata += @(,("Log level",($Script:htmlsb),$SecureGatewayStatus.LogLevel,$htmlwhite))
 					$rowdata += @(,("Last modification by",($Script:htmlsb), $SecureGateway.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $SecureGateway.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $SecureGateway.TimeLastMod),$htmlwhite))
 					$rowdata += @(,("Created by",($Script:htmlsb), $SecureGateway.AdminCreate.ToString(),$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $SecureGateway.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $SecureGateway.TimeCreate),$htmlwhite))
 					$rowdata += @(,("ID",($Script:htmlsb),$SecureGateway.Id.ToString(),$htmlwhite))
 
 					$msg = ""
@@ -22858,9 +22861,9 @@ Function OutputSite
 					$ScriptInformation.Add(@{Data = "Status"; Value = $ConnectionBrokerStatusAgentState; }) > $Null
 					$ScriptInformation.Add(@{Data = "Log level"; Value = $ConnectionBrokerStatus.LogLevel; }) > $Null
 					$ScriptInformation.Add(@{Data = "Last modification by"; Value = $ConnectionBroker.AdminLastMod; }) > $Null
-					$ScriptInformation.Add(@{Data = "Modified on"; Value = $ConnectionBroker.TimeLastMod.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $ConnectionBroker.TimeLastMod); }) > $Null
 					$ScriptInformation.Add(@{Data = "Created by"; Value = $ConnectionBroker.AdminCreate; }) > $Null
-					$ScriptInformation.Add(@{Data = "Created on"; Value = $ConnectionBroker.TimeCreate.ToString(); }) > $Null
+					$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $ConnectionBroker.TimeCreate); }) > $Null
 					$ScriptInformation.Add(@{Data = "ID"; Value = $ConnectionBroker.Id.ToString(); }) > $Null
 
 					$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -22890,9 +22893,9 @@ Function OutputSite
 					Line 3 "Status`t`t`t: " $ConnectionBrokerStatusAgentState
 					Line 3 "Log level`t`t: " $ConnectionBrokerStatus.LogLevel
 					Line 3 "Last modification by`t: " $ConnectionBroker.AdminLastMod
-					Line 3 "Modified on`t`t: " $ConnectionBroker.TimeLastMod.ToString()
+					Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $ConnectionBroker.TimeLastMod)
 					Line 3 "Created by`t`t: " $ConnectionBroker.AdminCreate
-					Line 3 "Created on`t`t: " $ConnectionBroker.TimeCreate.ToString()
+					Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $ConnectionBroker.TimeCreate)
 					Line 3 "ID`t`t`t: " $ConnectionBroker.Id.ToString()
 					Line 0 ""
 				}
@@ -22906,9 +22909,9 @@ Function OutputSite
 					$rowdata += @(,("Status",($Script:htmlsb),$ConnectionBrokerStatusAgentState,$htmlwhite))
 					$rowdata += @(,("Log level",($Script:htmlsb),$ConnectionBrokerStatus.LogLevel,$htmlwhite))
 					$rowdata += @(,("Last modification by",($Script:htmlsb), $ConnectionBroker.AdminLastMod,$htmlwhite))
-					$rowdata += @(,("Modified on",($Script:htmlsb), $ConnectionBroker.TimeLastMod.ToString(),$htmlwhite))
+					$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $ConnectionBroker.TimeLastMod),$htmlwhite))
 					$rowdata += @(,("Created by",($Script:htmlsb), $ConnectionBroker.AdminCreate,$htmlwhite))
-					$rowdata += @(,("Created on",($Script:htmlsb), $ConnectionBroker.TimeCreate.ToString(),$htmlwhite))
+					$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $ConnectionBroker.TimeCreate),$htmlwhite))
 					$rowdata += @(,("ID",($Script:htmlsb),$ConnectionBroker.Id.ToString(),$htmlwhite))
 
 					$msg = ""
@@ -23157,9 +23160,9 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Description"; Value = $EnrollmentServer.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Log level"; Value = "Can't find"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $EnrollmentServer.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $EnrollmentServer.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $EnrollmentServer.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $EnrollmentServer.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $EnrollmentServer.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $EnrollmentServer.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "ID"; Value = $EnrollmentServer.Id.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -23189,9 +23192,9 @@ Function OutputSite
 				Line 3 "Description`t`t: " $EnrollmentServer.Description
 				Line 3 "Log level`t`t: " "Can't find"
 				Line 3 "Last modification by`t: " $EnrollmentServer.AdminLastMod
-				Line 3 "Modified on`t`t: " $EnrollmentServer.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $EnrollmentServer.TimeLastMod)
 				Line 3 "Created by`t`t: " $EnrollmentServer.AdminCreate
-				Line 3 "Created on`t`t: " $EnrollmentServer.TimeCreate.ToString()
+				Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $EnrollmentServer.TimeCreate)
 				Line 3 "ID`t`t`t: " $EnrollmentServer.Id.ToString()
 				Line 0 ""
 			}
@@ -23205,9 +23208,9 @@ Function OutputSite
 				$rowdata += @(,("Description",($Script:htmlsb),$EnrollmentServer.Description,$htmlwhite))
 				$rowdata += @(,("Log level",($Script:htmlsb),"Can't find",$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $EnrollmentServer.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $EnrollmentServer.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $EnrollmentServer.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $EnrollmentServer.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $EnrollmentServer.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $EnrollmentServer.TimeCreate),$htmlwhite))
 				$rowdata += @(,("ID",($Script:htmlsb),$EnrollmentServer.Id.ToString(),$htmlwhite))
 
 				$msg = ""
@@ -23370,9 +23373,9 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Description"; Value = $HALB.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Public Address"; Value = $HALB.PublicAddress; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $HALB.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $HALB.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $HALB.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $HALB.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $HALB.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $HALB.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "ID"; Value = $HALB.Id.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -23403,9 +23406,9 @@ Function OutputSite
 				Line 3 "Description`t`t: " $HALB.Description
 				Line 3 "Public Address`t`t: " $HALB.PublicAddress
 				Line 3 "Last modification by`t: " $HALB.AdminLastMod
-				Line 3 "Modified on`t`t: " $HALB.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $HALB.TimeLastMod)
 				Line 3 "Created by`t`t: " $HALB.AdminCreate
-				Line 3 "Created on`t`t: " $HALB.TimeCreate.ToString()
+				Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $HALB.TimeCreate)
 				Line 3 "ID`t`t`t: " $HALB.Id.ToString()
 				Line 0 ""
 			}
@@ -23420,9 +23423,9 @@ Function OutputSite
 				$rowdata += @(,("Description",($Script:htmlsb),$HALB.Description,$htmlwhite))
 				$rowdata += @(,("Public Address",($Script:htmlsb),$HALB.PublicAddress,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $HALB.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $HALB.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $HALB.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $HALB.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $HALB.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $HALB.TimeCreate),$htmlwhite))
 				$rowdata += @(,("ID",($Script:htmlsb),$HALB.Id.ToString(),$htmlwhite))
 
 				$msg = ""
@@ -24335,9 +24338,9 @@ Function OutputSite
 				$ScriptInformation.Add(@{Data = "Description"; Value = $Theme.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "HTML5 URL"; Value = $ThemeUserPortalURL; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Theme.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $Theme.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $Theme.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $Theme.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $Theme.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $Theme.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "ID"; Value = $Theme.Id.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -24365,9 +24368,9 @@ Function OutputSite
 				Line 3 "Description`t`t: " $Theme.Description
 				Line 3 "HTML5 URL`t`t: " $ThemeUserPortalURL
 				Line 3 "Last modification by`t: " $Theme.AdminLastMod
-				Line 3 "Modified on`t`t: " $Theme.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $Theme.TimeLastMod)
 				Line 3 "Created by`t`t: " $Theme.AdminCreate
-				Line 3 "Created on`t`t: " $Theme.TimeCreate.ToString()
+				Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $Theme.TimeCreate)
 				Line 3 "ID`t`t`t: " $Theme.Id.ToString()
 				Line 0 ""
 			}
@@ -24380,9 +24383,9 @@ Function OutputSite
 				$rowdata += @(,("Description",($Script:htmlsb),$Theme.Description,$htmlwhite))
 				$rowdata += @(,("HTML5 URL",($Script:htmlsb),$ThemeUserPortalURL,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $Theme.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $Theme.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $Theme.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $Theme.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $Theme.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $Theme.TimeCreate),$htmlwhite))
 				$rowdata += @(,("ID",($Script:htmlsb),$Theme.Id.ToString(),$htmlwhite))
 
 				$msg = ""
@@ -25907,9 +25910,9 @@ Function OutputSite
 				}
 				
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Cert.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $Cert.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $Cert.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $Cert.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $Cert.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $Cert.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "ID"; Value = $Cert.Id.ToString(); }) > $Null
 
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -25956,9 +25959,9 @@ Function OutputSite
 				}
 				
 				Line 3 "Last modification by`t: " $Cert.AdminLastMod
-				Line 3 "Modified on`t`t: " $Cert.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $Cert.TimeLastMod)
 				Line 3 "Created by`t`t: " $Cert.AdminCreate
-				Line 3 "Created on`t`t: " $Cert.TimeCreate.ToString()
+				Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $Cert.TimeCreate)
 				Line 3 "ID`t`t`t: " $Cert.Id.ToString()
 				Line 0 ""
 			}
@@ -25990,9 +25993,9 @@ Function OutputSite
 				}
 				
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $Cert.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $Cert.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $Cert.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $Cert.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $Cert.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $Cert.TimeCreate),$htmlwhite))
 				$rowdata += @(,("ID",($Script:htmlsb),$Cert.Id.ToString(),$htmlwhite))
 
 				$msg = ""
@@ -27410,37 +27413,191 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Folder"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				
 				If($PubItem.AdminOnly -eq $True)
 				{
 					$ScriptInformation.Add(@{Data = "Use for administrative purposes"; Value = ""; }) > $Null
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
+				$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
 
 				If($PubItem.UserFilterEnabled)
 				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
+					#$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
+					$cnt = -1
 					
 					ForEach($Item in $PubItem.AllowedUsers)
 					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
+						$cnt++
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "User or group is "; Value = $Item; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						}
+					}
+				}
+				If($PubItem.GatewayFilterEnabled)
+				{
+					#$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
+					$cnt = -1
+					ForEach($item in $PubItem.AllowedGateways)
+					{
+						$cnt++
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Secure gateway is "; Value = $Item; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						}
+					}
+				}
+				###add theme
+				If($PubItem.ClientFilterEnabled)
+				{
+					#$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
+					$cnt = -1
+					ForEach($item in $PubItem.AllowedClients)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = $Item; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						}
+					}
+				}
+				If($PubItem.OSFilterEnabled)
+				{
+					#$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
+					
+					$cnt = -1
+					If($PubItem.AllowedOSes.Windows)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "Windows"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
+						}
+					}
+					
+					If($PubItem.AllowedOSes.WebClient)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "User Portal (Web Client)"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
+						}
+					}
+					
+					If($PubItem.AllowedOSes.Mac)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "macOS"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
+						}
+					}
+					
+					If($PubItem.AllowedOSes.Linux)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "Linux"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
+						}
+					}
+					
+					If($PubItem.AllowedOSes.iOS)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "iOS/iPadOS"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
+						}
+					}
+					
+					If($PubItem.AllowedOSes.Android)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "Android"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
+						}
+					}
+					
+					If($PubItem.AllowedOSes.Chrome)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "Chrome OS"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
+						}
+					}
+					
+					If($PubItem.AllowedOSes.Wyse)
+					{
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Device is "; Value = "Wyse"; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
+						}
 					}
 				}
 				If($PubItem.IPFilterEnabled)
 				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
+					#$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
 
 					If($PubItem.AllowedIP4s.Count -gt 0)
 					{
@@ -27472,75 +27629,22 @@ Function OutputPublishingSettings
 						}
 					}
 				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
 				If($PubItem.MACFilterEnabled)
 				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
+					#$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
+					$cnt = -1
 					ForEach($item in $PubItem.AllowedMACs)
 					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
+						$cnt++
+						
+						If($cnt -eq 0)
+						{
+							$ScriptInformation.Add(@{Data = "Hardware ID is "; Value = $Item; }) > $Null
+						}
+						Else
+						{
+							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+						}
 					}
 				}
 
@@ -27586,6 +27690,10 @@ Function OutputPublishingSettings
 							}
 						}
 					}
+				}
+				Else
+				{
+					$ScriptInformation.Add(@{Data = "Preferred routing is disabled"; Value = ""; }) > $Null
 				}
 		
 				$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -27674,24 +27782,16 @@ Function OutputPublishingSettings
 				Line 3 "Folder`t`t`t`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				
 				If($PubItem.AdminOnly -eq $True)
 				{
 					Line 3 "Use for administrative purposes"
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
+				Line 3 "Own Filters"
 
 				If($PubItem.UserFilterEnabled)
 				{
@@ -27703,65 +27803,22 @@ Function OutputPublishingSettings
 					}
 					Line 0 ""
 				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
 				If($PubItem.GatewayFilterEnabled)
 				{
 					Line 3 " Gateway filtering is enabled"
 					
 					ForEach($item in $PubItem.AllowedGateways)
+					{
+						Line 10 "  " $Item
+					}
+					Line 0 ""
+				}
+				###add theme
+				If($PubItem.ClientFilterEnabled)
+				{
+					Line 3 " Client filtering is enabled"
+					
+					ForEach($item in $PubItem.AllowedClients)
 					{
 						Line 10 "  " $Item
 					}
@@ -27812,6 +27869,50 @@ Function OutputPublishingSettings
 					}
 					Line 0 ""
 				}
+				If($PubItem.IPFilterEnabled)
+				{
+					Line 3 " IP filtering is enabled"
+					If($PubItem.AllowedIP4s.Count -gt 0)
+					{
+						ForEach($item in $PubItem.AllowedIP4s)
+						{
+							If($item.From -eq $item.To)
+							{
+								Line 10 "  " $item.From
+							}
+							Else
+							{
+								Line 10 "  $($item.From) - $($item.To)"
+							}
+						}
+					}
+
+					If($PubItem.AllowedIP6s.Count -gt 0)
+					{
+						ForEach($item in $PubItem.AllowedIP6s)
+						{
+							If($item.From -eq $item.To)
+							{
+								Line 10 "  " $item.From
+							}
+							Else
+							{
+								Line 10 "  $($item.From) - $($item.To)"
+							}
+						}
+					}
+					Line 0 ""
+				}
+				If($PubItem.MACFilterEnabled)
+				{
+					Line 3 " MAC filtering is enabled"
+					
+					ForEach($item in $PubItem.AllowedMACs)
+					{
+						Line 10 "  " $Item
+					}
+					Line 0 ""
+				}
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -27856,6 +27957,11 @@ Function OutputPublishingSettings
 						}
 					}
 				}
+				Else
+				{
+					Line 3 "Preferred routing is disabled"
+				}
+				
 				Line 0 ""
 
 				Line 2 Sites
@@ -27890,24 +27996,16 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Folder",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				
 				If($PubItem.AdminOnly -eq $True)
 				{
 					$rowdata += @(,("Use for administrative purposes",($Script:htmlsb), "",$htmlwhite))
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
+				$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
 
 				If($PubItem.UserFilterEnabled)
 				{
@@ -27918,63 +28016,21 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
 					}
 				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
 				If($PubItem.GatewayFilterEnabled)
 				{
 					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
 					
 					ForEach($item in $PubItem.AllowedGateways)
+					{
+						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
+					}
+				}
+				###add theme
+				If($PubItem.ClientFilterEnabled)
+				{
+					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
+					
+					ForEach($item in $PubItem.AllowedClients)
 					{
 						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
 					}
@@ -28023,6 +28079,49 @@ Function OutputPublishingSettings
 						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
 					}
 				}
+				If($PubItem.IPFilterEnabled)
+				{
+					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
+
+					If($PubItem.AllowedIP4s.Count -gt 0)
+					{
+						ForEach($item in $PubItem.AllowedIP4s)
+						{
+							If($item.From -eq $item.To)
+							{
+								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
+							}
+						}
+					}
+
+					If($PubItem.AllowedIP6s.Count -gt 0)
+					{
+						ForEach($item in $PubItem.AllowedIP6s)
+						{
+							If($item.From -eq $item.To)
+							{
+								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
+							}
+						}
+					}
+				}
+				If($PubItem.MACFilterEnabled)
+				{
+					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
+					
+					ForEach($item in $PubItem.AllowedMACs)
+					{
+						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
+					}
+				}
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -28067,6 +28166,11 @@ Function OutputPublishingSettings
 						}
 					}
 				}
+				Else
+				{
+					$rowdata += @(,("Preferred routing is disabled",($Script:htmlsb),"",$htmlwhite))
+				}
+				
 				$msg = ""
 				$columnWidths = @("200","300")
 				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
@@ -28096,9 +28200,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Remote PC Application"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Target"; Value = $PubItem.Target; }) > $Null
 				$ScriptInformation.Add(@{Data = "Start In"; Value = $PubItem.StartIn; }) > $Null
 				$ScriptInformation.Add(@{Data = "Start automatically when user logs on"; Value = $PubItem.StartOnLogon.ToString(); }) > $Null
@@ -28380,9 +28484,9 @@ Function OutputPublishingSettings
 				Line 3 "Remote PC Application`t`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Target`t`t`t`t`t`t`t: " $PubItem.Target
 				Line 3 "Start In`t`t`t`t`t`t: " $PubItem.StartIn
 				Line 3 "Start automatically when user logs on`t`t`t: " $PubItem.StartOnLogon.ToString()
@@ -28610,9 +28714,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Remote PC Application",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Target",($Script:htmlsb),$PubItem.Target,$htmlwhite))
 				$rowdata += @(,("Start In",($Script:htmlsb),$PubItem.StartIn,$htmlwhite))
 				$rowdata += @(,("Start automatically when user logs on",($Script:htmlsb),$PubItem.StartOnLogon.ToString(),$htmlwhite))
@@ -28884,9 +28988,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Remote PC Desktop"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Desktop Size"; Value = $DesktopSize; }) > $Null
 				If($PubItem.InheritShortcutDefaultSettings)
 				{
@@ -29179,9 +29283,9 @@ Function OutputPublishingSettings
 				Line 3 "Remote PC Desktop`t`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Desktop Size`t`t`t`t`t`t: " $DesktopSize
 
 				If($PubItem.InheritShortcutDefaultSettings)
@@ -29400,9 +29504,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Remote PC Desktop",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Desktop Size",($Script:htmlsb),$DesktopSize,$htmlwhite))
 				If($PubItem.InheritShortcutDefaultSettings)
 				{
@@ -29696,9 +29800,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Application"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Status"; Value = $PubItemMode; }) > $Null
 				$ScriptInformation.Add(@{Data = "Target"; Value = $PubItem.Target; }) > $Null
 				$ScriptInformation.Add(@{Data = "Start In"; Value = $PubItem.StartIn; }) > $Null
@@ -30289,9 +30393,9 @@ Function OutputPublishingSettings
 				Line 3 "Application`t`t`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Status`t`t`t`t`t`t`t: " $PubItemMode
 				Line 3 "Target`t`t`t`t`t`t`t: " $PubItem.Target
 				Line 3 "Start In`t`t`t`t`t`t: " $PubItem.StartIn
@@ -30681,9 +30785,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Application",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Status",($Script:htmlsb),$PubItemMode,$htmlwhite))
 				$rowdata += @(,("Target",($Script:htmlsb),$PubItem.Target,$htmlwhite))
 				$rowdata += @(,("Start In",($Script:htmlsb),$PubItem.StartIn,$htmlwhite))
@@ -31197,9 +31301,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "RD Session Host Desktop"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Connect to administrative session"; Value = $PubItem.ConnectToConsole.ToString(); }) > $Null
 				$ScriptInformation.Add(@{Data = "Desktop Size"; Value = $DesktopSize; }) > $Null
 				
@@ -31596,9 +31700,9 @@ Function OutputPublishingSettings
 				Line 3 "RD Session Host Desktop`t`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Connect to administrative session`t`t`t: " $PubItem.ConnectToConsole.ToString()
 				Line 3 "Desktop Size`t`t`t`t`t`t: " $DesktopSize
 				
@@ -31878,9 +31982,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("RD Session Host Desktop",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Connect to administrative session",($Script:htmlsb),$PubItem.ConnectToConsole.ToString(),$htmlwhite))
 				$rowdata += @(,("Desktop Size",($Script:htmlsb),$DesktopSize,$htmlwhite))
 				
@@ -32236,9 +32340,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Virtual Desktop Application"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Target"; Value = $PubItem.Target; }) > $Null
 				$ScriptInformation.Add(@{Data = "Start In"; Value = $PubItem.StartIn; }) > $Null
 				$ScriptInformation.Add(@{Data = "Start automatically when user logs on"; Value = $PubItem.StartOnLogon.ToString(); }) > $Null
@@ -32546,9 +32650,9 @@ Function OutputPublishingSettings
 				Line 3 "Virtual Desktop Application`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Target`t`t`t`t`t`t`t: " $PubItem.Target
 				Line 3 "Start In`t`t`t`t`t`t: " $PubItem.StartIn
 				Line 3 "Start automatically when user logs on`t`t`t: " $PubItem.StartOnLogon.ToString()
@@ -32784,9 +32888,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Virtual Desktop Application",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Target",($Script:htmlsb),$PubItem.Target,$htmlwhite))
 				$rowdata += @(,("Start In",($Script:htmlsb),$PubItem.StartIn,$htmlwhite))
 				$rowdata += @(,("Start automatically when user logs on",($Script:htmlsb),$PubItem.StartOnLogon.ToString(),$htmlwhite))
@@ -33077,9 +33181,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Virtual Desktop"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Settings for Site $xSiteName"; Value = ""; }) > $Null
 				$ScriptInformation.Add(@{Data = "Connect to"; Value = $ConnectTo; }) > $Null
 				
@@ -33382,9 +33486,9 @@ Function OutputPublishingSettings
 				Line 3 "Virtual Desktop`t`t`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Settings for Site $xSiteName"
 				Line 3 "Connect to`t`t`t`t`t`t: " $ConnectTo
 				
@@ -33613,9 +33717,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Virtual Desktop",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Settings for Site $xSiteName",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("Connect to",($Script:htmlsb),$ConnectTo,$htmlwhite))
 				
@@ -33860,7 +33964,7 @@ Function OutputPublishingSettings
 				$DefaultReplicateShortcutSettings
 			}
 		}
-		ElseIf($PubItem.Type -eq "WVDApp" -or ($PubItem.Type -eq "AVDApp")
+		ElseIf($PubItem.Type -eq "WVDApp" -or ($PubItem.Type -eq "AVDApp"))
 		{
 			Switch ($PubItem.ConCurrentLicenses)
 			{
@@ -33911,9 +34015,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Windows Virtual Desktop"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Target"; Value = $PubItem.Target; }) > $Null
 				$ScriptInformation.Add(@{Data = "Start In"; Value = $PubItem.StartIn; }) > $Null
 				$ScriptInformation.Add(@{Data = "Start automatically when user logs on"; Value = $PubItem.StartOnLogon.ToString(); }) > $Null
@@ -34540,9 +34644,9 @@ Function OutputPublishingSettings
 				Line 3 "Windows Virtual Desktop`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Target`t`t`t`t`t`t`t: " $PubItem.Target
 				Line 3 "Start In`t`t`t`t`t`t: " $PubItem.StartIn
 				Line 3 "Start automatically when user logs on`t`t`t: " $PubItem.StartOnLogon.ToString()
@@ -34929,9 +35033,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Windows Virtual Desktop",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Target",($Script:htmlsb),$PubItem.Target,$htmlwhite))
 				$rowdata += @(,("Start In",($Script:htmlsb),$PubItem.StartIn,$htmlwhite))
 				$rowdata += @(,("Start automatically when user logs on",($Script:htmlsb),$PubItem.StartOnLogon.ToString(),$htmlwhite))
@@ -35456,9 +35560,9 @@ Function OutputPublishingSettings
 				$ScriptInformation.Add(@{Data = "Windows Virtual Desktop"; Value = "#$($PubItem.Id): $($PubItem.Name)"; }) > $Null
 				$ScriptInformation.Add(@{Data = "Description"; Value = $PubItem.Description; }) > $Null
 				$ScriptInformation.Add(@{Data = "Last modification by"; Value = $PubItem.AdminLastMod; }) > $Null
-				$ScriptInformation.Add(@{Data = "Modified on"; Value = $PubItem.TimeLastMod.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeLastMod); }) > $Null
 				$ScriptInformation.Add(@{Data = "Created by"; Value = $PubItem.AdminCreate; }) > $Null
-				$ScriptInformation.Add(@{Data = "Created on"; Value = $PubItem.TimeCreate.ToString(); }) > $Null
+				$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $PubItem.TimeCreate); }) > $Null
 				$ScriptInformation.Add(@{Data = "Desktop Size"; Value = $DesktopSize; }) > $Null
 				
 				If($PubItem.PublishFrom -eq "Server")
@@ -35855,9 +35959,9 @@ Function OutputPublishingSettings
 				Line 3 "Windows Virtual Desktop`t`t`t`t`t: " "#$($PubItem.Id): $($PubItem.Name)"
 				Line 3 "Description`t`t`t`t`t`t: " $PubItem.Description
 				Line 3 "Last modification by`t`t`t`t`t: " $PubItem.AdminLastMod
-				Line 3 "Modified on`t`t`t`t`t`t: " $PubItem.TimeLastMod.ToString()
+				Line 3 "Modified on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeLastMod)
 				Line 3 "Created by`t`t`t`t`t`t: " $PubItem.AdminCreate
-				Line 3 "Created on`t`t`t`t`t`t: " $PubItem.TimeCreate.ToString()
+				Line 3 "Created on`t`t`t`t`t`t: " (Get-Date -UFormat "%c" $PubItem.TimeCreate)
 				Line 3 "Desktop Size`t`t`t`t`t`t: " $DesktopSize
 				
 				If($PubItem.PublishFrom -eq "Server")
@@ -36137,9 +36241,9 @@ Function OutputPublishingSettings
 				$columnHeaders = @("Windows Virtual Desktop",($Script:htmlsb),"#$($PubItem.Id): $($PubItem.Name)",$htmlwhite)
 				$rowdata += @(,("Description",($Script:htmlsb),$PubItem.Description,$htmlwhite))
 				$rowdata += @(,("Last modification by",($Script:htmlsb), $PubItem.AdminLastMod,$htmlwhite))
-				$rowdata += @(,("Modified on",($Script:htmlsb), $PubItem.TimeLastMod.ToString(),$htmlwhite))
+				$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeLastMod),$htmlwhite))
 				$rowdata += @(,("Created by",($Script:htmlsb), $PubItem.AdminCreate,$htmlwhite))
-				$rowdata += @(,("Created on",($Script:htmlsb), $PubItem.TimeCreate.ToString(),$htmlwhite))
+				$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $PubItem.TimeCreate),$htmlwhite))
 				$rowdata += @(,("Desktop Size",($Script:htmlsb),$DesktopSize,$htmlwhite))
 				
 				If($PubItem.PublishFrom -eq "Server")
@@ -41147,9 +41251,9 @@ Function OutputPoliciesSummary
 			
 			$ScriptInformation.Add(@{Data = "Description"; Value = $Policy.Description; }) > $Null
 			$ScriptInformation.Add(@{Data = "Last modification by"; Value = $Policy.AdminLastMod; }) > $Null
-			$ScriptInformation.Add(@{Data = "Modified on"; Value = $Policy.TimeLastMod.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $Policy.TimeLastMod); }) > $Null
 			$ScriptInformation.Add(@{Data = "Created by"; Value = $Policy.AdminCreate; }) > $Null
-			$ScriptInformation.Add(@{Data = "Created on"; Value = $Policy.TimeCreate.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $Policy.TimeCreate); }) > $Null
 			$ScriptInformation.Add(@{Data = "ID"; Value = $Policy.Id; }) > $Null
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -41205,9 +41309,9 @@ Function OutputPoliciesSummary
 			
 			Line 2 "Description`t`t: " $Policy.Description
 			Line 2 "Last modification by`t: " $Policy.AdminLastMod
-			Line 2 "Modified on`t`t: " $Policy.TimeLastMod.ToString()
+			Line 2 "Modified on`t`t: " (Get-Date -UFormat "%c" $Policy.TimeLastMod)
 			Line 2 "Created by`t`t: " $Policy.AdminCreate
-			Line 2 "Created on`t`t: " $Policy.TimeCreate.ToString()
+			Line 2 "Created on`t`t: " (Get-Date -UFormat "%c" $Policy.TimeCreate)
 			Line 2 "ID`t`t`t: " $Policy.Id
 			Line 0 ""
 		}
@@ -41247,9 +41351,9 @@ Function OutputPoliciesSummary
 			
 			$rowdata += @(,("Description",($Script:htmlsb),$Policy.Description,$htmlwhite))
 			$rowdata += @(,("Last modification by",($Script:htmlsb), $Policy.AdminLastMod,$htmlwhite))
-			$rowdata += @(,("Modified on",($Script:htmlsb), $Policy.TimeLastMod.ToString(),$htmlwhite))
+			$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $Policy.TimeLastMod),$htmlwhite))
 			$rowdata += @(,("Created by",($Script:htmlsb), $Policy.AdminCreate,$htmlwhite))
-			$rowdata += @(,("Created on",($Script:htmlsb), $Policy.TimeCreate.ToString(),$htmlwhite))
+			$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $Policy.TimeCreate),$htmlwhite))
 			$rowdata += @(,("ID",($Script:htmlsb),$Policy.Id,$htmlwhite))
 
 			$msg = ""
@@ -45274,9 +45378,9 @@ Function OutputRASAccounts
 			$ScriptInformation.Add(@{Data = 'Mobile'; Value = $RASAccount.Mobile; }) > $Null
 			$ScriptInformation.Add(@{Data = 'Group'; Value = $RASAccount.GroupName; }) > $Null
 			$ScriptInformation.Add(@{Data = "Last modification by"; Value = $RASAccount.AdminLastMod; }) > $Null
-			$ScriptInformation.Add(@{Data = "Modified on"; Value = $RASAccount.TimeLastMod.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $RASAccount.TimeLastMod); }) > $Null
 			$ScriptInformation.Add(@{Data = "Created by"; Value = $RASAccount.AdminCreate; }) > $Null
-			$ScriptInformation.Add(@{Data = "Created on"; Value = $RASAccount.TimeCreate.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $RASAccount.TimeCreate); }) > $Null
 			$ScriptInformation.Add(@{Data = "ID"; Value = $RASAccount.Id.ToString(); }) > $Null
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -45307,9 +45411,9 @@ Function OutputRASAccounts
 			Line 2 "Mobile`t`t`t`t: " $RASAccount.Mobile
 			Line 2 "Group`t`t`t`t: " $RASAccount.GroupName
 			Line 2 "Last modification by`t`t: " $RASAccount.AdminLastMod
-			Line 2 "Modified on`t`t`t: " $RASAccount.TimeLastMod.ToString()
+			Line 2 "Modified on`t`t`t: " (Get-Date -UFormat "%c" $RASAccount.TimeLastMod)
 			Line 2 "Created by`t`t`t: " $RASAccount.AdminCreate
-			Line 2 "Created on`t`t`t: " $RASAccount.TimeCreate.ToString()
+			Line 2 "Created on`t`t`t: " (Get-Date -UFormat "%c" $RASAccount.TimeCreate)
 			Line 2 "ID`t`t`t`t: " $RASAccount.Id.ToString()
 			Line 0 ""
 		}
@@ -45324,9 +45428,9 @@ Function OutputRASAccounts
 			$rowdata += @(,("Mobile",($Script:htmlsb),$RASAccount.Mobile,$htmlwhite))
 			$rowdata += @(,("Group",($Script:htmlsb),$RASAccount.GroupName,$htmlwhite))
 			$rowdata += @(,("Last modification by",($Script:htmlsb), $RASAccount.AdminLastMod,$htmlwhite))
-			$rowdata += @(,("Modified on",($Script:htmlsb), $RASAccount.TimeLastMod.ToString(),$htmlwhite))
+			$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $RASAccount.TimeLastMod),$htmlwhite))
 			$rowdata += @(,("Created by",($Script:htmlsb), $RASAccount.AdminCreate,$htmlwhite))
-			$rowdata += @(,("Created on",($Script:htmlsb), $RASAccount.TimeCreate.ToString(),$htmlwhite))
+			$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $RASAccount.TimeCreate),$htmlwhite))
 			$rowdata += @(,("ID",($Script:htmlsb),$RASAccount.Id.ToString(),$htmlwhite))
 
 			$msg = ""
