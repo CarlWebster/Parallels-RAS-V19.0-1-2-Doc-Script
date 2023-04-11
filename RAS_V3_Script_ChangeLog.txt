@@ -7,6 +7,21 @@
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.01 11-Apr-2023
+#	Change all Created and Modified dates to match the output formatting in the console
+#	In Function OutputPublishingSettings:
+#		Add AVDApp and AVDDesktop to WVDApp and WVDDesktop
+#		If Preferred Routing is not enabled, added "Preferred routing is disabled"
+#	In Function OutputRASMailboxSettings, added the missing enum fixed in 19.2
+#		YesTLS12IfAvailable	- Use TLS 1.2 if available
+#	In Function OutputSite, add code to handle the different types of Registry Optimizations
+#		REG_DWORD
+#		REG_EXPAND_SZ
+#		REG_MULTI_SZ
+#		REG_QWORD
+#		REG_SZ
+#
+
 #Version 3.00 25-Mar-2023
 #
 #	Added Connection Brokers/Auto-promotion
