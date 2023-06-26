@@ -7,6 +7,17 @@
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.02 26-Jun-2023
+#	Added to Connection settings, SAML
+#		Properties
+#		General
+#		IdP
+#		SP
+#		Attributes
+#	Added to Site settings, Enrollment server AD integration
+#	For Provider settings, for Word output, added the provider name to make the Navigation panel in Word more useful
+#	Updated the ReadMe file
+
 #Version 3.01 11-Apr-2023
 #	Change all Created and Modified dates to match the output formatting in the console
 #	In Function OutputPublishingSettings:
