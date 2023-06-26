@@ -420,9 +420,9 @@
 	text document.
 .NOTES
 	NAME: RAS_Inventory_V3.0.ps1
-	VERSION: 3.01
+	VERSION: 3.02
 	AUTHOR: Carl Webster
-	LASTEDIT: April 11, 2023
+	LASTEDIT: June 26, 2023
 #>
 
 
@@ -534,6 +534,17 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.02 26-Jun-2023
+#	Added to Connection settings, SAML
+#		Properties
+#		General
+#		IdP
+#		SP
+#		Attributes
+#	Added to Site settings, Enrollment server AD integration
+#	For Provider settings, for Word output, added the provider name to make the Navigation panel in Word more useful
+#	Updated the ReadMe file
+#
 #Version 3.01 11-Apr-2023
 #	Change all Created and Modified dates to match the output formatting in the console
 #	In Function OutputPublishingSettings:
@@ -623,9 +634,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.01'
+$script:MyVersion         = '3.02'
 $Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "04/11/2023"
+$tmpdate                  = [datetime] "06/24/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -23289,6 +23300,116 @@ Function OutputSite
 				WriteHTMLLine 0 0 ""
 			}
 		}
+		
+		#AD Intergration is a Site setting
+		$ADIntegration = Get-RASADIntegrationSettings -Siteid $Site.Id -EA 0 4> $Null
+		
+		If(!$?)
+		{
+			Write-Warning "
+			`n
+			Unable to retrieve Enrollment Server AD Integration for Site $($Site.Name)`
+			"
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 "Unable to retrieve Enrollment Server AD Integration for Site $($Site.Name)"
+			}
+			If($Text)
+			{
+				Line 0 "Unable to retrieve Enrollment Server AD Integration for Site $($Site.Name)"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 "Unable to retrieve Enrollment Server AD Integration for Site $($Site.Name)"
+			}
+		}
+		ElseIf($? -and $Null -eq $EnrollmentServers)
+		{
+			Write-Host "
+		No Enrollment Server AD Integration retrieved for Site $($Site.Name).`
+			" -ForegroundColor White
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 0 0 "No Enrollment Server AD Integration retrieved for Site $($Site.Name)"
+			}
+			If($Text)
+			{
+				Line 0 "No Enrollment Server AD Integration retrieved for Site $($Site.Name)"
+			}
+			If($HTML)
+			{
+				WriteHTMLLine 0 0 "No Enrollment Server AD Integration retrieved for Site $($Site.Name)"
+			}
+		}
+		Else
+		{
+			If($MSWord -or $PDF)
+			{
+				WriteWordLine 3 0 "AD Integration"
+			}
+			If($Text)
+			{
+				Line 1 "AD Integration"
+			}
+			If($HTML)
+			{
+				#Nothing
+			}
+			
+			If($MSWord -or $PDF)
+			{
+				$ScriptInformation = New-Object System.Collections.ArrayList
+				$ScriptInformation.Add(@{Data = "Certificate authority (CA)"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Certificate authority"; Value = $ADIntegration.CertificateAuthority; }) > $Null
+				$ScriptInformation.Add(@{Data = "Enrollment agent"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Username"; Value = $ADIntegration.EnrollmentAgentUsername; }) > $Null
+				$ScriptInformation.Add(@{Data = "NLA user"; Value = ""; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Username"; Value = $ADIntegration.NLAUsername; }) > $Null
+
+				$Table = AddWordTable -Hashtable $ScriptInformation `
+				-Columns Data,Value `
+				-List `
+				-Format $wdTableGrid `
+				-AutoFit $wdAutoFitFixed;
+
+				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+				SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+				$Table.Columns.Item(1).Width = 200;
+				$Table.Columns.Item(2).Width = 250;
+
+				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+				FindWordDocumentEnd
+				$Table = $Null
+				WriteWordLine 0 0 ""
+			}
+			If($Text)
+			{
+				Line 2 "Certificate authority (CA)"
+				Line 3 "Certificate authority`t: " $ADIntegration.CertificateAuthority
+				Line 2 "Enrollment agent"
+				Line 3 "Username`t`t: " $ADIntegration.EnrollmentAgentUsername
+				Line 2 "NLA user"
+				Line 3 "Username`t`t: " $ADIntegration.NLAUsername
+				Line 0 ""
+			}
+			If($HTML)
+			{
+				$rowdata = @()
+				$columnHeaders = @("Certificate authority (CA)",($Script:htmlsb),"",$htmlwhite)
+				$rowdata += @(,("     Certificate authority",($Script:htmlsb),$ADIntegration.CertificateAuthority,$htmlwhite))
+				$rowdata += @(,("Enrollment agent",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("     Username",($Script:htmlsb),$ADIntegration.EnrollmentAgentUsername,$htmlwhite))
+				$rowdata += @(,("NLA user",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("     Username",($Script:htmlsb),$ADIntegration.NLAUsername,$htmlwhite))
+
+				$msg = "AD Integration"
+				$columnWidths = @("200","275")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+		}
 	}
 	
 	#HALB
@@ -39168,6 +39289,53 @@ Function ProcessConnection
 		OutputMFASetting $MFA
 	}
 	
+
+	Write-Verbose "$(Get-Date -Format G): `tProcessing SAML"
+	
+	$SAML = Get-RASSAMLIDP -SiteId $Site.Id -EA 0 4>$Null
+	
+	If(!($?))
+	{
+		Write-Warning "
+		`n
+		Unable to retrieve SAML information
+		"
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "Unable to retrieve SAML information"
+		}
+		If($Text)
+		{
+			Line 0 "Unable to retrieve SAML information"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "Unable to retrieve SAML information"
+		}
+	}
+	ElseIf($? -and $null -eq $MFA)
+	{
+		Write-Host "
+		No SAML information was found
+		" -ForegroundColor White
+		If($MSWord -or $PDF)
+		{
+			WriteWordLine 0 0 "No SAML information was found"
+		}
+		If($Text)
+		{
+			Line 0 "No SAML information was found"
+		}
+		If($HTML)
+		{
+			WriteHTMLLine 0 0 "No SAML information was found"
+		}
+	}
+	Else
+	{
+		OutputSAMLSetting $SAML
+	}
+	
 	Write-Verbose "$(Get-Date -Format G): `tProcessing Allowed devices"
 	
 	$results = Get-RASAllowedDevicesSetting -SiteId $Site.Id -EA 0 4>$Null
@@ -39489,7 +39657,7 @@ Function OutputMFASetting
 
 		If($MSWord -or $PDF)
 		{
-			WriteWordLine 3 0 "Provider settings"
+			WriteWordLine 3 0 "Provider settings ($RASMFASettingProvider)"
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Provider"; Value = $RASMFASettingProvider; }) > $Null
 			
@@ -40834,6 +41002,465 @@ Function OutputMFASetting
 				#>
 			}
 		}
+	}
+}
+
+Function OutputSAMLSetting
+{
+	Param([object] $SAMLSettings)
+	
+	Write-Verbose "$(Get-Date -Format G): `t`tOutput SAML"
+	
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 2 0 "SAML"
+	}
+	If($Text)
+	{
+		Line 1 "SAML"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 2 0 "SAML"
+	}
+
+	#Properties
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 3 0 "Properties"
+	}
+	If($Text)
+	{
+		Line 2 "Properties"
+	}
+	If($HTML)
+	{
+		#Nothing
+	}
+	
+	#get theme used by SAML
+	$xTheme = Get-RASTheme -Id $SAMLSettings.ThemeId -EA 0 4> $Null
+	
+	If(!$? -or $Null -eq $xTheme)
+	{
+		$SAMLTheme = "not used"
+	}
+	Else
+	{
+		$SAMLTheme = $xTheme.Name
+	}
+	
+	If($MSWord -or $PDF)
+	{
+		$ScriptInformation = New-Object System.Collections.ArrayList
+		$ScriptInformation.Add(@{Data = "Enabled"; Value = $SAMLSettings.Enabled.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Name"; Value = $SAMLSettings.Name; }) > $Null
+		$ScriptInformation.Add(@{Data = "Description"; Value = $SAMLSettings.Description; }) > $Null
+		$ScriptInformation.Add(@{Data = "Theme"; Value = $SAMLTheme; }) > $Null
+		$ScriptInformation.Add(@{Data = "Last modification by"; Value = $SAMLSettings.AdminLastMod; }) > $Null
+		$ScriptInformation.Add(@{Data = "Modified on"; Value = (Get-Date -UFormat "%c" $SAMLSettings.TimeLastMod); }) > $Null
+		$ScriptInformation.Add(@{Data = "Created by"; Value = $SAMLSettings.AdminCreate; }) > $Null
+		$ScriptInformation.Add(@{Data = "Created on"; Value = (Get-Date -UFormat "%c" $SAMLSettings.TimeCreate); }) > $Null
+		$ScriptInformation.Add(@{Data = "ID"; Value = $SAMLSettings.Id.ToString(); }) > $Null
+
+		$Table = AddWordTable -Hashtable $ScriptInformation `
+		-Columns Data,Value `
+		-List `
+		-Format $wdTableGrid `
+		-AutoFit $wdAutoFitFixed;
+
+		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+		$Table.Columns.Item(1).Width = 200;
+		$Table.Columns.Item(2).Width = 250;
+
+		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+		FindWordDocumentEnd
+		$Table = $Null
+		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 3 "Enabled`t`t`t: " $SAMLSettings.Enabled.ToString()
+		Line 3 "Name`t`t`t: " $SAMLSettings.Name
+		Line 3 "Description`t`t: " $SAMLSettings.Description
+		Line 3 "Theme`t`t`t: " $SAMLTheme
+		Line 3 "Last modification by`t: " $SAMLSettings.AdminLastMod
+		Line 3 "Modified on`t`t: " (Get-Date -UFormat "%c" $SAMLSettings.TimeLastMod)
+		Line 3 "Created by`t`t: " $SAMLSettings.AdminCreate
+		Line 3 "Created on`t`t: " (Get-Date -UFormat "%c" $SAMLSettings.TimeCreate)
+		Line 3 "ID`t`t`t: " $SAMLSettings.Id.ToString()
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		$rowdata = @()
+		$columnHeaders = @("Enabled",($Script:htmlsb),$SAMLSettings.Enabled.ToString(),$htmlwhite)
+		$rowdata += @(,("Name",($Script:htmlsb),$SAMLSettings.Name,$htmlwhite))
+		$rowdata += @(,("Description",($Script:htmlsb),$SAMLSettings.Description,$htmlwhite))
+		$rowdata += @(,("Theme",($Script:htmlsb),$SAMLTheme,$htmlwhite))
+		$rowdata += @(,("Last modification by",($Script:htmlsb), $SAMLSettings.AdminLastMod,$htmlwhite))
+		$rowdata += @(,("Modified on",($Script:htmlsb), (Get-Date -UFormat "%c" $SAMLSettings.TimeLastMod),$htmlwhite))
+		$rowdata += @(,("Created by",($Script:htmlsb), $SAMLSettings.AdminCreate,$htmlwhite))
+		$rowdata += @(,("Created on",($Script:htmlsb), (Get-Date -UFormat "%c" $SAMLSettings.TimeCreate),$htmlwhite))
+		$rowdata += @(,("ID",($Script:htmlsb),$SAMLSettings.Id.ToString(),$htmlwhite))
+
+		$msg = "Properties"
+		$columnWidths = @("200","275")
+		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+		WriteHTMLLine 0 0 ""
+	}
+
+	#General
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 3 0 "General"
+	}
+	If($Text)
+	{
+		Line 2 "General"
+	}
+	If($HTML)
+	{
+		#Nothing
+	}
+	
+	If($MSWord -or $PDF)
+	{
+		$ScriptInformation = New-Object System.Collections.ArrayList
+		$ScriptInformation.Add(@{Data = "Enable identity provider"; Value = $SAMLSettings.Enabled.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Name"; Value = $SAMLSettings.Name; }) > $Null
+		$ScriptInformation.Add(@{Data = "Description"; Value = $SAMLSettings.Description; }) > $Null
+		$ScriptInformation.Add(@{Data = "Use with theme"; Value = $SAMLTheme; }) > $Null
+
+		$Table = AddWordTable -Hashtable $ScriptInformation `
+		-Columns Data,Value `
+		-List `
+		-Format $wdTableGrid `
+		-AutoFit $wdAutoFitFixed;
+
+		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+		$Table.Columns.Item(1).Width = 200;
+		$Table.Columns.Item(2).Width = 250;
+
+		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+		FindWordDocumentEnd
+		$Table = $Null
+		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 3 "Enable identity provider: " $SAMLSettings.Enabled.ToString()
+		Line 3 "Name`t`t`t: " $SAMLSettings.Name
+		Line 3 "Description`t`t: " $SAMLSettings.Description
+		Line 3 "Use with theme`t`t: " $SAMLTheme
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		$rowdata = @()
+		$columnHeaders = @("Enable identity provider",($Script:htmlsb),$SAMLSettings.Enabled.ToString(),$htmlwhite)
+		$rowdata += @(,("Name",($Script:htmlsb),$SAMLSettings.Name,$htmlwhite))
+		$rowdata += @(,("Description",($Script:htmlsb),$SAMLSettings.Description,$htmlwhite))
+		$rowdata += @(,("Use with theme",($Script:htmlsb),$SAMLTheme,$htmlwhite))
+
+		$msg = "General"
+		$columnWidths = @("200","275")
+		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+		WriteHTMLLine 0 0 ""
+	}
+
+	#IdP
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 3 0 "IdP"
+	}
+	If($Text)
+	{
+		Line 2 "IdP"
+	}
+	If($HTML)
+	{
+		#Nothing
+	}
+	
+	If($MSWord -or $PDF)
+	{
+		$ScriptInformation = New-Object System.Collections.ArrayList
+		$ScriptInformation.Add(@{Data = "IdP entity ID"; Value = $SAMLSettings.IDPEntityID; }) > $Null
+		$ScriptInformation.Add(@{Data = "IdP certificate"; Value = $SAMLSettings.IDPCertificate; }) > $Null
+		$ScriptInformation.Add(@{Data = "Logon URL"; Value = $SAMLSettings.LogonURL; }) > $Null
+		$ScriptInformation.Add(@{Data = "Logout URL"; Value = $SAMLSettings.LogoutURL; }) > $Null
+		$ScriptInformation.Add(@{Data = "Allow unencrypted assertion"; Value = $SAMLSettings.AllowUnencryptedAssertion; }) > $Null
+
+		$Table = AddWordTable -Hashtable $ScriptInformation `
+		-Columns Data,Value `
+		-List `
+		-Format $wdTableGrid `
+		-AutoFit $wdAutoFitFixed;
+
+		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+		$Table.Columns.Item(1).Width = 200;
+		$Table.Columns.Item(2).Width = 250;
+
+		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+		FindWordDocumentEnd
+		$Table = $Null
+		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 3 "IdP entity ID`t`t`t: " $SAMLSettings.IDPEntityID
+		Line 3 "IdP certificate`t`t`t: " $SAMLSettings.IDPCertificate
+		Line 3 "Logon URL`t`t`t: " $SAMLSettings.LogonURL
+		Line 3 "Logout URL`t`t`t: " $SAMLSettings.LogoutURL
+		Line 3 "Allow unencrypted assertion`t: " $SAMLSettings.AllowUnencryptedAssertion
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		$rowdata = @()
+		$columnHeaders = @("IdP entity ID",($Script:htmlsb),$SAMLSettings.IDPEntityID,$htmlwhite)
+		$rowdata += @(,("IdP certificate",($Script:htmlsb),$SAMLSettings.IDPCertificate,$htmlwhite))
+		$rowdata += @(,("Logon URL",($Script:htmlsb),$SAMLSettings.LogonURL,$htmlwhite))
+		$rowdata += @(,("Logout URL",($Script:htmlsb),$SAMLSettings.LogoutURL,$htmlwhite))
+		$rowdata += @(,("Allow unencrypted assertion",($Script:htmlsb),$SAMLSettings.AllowUnencryptedAssertion,$htmlwhite))
+
+		$msg = "IdP"
+		$columnWidths = @("200","275")
+		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+		WriteHTMLLine 0 0 ""
+	}
+
+	#SP
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 3 0 "SP"
+	}
+	If($Text)
+	{
+		Line 2 "SP"
+	}
+	If($HTML)
+	{
+		#Nothing
+	}
+	
+	If($MSWord -or $PDF)
+	{
+		$ScriptInformation = New-Object System.Collections.ArrayList
+		$ScriptInformation.Add(@{Data = "Host"; Value = $SAMLSettings.Host; }) > $Null
+		$ScriptInformation.Add(@{Data = "SP entity ID"; Value = $SAMLSettings.SPEntityID; }) > $Null
+		$ScriptInformation.Add(@{Data = "Reply URL"; Value = $SAMLSettings.SPReplyURL; }) > $Null
+		$ScriptInformation.Add(@{Data = "Logon URL"; Value = $SAMLSettings.SPLogonURL; }) > $Null
+		$ScriptInformation.Add(@{Data = "Logout URL"; Value = $SAMLSettings.SPLogoutURL; }) > $Null
+
+		$Table = AddWordTable -Hashtable $ScriptInformation `
+		-Columns Data,Value `
+		-List `
+		-Format $wdTableGrid `
+		-AutoFit $wdAutoFitFixed;
+
+		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+		$Table.Columns.Item(1).Width = 100;
+		$Table.Columns.Item(2).Width = 350;
+
+		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+		FindWordDocumentEnd
+		$Table = $Null
+		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 3 "Host`t`t: " $SAMLSettings.Host
+		Line 3 "SP entity ID`t: " $SAMLSettings.SPEntityID
+		Line 3 "Reply URL`t: " $SAMLSettings.SPReplyURL
+		Line 3 "Logon URL`t: " $SAMLSettings.SPLogonURL
+		Line 3 "Logout URL`t: " $SAMLSettings.SPLogoutURL
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		$rowdata = @()
+		$columnHeaders = @("Host",($Script:htmlsb),$SAMLSettings.Host,$htmlwhite)
+		$rowdata += @(,("SP entity ID",($Script:htmlsb),$SAMLSettings.SPEntityID,$htmlwhite))
+		$rowdata += @(,("Reply URL",($Script:htmlsb),$SAMLSettings.SPReplyURL,$htmlwhite))
+		$rowdata += @(,("Logon URL",($Script:htmlsb),$SAMLSettings.SPLogonURL,$htmlwhite))
+		$rowdata += @(,("Logout URL",($Script:htmlsb),$SAMLSettings.SPLogoutURL,$htmlwhite))
+
+		$msg = "SP"
+		$columnWidths = @("100","375")
+		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+		WriteHTMLLine 0 0 ""
+	}
+
+	#Attributes
+	If($MSWord -or $PDF)
+	{
+		WriteWordLine 3 0 "Attributes"
+	}
+	If($Text)
+	{
+		Line 2 "Attributes"
+	}
+	If($HTML)
+	{
+		#Nothing
+	}
+
+	If($MSWord -or $PDF)
+	{
+		$AttributesWordTable = @()
+		
+		$AttributesWordTable += @{
+			Enabled       = $SAMLSettings.Attributes.UserPrincipalName.Enabled.ToString()
+			Name          = "UserPrincipalName"
+			SAMLAttribute = $SAMLSettings.Attributes.UserPrincipalName.SAMLAttribute
+			ADAttribute   = $SAMLSettings.Attributes.UserPrincipalName.ADAttribute
+		}
+		
+		$AttributesWordTable += @{
+			Enabled       = $SAMLSettings.Attributes.ImmutableID.Enabled.ToString()
+			Name          = "Immutable ID"
+			SAMLAttribute = $SAMLSettings.Attributes.ImmutableID.SAMLAttribute
+			ADAttribute   = $SAMLSettings.Attributes.ImmutableID.ADAttribute
+		}
+		
+		$AttributesWordTable += @{
+			Enabled       = $SAMLSettings.Attributes.SID.Enabled.ToString()
+			Name          = "SID"
+			SAMLAttribute = $SAMLSettings.Attributes.SID.SAMLAttribute
+			ADAttribute   = $SAMLSettings.Attributes.SID.ADAttribute
+		}
+		
+		$AttributesWordTable += @{
+			Enabled       = $SAMLSettings.Attributes.sAMAccountName.Enabled.ToString()
+			Name          = "sAMAccountName"
+			SAMLAttribute = $SAMLSettings.Attributes.sAMAccountName.SAMLAttribute
+			ADAttribute   = $SAMLSettings.Attributes.sAMAccountName.ADAttribute
+		}
+		
+		$AttributesWordTable += @{
+			Enabled       = $SAMLSettings.Attributes.Custom.Enabled.ToString()
+			Name          = "Custom"
+			SAMLAttribute = $SAMLSettings.Attributes.Custom.SAMLAttribute
+			ADAttribute   = $SAMLSettings.Attributes.Custom.ADAttribute
+		}
+		
+		$Table = AddWordTable -Hashtable $AttributesWordTable `
+		-Columns Enabled, Name, SAMLAttribute, ADAttribute `
+		-Headers "Enabled", "Name", "SAML attribute", "AD attribute" `
+		-Format $wdTableGrid `
+		-AutoFit $wdAutoFitFixed;
+
+		SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+		$Table.Columns.Item(1).Width = 50;
+		$Table.Columns.Item(2).Width = 100;
+		$Table.Columns.Item(3).Width = 100;
+		$Table.Columns.Item(4).Width = 100;
+		
+		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+		FindWordDocumentEnd
+		$Table = $Null
+		WriteWordLine 0 0 ""
+	}
+	If($Text)
+	{
+		Line 0 ""
+		Line 3 "Enabled Name               SAML attribute  AD attribute"
+		Line 3 "========================================================="
+		#		1234567S12345678901234567SS12345678901234SS12345678901234
+		#       False   UserPrincipalName  sAMAccountName  sAMAccountName
+		Line 3 ( "{0,-7} {1,-17}  {2,-14}  {3,-14}" -f `
+		$SAMLSettings.Attributes.UserPrincipalName.Enabled.ToString(),
+		"UserPrincipalName",
+		$SAMLSettings.Attributes.UserPrincipalName.SAMLAttribute,
+		$SAMLSettings.Attributes.UserPrincipalName.ADAttribute)
+		
+		Line 3 ( "{0,-7} {1,-17}  {2,-14}  {3,-14}" -f `
+		$SAMLSettings.Attributes.ImmutableID.Enabled.ToString(),
+		"Immutable ID",
+		$SAMLSettings.Attributes.ImmutableID.SAMLAttribute,
+		$SAMLSettings.Attributes.ImmutableID.ADAttribute)
+		
+		Line 3 ( "{0,-7} {1,-17}  {2,-14}  {3,-14}" -f `
+		$SAMLSettings.Attributes.SID.Enabled.ToString(),
+		"SID",
+		$SAMLSettings.Attributes.SID.SAMLAttribute,
+		$SAMLSettings.Attributes.SID.ADAttribute)
+		
+		Line 3 ( "{0,-7} {1,-17}  {2,-14}  {3,-14}" -f `
+		$SAMLSettings.Attributes.sAMAccountName.Enabled.ToString(),
+		"sAMAccountName",
+		$SAMLSettings.Attributes.sAMAccountName.SAMLAttribute,
+		$SAMLSettings.Attributes.sAMAccountName.ADAttribute)
+		
+		Line 3 ( "{0,-7} {1,-17}  {2,-14}  {3,-14}" -f `
+		$SAMLSettings.Attributes.Custom.Enabled.ToString(),
+		"Custom",
+		$SAMLSettings.Attributes.Custom.SAMLAttribute,
+		$SAMLSettings.Attributes.Custom.ADAttribute)
+		
+		Line 0 ""
+	}
+	If($HTML)
+	{
+		$rowdata = @()
+
+		$rowdata += @(,(
+		$SAMLSettings.Attributes.UserPrincipalName.Enabled.ToString(),$htmlwhite,
+		"UserPrincipalName",$htmlwhite,
+		$SAMLSettings.Attributes.UserPrincipalName.SAMLAttribute,$htmlwhite,
+		$SAMLSettings.Attributes.UserPrincipalName.ADAttribute))
+		
+		$rowdata += @(,(
+		$SAMLSettings.Attributes.ImmutableID.Enabled.ToString(),$htmlwhite,
+		"Immutable ID",$htmlwhite,
+		$SAMLSettings.Attributes.ImmutableID.SAMLAttribute,$htmlwhite,
+		$SAMLSettings.Attributes.ImmutableID.ADAttribute,$htmlwhite))
+		
+		$rowdata += @(,(
+		$SAMLSettings.Attributes.SID.Enabled.ToString(),$htmlwhite,
+		"SID",$htmlwhite,
+		$SAMLSettings.Attributes.SID.SAMLAttribute,$htmlwhite,
+		$SAMLSettings.Attributes.SID.ADAttribute,$htmlwhite))
+		
+		$rowdata += @(,(
+		$SAMLSettings.Attributes.sAMAccountName.Enabled.ToString(),$htmlwhite,
+		"sAMAccountName",$htmlwhite,
+		$SAMLSettings.Attributes.sAMAccountName.SAMLAttribute,$htmlwhite,
+		$SAMLSettings.Attributes.sAMAccountName.ADAttribute,$htmlwhite))
+		
+		$rowdata += @(,(
+		$SAMLSettings.Attributes.Custom.Enabled.ToString(),$htmlwhite,
+		"Custom",$htmlwhite,
+		$SAMLSettings.Attributes.Custom.SAMLAttributeS,$htmlwhite,
+		$SAMLSettings.Attributes.Custom.ADAttribute,$htmlwhite))
+		
+		$columnHeaders = @(
+		"Enabled",($Script:htmlsb),
+		"Name",($Script:htmlsb),
+		"SAML attribute",($Script:htmlsb),
+		"AD attribute",($Script:htmlsb))
+
+		$msg = "Attributes"
+		$columnWidths = @("55","100","100", "100")
+		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+		WriteHTMLLine 0 0 ""
 	}
 }
 
