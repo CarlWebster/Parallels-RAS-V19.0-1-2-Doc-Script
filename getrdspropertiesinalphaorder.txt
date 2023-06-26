@@ -1,0 +1,1 @@
+﻿Get-RASPubItem | % {$_.psobject.properties | select name, value | sort name}
