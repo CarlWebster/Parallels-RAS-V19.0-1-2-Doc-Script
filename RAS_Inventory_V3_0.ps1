@@ -64,13 +64,30 @@
 	This parameter is disabled by default.
 .PARAMETER Folder
 	Specifies the optional output folder to save the output report. 
+.PARAMETER Section
+	Processes one or more sections of the report.
+	Valid options are:
+		Site
+		LB (LoadBalancing)
+		Publishing
+		Printing (Universal Printing)
+		Scanning (Universal Scanning)
+		Connection
+		Policies
+		Admin (Administration)
+		Licensing
+		All
+
+	This parameter defaults to All sections.
+	
+	Multiple sections are separated by a comma. -Section admin, licensing
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2023 at 6PM is 2023-06-01_1800.
+	June 1, 2024 at 6PM is 2024-06-01_1800.
 	
-	Output filename will be ReportName_2023-06-01_1800.<ext>.
+	Output filename will be ReportName_2024-06-01_1800.<ext>.
 	
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
@@ -247,18 +264,18 @@
 	Specifies whether to use SSL for the SmtpServer.
 	The default is False.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1
 	
 	Outputs, by default to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -RASSite EMEASite
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -RASSite EMEASite
 	
 	Includes only data for the EMEASite.
 	Outputs, by default to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -MSWord -CompanyName "Carl Webster 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -MSWord -CompanyName "Carl Webster 
 	Consulting" -CoverPage "Mod" -UserName "Carl Webster" -ComputerName RAS01
 
 	Will use:
@@ -270,7 +287,7 @@
 	Outputs to Microsoft Word.
 	Prompts for credentials for the RAS Server RAS01.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -PDF -CN "Carl Webster Consulting" -CP 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -PDF -CN "Carl Webster Consulting" -CP 
 	"Mod" -UN "Carl Webster"
 
 	Will use:
@@ -281,7 +298,7 @@
 	Outputs to PDF.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -CompanyName "Sherlock Holmes 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -CompanyName "Sherlock Holmes 
 	Consulting" -CoverPage Exposure -UserName "Dr. Watson" -CompanyAddress "221B Baker 
 	Street, London, England" -CompanyFax "+44 1753 276600" -CompanyPhone "+44 1753 276200" 
 	-MSWord
@@ -297,7 +314,7 @@
 	Outputs to Microsoft Word.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -CompanyName "Sherlock Holmes 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -CompanyName "Sherlock Holmes 
 	Consulting" -CoverPage Facet -UserName "Dr. Watson" -CompanyEmail 
 	SuperSleuth@SherlockHolmes.com
 	-PDF
@@ -311,7 +328,7 @@
 	Outputs to PDF.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript >.\RAS_Inventory_V3.0.ps1 -Dev -ScriptInfo -Log
+	PS C:\PSScript >.\RAS_Inventory_V3_0.ps1 -Dev -ScriptInfo -Log
 	
 	Creates an HTML report.
 	
@@ -324,7 +341,18 @@
 	Creates a text file for transcript logging named 
 	RASDocScriptTranscript_yyyyMMddTHHmmssffff.txt.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer mail.domain.tld -From 
+	PS C:\PSScript >.\RAS_Inventory_V3_0.ps1 -Section Policies
+	
+	Creates an HTML report that contains only policy information.
+	Processes only the Policies section of the report.
+.EXAMPLE
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -Section Admin, Licensing
+
+	Creates an HTML report.
+
+	The report includes only the Administration and Licensing sections.
+.EXAMPLE
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer mail.domain.tld -From 
 	RASAdmin@domain.tld -To ITGroup@domain.tld -Text
 
 	The script uses the email server mail.domain.tld, sending from RASAdmin@domain.tld 
@@ -338,7 +366,7 @@
 	Outputs to a text file.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer mailrelay.domain.tld -From 
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer mailrelay.domain.tld -From 
 	Anonymous@domain.tld -To ITGroup@domain.tld	
 
 	***SENDING UNAUTHENTICATED EMAIL***
@@ -365,7 +393,7 @@
 	Outputs, by default, to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer 
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer 
 	labaddomain-com.mail.protection.outlook.com -UseSSL -From 
 	SomeEmailAddress@labaddomain.com -To ITGroupDL@labaddomain.com	
 
@@ -385,7 +413,7 @@
 	Outputs, by default, to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer smtp.office365.com -SmtpPort 587
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer smtp.office365.com -SmtpPort 587
 	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	The script uses the email server smtp.office365.com on port 587 using SSL, sending from 
@@ -397,7 +425,7 @@
 	Outputs, by default, to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer smtp.gmail.com -SmtpPort 587
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer smtp.gmail.com -SmtpPort 587
 	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	*** NOTE ***
@@ -419,10 +447,10 @@
 	No objects are output from this script. This script creates a Word, PDF, HTML, or plain 
 	text document.
 .NOTES
-	NAME: RAS_Inventory_V3.0.ps1
-	VERSION: 3.02
+	NAME: RAS_Inventory_V3_0.ps1
+	VERSION: 3.03
 	AUTHOR: Carl Webster
-	LASTEDIT: June 26, 2023
+	LASTEDIT: June 27, 2024
 #>
 
 
@@ -447,6 +475,11 @@ Param(
 
 	[parameter(Mandatory=$False)] 
 	[string]$Folder="",
+	
+	[ValidateSet('All', 'Site', 'LB', 'Publishing', 'Printing',
+	'Scanning', 'Connection', 'Policies', 'Admin', 'Licensing')]
+	[parameter(Mandatory=$False)] 
+	[String[]] $Section = 'All',
 	
 	[parameter(Mandatory=$False)] 
 	[Alias("ADT")]
@@ -534,6 +567,28 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.03 27-Jun-2023
+#	Added a Section Parameter
+#		Processes one or more sections of the report.
+#		Valid options are:
+#			Site
+#			LB (LoadBalancing)
+#			Publishing
+#			Printing (Universal Printing)
+#			Scanning (Universal Scanning)
+#			Connection
+#			Policies
+#			Admin (Administration)
+#			Licensing
+#			All
+#
+#		This parameter defaults to All sections.
+#		
+#		Multiple sections are separated by a comma. -Section admin, licensing
+#
+#	Updated the help text
+#	Updated the ReadMe file
+#
 #Version 3.02 26-Jun-2023
 #	Added to Connection settings, SAML
 #		Properties
@@ -634,9 +689,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.02'
-$Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "06/24/2023"
+$script:MyVersion         = '3.03'
+$Script:ScriptName        = "RAS_Inventory_V3_0.ps1"
+$tmpdate                  = [datetime] "06/27/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -659,6 +714,51 @@ If($Text)
 If($HTML)
 {
 	Write-Verbose "$(Get-Date -Format G): HTML is set"
+}
+
+$ValidSection = $False
+#there are no Break statements since there can be multiple sections entered
+Switch ($Section)
+{
+	"Site"			{$ValidSection = $True}
+	"LB"			{$ValidSection = $True}
+	"Publishing"	{$ValidSection = $True}
+	"Printing"		{$ValidSection = $True}
+	"Scanning"		{$ValidSection = $True}
+	"Connection"	{$ValidSection = $True}
+	"Policies"		{$ValidSection = $True}
+	"Admin"			{$ValidSection = $True}
+	"Licensing"		{$ValidSection = $True}
+	"All"			{$ValidSection = $True}
+}
+
+If($ValidSection -eq $False)
+{
+	$ErrorActionPreference = $SaveEAPreference
+	Write-Error -Message "
+	`n`n
+	`t`t
+	The Section parameter specified, $Section, is an invalid Section option.
+	`n`n
+	`t`t
+	Valid options are:
+
+	`tSite
+	`tLB (Load Balancing)
+	`tPublishing
+	`tPrinting (Universal Printing)
+	`tScanning (Universal canning)
+	`tConnection
+	`tPolicies
+	`tAdmin (Administration)
+	`tLicensing
+	`tAll
+	
+	`t`t
+	Script cannot continue.
+	`n`n
+	"
+	Exit
 }
 
 If($Folder -ne "")
@@ -3508,6 +3608,7 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date -Format G): Save As TEXT         : $($TEXT)"
 	Write-Verbose "$(Get-Date -Format G): Save As WORD         : $($MSWORD)"
 	Write-Verbose "$(Get-Date -Format G): ScriptInfo           : $($ScriptInfo)"
+	Write-Verbose "$(Get-Date -Format G): Section              : $($Section)"
 	Write-Verbose "$(Get-Date -Format G): Smtp Port            : $($SmtpPort)"
 	Write-Verbose "$(Get-Date -Format G): Smtp Server          : $($SmtpServer)"
 	Write-Verbose "$(Get-Date -Format G): Title                : $($Script:Title)"
@@ -3826,7 +3927,46 @@ Function ProcessScriptSetup
 	}
 	Write-Verbose "$(Get-Date -Format G): Running RAS Version $($Script:RASVersion)"
 	
-	$Script:Title = "Parallels RAS Inventory"
+	#$Script:Title = "Parallels RAS Inventory"
+	#support multiple section items
+	If($Section.Count -eq 1 -and $Section -eq "All")
+	{
+		[string]$Script:Title = "Parallels RAS Inventory"
+	}
+	ElseIf($Section.Count -eq 1)
+	{
+		Switch ($Section)
+		{
+			"Site"			{[string]$Script:Title = "Parallels RAS Inventory (Site Only)"; Break}
+			"LB"			{[string]$Script:Title = "Parallels RAS Inventory (Load Balancing Only)"; Break}
+			"Publishing"	{[string]$Script:Title = "Parallels RAS Inventory (Publishing Only"; Break}
+			"Printing"		{[string]$Script:Title = "Parallels RAS Inventory (Universal Printing Only)"; Break}
+			"Scanning"		{[string]$Script:Title = "Parallels RAS Inventory (Universal Scanning Only)"; Break}
+			"Connection"	{[string]$Script:Title = "Parallels RAS Inventory (Connection Only)"; Break}
+			"Policies" 		{[string]$Script:Title = "Parallels RAS Inventory (Policies Only)"; Break}
+			"Admin"			{[string]$Script:Title = "Parallels RAS Inventory (Administration Only)"; Break}
+			"Licensing"		{[string]$Script:Title = "Parallels RAS Inventory (Licensing Only)"; Break}
+			Default			{[string]$Script:Title = "Parallels RAS Inventory (Missing a section title for $Section"; Break}
+		}
+	}
+	ElseIf($Section.Count -gt 1)
+	{
+		[string]$Script:Title = "Parallels RAS Inventory ("
+		Switch ($Section)
+		{
+			"Site"			{[string]$Script:Title += "Site "}
+			"LB"			{[string]$Script:Title += "Load Balancing "}
+			"Publishing"	{[string]$Script:Title += "Publishing "}
+			"Printing"		{[string]$Script:Title += "Universal Printing "}
+			"Scanning"		{[string]$Script:Title += "Universal Scanning "}
+			"Connection"	{[string]$Script:Title += "Connection "}
+			"Policies" 		{[string]$Script:Title += "Policies "}
+			"Admin"			{[string]$Script:Title += "Admin "}
+			"Licensing"		{[string]$Script:Title += "Licensing "}
+			Default			{[string]$Script:Title += "Missing a section title for $Section"}
+		}
+		[string]$Script:Title = $Script:Title.Substring(0,$Script:Title.LastIndexOf(" "))+")"
+	}
 }
 #endregion
 
@@ -3905,6 +4045,7 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD         : $MSWORD" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Script Info          : $ScriptInfo" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Server               : $Script:ServerName" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Section              : $($Section)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port            : $SmtpPort" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server          : $SmtpServer" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Title                : $Script:Title" 4>$Null
@@ -47467,24 +47608,51 @@ ForEach($Site in $Script:Sites)
 		$OnlyOneTime = $False
 	}
 
-	OutputSite $Site
+	If($Section -eq "All" -or $Section -eq "Site")
+	{
+		OutputSite $Site
+	}
 
-	ProcessLoadBalancing $Site
+	If($Section -eq "All" -or $Section -eq "LB")
+	{
+		ProcessLoadBalancing $Site
+	}
 
-	ProcessPublishing $Site
+	If($Section -eq "All" -or $Section -eq "Publishing")
+	{
+		ProcessPublishing $Site
+	}
 
-	ProcessUniversalPrinting $Site
+	If($Section -eq "All" -or $Section -eq "Printing")
+	{
+		ProcessUniversalPrinting $Site
+	}
 
-	ProcessUniversalScanning $Site
+	If($Section -eq "All" -or $Section -eq "Scanning")
+	{
+		ProcessUniversalScanning $Site
+	}
 
-	ProcessConnection $Site
+	If($Section -eq "All" -or $Section -eq "Connection")
+	{
+		ProcessConnection $Site
+	}
 }
 
-ProcessPolicies
+If($Section -eq "All" -or $Section -eq "Policies")
+{
+	ProcessPolicies
+}
 
-ProcessAdministration
+If($Section -eq "All" -or $Section -eq "Admin")
+{
+	ProcessAdministration
+}
 
-ProcessLicensing
+If($Section -eq "All" -or $Section -eq "Licensing")
+{
+	ProcessLicensing
+}
 
 #endregion
 
@@ -47508,3 +47676,248 @@ ProcessDocumentOutput "Regular"
 
 ProcessScriptEnd
 #endregion
+
+# SIG # Begin signature block
+# MIItUQYJKoZIhvcNAQcCoIItQjCCLT4CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcB85LnS8PDZSwktUL6W19JSw
+# pS2ggiaxMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
+# VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
+# IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
+# CQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cu
+# ZGlnaWNlcnQuY29tMSEwHwYDVQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQw
+# ggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC/5pBzaN675F1KPDAiMGkz
+# 7MKnJS7JIT3yithZwuEppz1Yq3aaza57G4QNxDAf8xukOBbrVsaXbR2rsnnyyhHS
+# 5F/WBTxSD1Ifxp4VpX6+n6lXFllVcq9ok3DCsrp1mWpzMpTREEQQLt+C8weE5nQ7
+# bXHiLQwb7iDVySAdYyktzuxeTsiT+CFhmzTrBcZe7FsavOvJz82sNEBfsXpm7nfI
+# SKhmV1efVFiODCu3T6cw2Vbuyntd463JT17lNecxy9qTXtyOj4DatpGYQJB5w3jH
+# trHEtWoYOAMQjdjUN6QuBX2I9YI+EJFwq1WCQTLX2wRzKm6RAXwhTNS8rhsDdV14
+# Ztk6MUSaM0C/CNdaSaTC5qmgZ92kJ7yhTzm1EVgX9yRcRo9k98FpiHaYdj1ZXUJ2
+# h4mXaXpI8OCiEhtmmnTK3kse5w5jrubU75KSOp493ADkRSWJtppEGSt+wJS00mFt
+# 6zPZxd9LBADMfRyVw4/3IbKyEbe7f/LVjHAsQWCqsWMYRJUadmJ+9oCw++hkpjPR
+# iQfhvbfmQ6QYuKZ3AeEPlAwhHbJUKSWJbOUOUlFHdL4mrLZBdd56rF+NP8m800ER
+# ElvlEFDrMcXKchYiCd98THU/Y+whX8QgUWtvsauGi0/C1kVfnSD8oR7FwI+isX4K
+# Jpn15GkvmB0t9dmpsh3lGwIDAQABo4IBOjCCATYwDwYDVR0TAQH/BAUwAwEB/zAd
+# BgNVHQ4EFgQU7NfjgtJxXWRM3y5nP+e6mK4cD08wHwYDVR0jBBgwFoAUReuir/SS
+# y4IxLVGLp6chnfNtyA8wDgYDVR0PAQH/BAQDAgGGMHkGCCsGAQUFBwEBBG0wazAk
+# BggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29tMEMGCCsGAQUFBzAC
+# hjdodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkSURS
+# b290Q0EuY3J0MEUGA1UdHwQ+MDwwOqA4oDaGNGh0dHA6Ly9jcmwzLmRpZ2ljZXJ0
+# LmNvbS9EaWdpQ2VydEFzc3VyZWRJRFJvb3RDQS5jcmwwEQYDVR0gBAowCDAGBgRV
+# HSAAMA0GCSqGSIb3DQEBDAUAA4IBAQBwoL9DXFXnOF+go3QbPbYW1/e/Vwe9mqyh
+# hyzshV6pGrsi+IcaaVQi7aSId229GhT0E0p6Ly23OO/0/4C5+KH38nLeJLxSA8hO
+# 0Cre+i1Wz/n096wwepqLsl7Uz9FDRJtDIeuWcqFItJnLnU+nBgMTdydE1Od/6Fmo
+# 8L8vC6bp8jQ87PcDx4eo0kxAGTVGamlUsLihVo7spNU96LHc/RzY9HdaXFSMb++h
+# UD38dglohJ9vytsgjTVgHAIDyyCwrFigDkBjxZgiwbJZ9VVrzyerbHbObyMt9H5x
+# aiNrIv8SuFQtJ37YOtnwtoeW/VvRXKwYw02fc7cBqZ9Xql4o4rmUMIIFkDCCA3ig
+# AwIBAgIQBZsbV56OITLiOQe9p3d1XDANBgkqhkiG9w0BAQwFADBiMQswCQYDVQQG
+# EwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNl
+# cnQuY29tMSEwHwYDVQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwHhcNMTMw
+# ODAxMTIwMDAwWhcNMzgwMTE1MTIwMDAwWjBiMQswCQYDVQQGEwJVUzEVMBMGA1UE
+# ChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYD
+# VQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwggIiMA0GCSqGSIb3DQEBAQUA
+# A4ICDwAwggIKAoICAQC/5pBzaN675F1KPDAiMGkz7MKnJS7JIT3yithZwuEppz1Y
+# q3aaza57G4QNxDAf8xukOBbrVsaXbR2rsnnyyhHS5F/WBTxSD1Ifxp4VpX6+n6lX
+# FllVcq9ok3DCsrp1mWpzMpTREEQQLt+C8weE5nQ7bXHiLQwb7iDVySAdYyktzuxe
+# TsiT+CFhmzTrBcZe7FsavOvJz82sNEBfsXpm7nfISKhmV1efVFiODCu3T6cw2Vbu
+# yntd463JT17lNecxy9qTXtyOj4DatpGYQJB5w3jHtrHEtWoYOAMQjdjUN6QuBX2I
+# 9YI+EJFwq1WCQTLX2wRzKm6RAXwhTNS8rhsDdV14Ztk6MUSaM0C/CNdaSaTC5qmg
+# Z92kJ7yhTzm1EVgX9yRcRo9k98FpiHaYdj1ZXUJ2h4mXaXpI8OCiEhtmmnTK3kse
+# 5w5jrubU75KSOp493ADkRSWJtppEGSt+wJS00mFt6zPZxd9LBADMfRyVw4/3IbKy
+# Ebe7f/LVjHAsQWCqsWMYRJUadmJ+9oCw++hkpjPRiQfhvbfmQ6QYuKZ3AeEPlAwh
+# HbJUKSWJbOUOUlFHdL4mrLZBdd56rF+NP8m800ERElvlEFDrMcXKchYiCd98THU/
+# Y+whX8QgUWtvsauGi0/C1kVfnSD8oR7FwI+isX4KJpn15GkvmB0t9dmpsh3lGwID
+# AQABo0IwQDAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBhjAdBgNVHQ4E
+# FgQU7NfjgtJxXWRM3y5nP+e6mK4cD08wDQYJKoZIhvcNAQEMBQADggIBALth2X2p
+# bL4XxJEbw6GiAI3jZGgPVs93rnD5/ZpKmbnJeFwMDF/k5hQpVgs2SV1EY+CtnJYY
+# ZhsjDT156W1r1lT40jzBQ0CuHVD1UvyQO7uYmWlrx8GnqGikJ9yd+SeuMIW59mdN
+# Oj6PWTkiU0TryF0Dyu1Qen1iIQqAyHNm0aAFYF/opbSnr6j3bTWcfFqK1qI4mfN4
+# i/RN0iAL3gTujJtHgXINwBQy7zBZLq7gcfJW5GqXb5JQbZaNaHqasjYUegbyJLkJ
+# EVDXCLG4iXqEI2FCKeWjzaIgQdfRnGTZ6iahixTXTBmyUEFxPT9NcCOGDErcgdLM
+# MpSEDQgJlxxPwO5rIHQw0uA5NBCFIRUBCOhVMt5xSdkoF1BN5r5N0XWs0Mr7QbhD
+# parTwwVETyw2m+L64kW4I1NsBm9nVX9GtUw/bihaeSbSpKhil9Ie4u1Ki7wb/UdK
+# Dd9nZn6yW0HQO+T0O/QEY+nvwlQAUaCKKsnOeMzV6ocEGLPOr0mIr/OSmbaz5mEP
+# 0oUA51Aa5BuVnRmhuZyxm7EAHu/QD09CbMkKvO5D+jpxpchNJqU1/YldvIViHTLS
+# oCtU7ZpXwdv6EM8Zt4tKG48BtieVU+i2iW1bvGjUI+iLUaJW+fCmgKDWHrO8Dw9T
+# dSmq6hN35N6MgSGtBxBHEa2HPQfRdbzP82Z+MIIGrjCCBJagAwIBAgIQBzY3tyRU
+# fNhHrP0oZipeWzANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzEVMBMGA1UE
+# ChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYD
+# VQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwHhcNMjIwMzIzMDAwMDAwWhcN
+# MzcwMzIyMjM1OTU5WjBjMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQs
+# IEluYy4xOzA5BgNVBAMTMkRpZ2lDZXJ0IFRydXN0ZWQgRzQgUlNBNDA5NiBTSEEy
+# NTYgVGltZVN0YW1waW5nIENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKC
+# AgEAxoY1BkmzwT1ySVFVxyUDxPKRN6mXUaHW0oPRnkyibaCwzIP5WvYRoUQVQl+k
+# iPNo+n3znIkLf50fng8zH1ATCyZzlm34V6gCff1DtITaEfFzsbPuK4CEiiIY3+va
+# PcQXf6sZKz5C3GeO6lE98NZW1OcoLevTsbV15x8GZY2UKdPZ7Gnf2ZCHRgB720RB
+# idx8ald68Dd5n12sy+iEZLRS8nZH92GDGd1ftFQLIWhuNyG7QKxfst5Kfc71ORJn
+# 7w6lY2zkpsUdzTYNXNXmG6jBZHRAp8ByxbpOH7G1WE15/tePc5OsLDnipUjW8LAx
+# E6lXKZYnLvWHpo9OdhVVJnCYJn+gGkcgQ+NDY4B7dW4nJZCYOjgRs/b2nuY7W+yB
+# 3iIU2YIqx5K/oN7jPqJz+ucfWmyU8lKVEStYdEAoq3NDzt9KoRxrOMUp88qqlnNC
+# aJ+2RrOdOqPVA+C/8KI8ykLcGEh/FDTP0kyr75s9/g64ZCr6dSgkQe1CvwWcZklS
+# UPRR8zZJTYsg0ixXNXkrqPNFYLwjjVj33GHek/45wPmyMKVM1+mYSlg+0wOI/rOP
+# 015LdhJRk8mMDDtbiiKowSYI+RQQEgN9XyO7ZONj4KbhPvbCdLI/Hgl27KtdRnXi
+# YKNYCQEoAA6EVO7O6V3IXjASvUaetdN2udIOa5kM0jO0zbECAwEAAaOCAV0wggFZ
+# MBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFLoW2W1NhS9zKXaaL3WMaiCP
+# nshvMB8GA1UdIwQYMBaAFOzX44LScV1kTN8uZz/nupiuHA9PMA4GA1UdDwEB/wQE
+# AwIBhjATBgNVHSUEDDAKBggrBgEFBQcDCDB3BggrBgEFBQcBAQRrMGkwJAYIKwYB
+# BQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBBBggrBgEFBQcwAoY1aHR0
+# cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZFJvb3RHNC5j
+# cnQwQwYDVR0fBDwwOjA4oDagNIYyaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0Rp
+# Z2lDZXJ0VHJ1c3RlZFJvb3RHNC5jcmwwIAYDVR0gBBkwFzAIBgZngQwBBAIwCwYJ
+# YIZIAYb9bAcBMA0GCSqGSIb3DQEBCwUAA4ICAQB9WY7Ak7ZvmKlEIgF+ZtbYIULh
+# sBguEE0TzzBTzr8Y+8dQXeJLKftwig2qKWn8acHPHQfpPmDI2AvlXFvXbYf6hCAl
+# NDFnzbYSlm/EUExiHQwIgqgWvalWzxVzjQEiJc6VaT9Hd/tydBTX/6tPiix6q4XN
+# Q1/tYLaqT5Fmniye4Iqs5f2MvGQmh2ySvZ180HAKfO+ovHVPulr3qRCyXen/KFSJ
+# 8NWKcXZl2szwcqMj+sAngkSumScbqyQeJsG33irr9p6xeZmBo1aGqwpFyd/EjaDn
+# mPv7pp1yr8THwcFqcdnGE4AJxLafzYeHJLtPo0m5d2aR8XKc6UsCUqc3fpNTrDsd
+# CEkPlM05et3/JWOZJyw9P2un8WbDQc1PtkCbISFA0LcTJM3cHXg65J6t5TRxktcm
+# a+Q4c6umAU+9Pzt4rUyt+8SVe+0KXzM5h0F4ejjpnOHdI/0dKNPH+ejxmF/7K9h+
+# 8kaddSweJywm228Vex4Ziza4k9Tm8heZWcpw8De/mADfIBZPJ/tgZxahZrrdVcA6
+# KYawmKAr7ZVBtzrVFZgxtGIJDwq9gdkT/r+k0fNX2bwE+oLeMt8EifAAzV3C+dAj
+# fwAL5HYCJtnwZXZCpimHCUcr5n8apIUP/JiW9lVUKx+A+sDyDivl1vupL0QVSucT
+# Dh3bNzgaoSv27dZ8/DCCBrAwggSYoAMCAQICEAitQLJg0pxMn17Nqb2TrtkwDQYJ
+# KoZIhvcNAQEMBQAwYjELMAkGA1UEBhMCVVMxFTATBgNVBAoTDERpZ2lDZXJ0IElu
+# YzEZMBcGA1UECxMQd3d3LmRpZ2ljZXJ0LmNvbTEhMB8GA1UEAxMYRGlnaUNlcnQg
+# VHJ1c3RlZCBSb290IEc0MB4XDTIxMDQyOTAwMDAwMFoXDTM2MDQyODIzNTk1OVow
+# aTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEwPwYDVQQD
+# EzhEaWdpQ2VydCBUcnVzdGVkIEc0IENvZGUgU2lnbmluZyBSU0E0MDk2IFNIQTM4
+# NCAyMDIxIENBMTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANW0L0LQ
+# KK14t13VOVkbsYhC9TOM6z2Bl3DFu8SFJjCfpI5o2Fz16zQkB+FLT9N4Q/QX1x7a
+# +dLVZxpSTw6hV/yImcGRzIEDPk1wJGSzjeIIfTR9TIBXEmtDmpnyxTsf8u/LR1oT
+# pkyzASAl8xDTi7L7CPCK4J0JwGWn+piASTWHPVEZ6JAheEUuoZ8s4RjCGszF7pNJ
+# cEIyj/vG6hzzZWiRok1MghFIUmjeEL0UV13oGBNlxX+yT4UsSKRWhDXW+S6cqgAV
+# 0Tf+GgaUwnzI6hsy5srC9KejAw50pa85tqtgEuPo1rn3MeHcreQYoNjBI0dHs6EP
+# bqOrbZgGgxu3amct0r1EGpIQgY+wOwnXx5syWsL/amBUi0nBk+3htFzgb+sm+YzV
+# svk4EObqzpH1vtP7b5NhNFy8k0UogzYqZihfsHPOiyYlBrKD1Fz2FRlM7WLgXjPy
+# 6OjsCqewAyuRsjZ5vvetCB51pmXMu+NIUPN3kRr+21CiRshhWJj1fAIWPIMorTmG
+# 7NS3DVPQ+EfmdTCN7DCTdhSmW0tddGFNPxKRdt6/WMtyEClB8NXFbSZ2aBFBE1ia
+# 3CYrAfSJTVnbeM+BSj5AR1/JgVBzhRAjIVlgimRUwcwhGug4GXxmHM14OEUwmU//
+# Y09Mu6oNCFNBfFg9R7P6tuyMMgkCzGw8DFYRAgMBAAGjggFZMIIBVTASBgNVHRMB
+# Af8ECDAGAQH/AgEAMB0GA1UdDgQWBBRoN+Drtjv4XxGG+/5hewiIZfROQjAfBgNV
+# HSMEGDAWgBTs1+OC0nFdZEzfLmc/57qYrhwPTzAOBgNVHQ8BAf8EBAMCAYYwEwYD
+# VR0lBAwwCgYIKwYBBQUHAwMwdwYIKwYBBQUHAQEEazBpMCQGCCsGAQUFBzABhhho
+# dHRwOi8vb2NzcC5kaWdpY2VydC5jb20wQQYIKwYBBQUHMAKGNWh0dHA6Ly9jYWNl
+# cnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRSb290RzQuY3J0MEMGA1Ud
+# HwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRy
+# dXN0ZWRSb290RzQuY3JsMBwGA1UdIAQVMBMwBwYFZ4EMAQMwCAYGZ4EMAQQBMA0G
+# CSqGSIb3DQEBDAUAA4ICAQA6I0Q9jQh27o+8OpnTVuACGqX4SDTzLLbmdGb3lHKx
+# AMqvbDAnExKekESfS/2eo3wm1Te8Ol1IbZXVP0n0J7sWgUVQ/Zy9toXgdn43ccsi
+# 91qqkM/1k2rj6yDR1VB5iJqKisG2vaFIGH7c2IAaERkYzWGZgVb2yeN258TkG19D
+# +D6U/3Y5PZ7Umc9K3SjrXyahlVhI1Rr+1yc//ZDRdobdHLBgXPMNqO7giaG9OeE4
+# Ttpuuzad++UhU1rDyulq8aI+20O4M8hPOBSSmfXdzlRt2V0CFB9AM3wD4pWywiF1
+# c1LLRtjENByipUuNzW92NyyFPxrOJukYvpAHsEN/lYgggnDwzMrv/Sk1XB+JOFX3
+# N4qLCaHLC+kxGv8uGVw5ceG+nKcKBtYmZ7eS5k5f3nqsSc8upHSSrds8pJyGH+PB
+# VhsrI/+PteqIe3Br5qC6/To/RabE6BaRUotBwEiES5ZNq0RA443wFSjO7fEYVgcq
+# LxDEDAhkPDOPriiMPMuPiAsNvzv0zh57ju+168u38HcT5ucoP6wSrqUvImxB+YJc
+# FWbMbA7KxYbD9iYzDAdLoNMHAmpqQDBISzSoUSC7rRuFCOJZDW3KBVAr6kocnqX9
+# oKcfBnTn8tZSkP2vhUgh+Vc7tJwD7YZF9LRhbr9o4iZghurIr6n+lB3nYxs6hlZ4
+# TjCCBsAwggSooAMCAQICEAxNaXJLlPo8Kko9KQeAPVowDQYJKoZIhvcNAQELBQAw
+# YzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMTswOQYDVQQD
+# EzJEaWdpQ2VydCBUcnVzdGVkIEc0IFJTQTQwOTYgU0hBMjU2IFRpbWVTdGFtcGlu
+# ZyBDQTAeFw0yMjA5MjEwMDAwMDBaFw0zMzExMjEyMzU5NTlaMEYxCzAJBgNVBAYT
+# AlVTMREwDwYDVQQKEwhEaWdpQ2VydDEkMCIGA1UEAxMbRGlnaUNlcnQgVGltZXN0
+# YW1wIDIwMjIgLSAyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAz+yl
+# JjrGqfJru43BDZrboegUhXQzGias0BxVHh42bbySVQxh9J0Jdz0Vlggva2Sk/QaD
+# FteRkjgcMQKW+3KxlzpVrzPsYYrppijbkGNcvYlT4DotjIdCriak5Lt4eLl6FuFW
+# xsC6ZFO7KhbnUEi7iGkMiMbxvuAvfTuxylONQIMe58tySSgeTIAehVbnhe3yYbyq
+# Ogd99qtu5Wbd4lz1L+2N1E2VhGjjgMtqedHSEJFGKes+JvK0jM1MuWbIu6pQOA3l
+# jJRdGVq/9XtAbm8WqJqclUeGhXk+DF5mjBoKJL6cqtKctvdPbnjEKD+jHA9QBje6
+# CNk1prUe2nhYHTno+EyREJZ+TeHdwq2lfvgtGx/sK0YYoxn2Off1wU9xLokDEaJL
+# u5i/+k/kezbvBkTkVf826uV8MefzwlLE5hZ7Wn6lJXPbwGqZIS1j5Vn1TS+QHye3
+# 0qsU5Thmh1EIa/tTQznQZPpWz+D0CuYUbWR4u5j9lMNzIfMvwi4g14Gs0/EH1OG9
+# 2V1LbjGUKYvmQaRllMBY5eUuKZCmt2Fk+tkgbBhRYLqmgQ8JJVPxvzvpqwcOagc5
+# YhnJ1oV/E9mNec9ixezhe7nMZxMHmsF47caIyLBuMnnHC1mDjcbu9Sx8e47LZInx
+# scS451NeX1XSfRkpWQNO+l3qRXMchH7XzuLUOncCAwEAAaOCAYswggGHMA4GA1Ud
+# DwEB/wQEAwIHgDAMBgNVHRMBAf8EAjAAMBYGA1UdJQEB/wQMMAoGCCsGAQUFBwMI
+# MCAGA1UdIAQZMBcwCAYGZ4EMAQQCMAsGCWCGSAGG/WwHATAfBgNVHSMEGDAWgBS6
+# FtltTYUvcyl2mi91jGogj57IbzAdBgNVHQ4EFgQUYore0GH8jzEU7ZcLzT0qlBTf
+# UpwwWgYDVR0fBFMwUTBPoE2gS4ZJaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0Rp
+# Z2lDZXJ0VHJ1c3RlZEc0UlNBNDA5NlNIQTI1NlRpbWVTdGFtcGluZ0NBLmNybDCB
+# kAYIKwYBBQUHAQEEgYMwgYAwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2lj
+# ZXJ0LmNvbTBYBggrBgEFBQcwAoZMaHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29t
+# L0RpZ2lDZXJ0VHJ1c3RlZEc0UlNBNDA5NlNIQTI1NlRpbWVTdGFtcGluZ0NBLmNy
+# dDANBgkqhkiG9w0BAQsFAAOCAgEAVaoqGvNG83hXNzD8deNP1oUj8fz5lTmbJeb3
+# coqYw3fUZPwV+zbCSVEseIhjVQlGOQD8adTKmyn7oz/AyQCbEx2wmIncePLNfIXN
+# U52vYuJhZqMUKkWHSphCK1D8G7WeCDAJ+uQt1wmJefkJ5ojOfRu4aqKbwVNgCeij
+# uJ3XrR8cuOyYQfD2DoD75P/fnRCn6wC6X0qPGjpStOq/CUkVNTZZmg9U0rIbf35e
+# Ca12VIp0bcrSBWcrduv/mLImlTgZiEQU5QpZomvnIj5EIdI/HMCb7XxIstiSDJFP
+# PGaUr10CU+ue4p7k0x+GAWScAMLpWnR1DT3heYi/HAGXyRkjgNc2Wl+WFrFjDMZG
+# QDvOXTXUWT5Dmhiuw8nLw/ubE19qtcfg8wXDWd8nYiveQclTuf80EGf2JjKYe/5c
+# QpSBlIKdrAqLxksVStOYkEVgM4DgI974A6T2RUflzrgDQkfoQTZxd639ouiXdE4u
+# 2h4djFrIHprVwvDGIqhPm73YHJpRxC+a9l+nJ5e6li6FV8Bg53hWf2rvwpWaSxEC
+# yIKcyRoFfLpxtU56mWz06J7UWpjIn7+NuxhcQ/XQKujiYu54BNu90ftbCqhwfvCX
+# hHjjCANdRyxjqCU4lwHSPzra5eX25pvcfizM/xdMTQCi2NYBDriL7ubgclWJLCcZ
+# YfZ3AYwwggdeMIIFRqADAgECAhAFulYuS3p29y1ilWIrK5dmMA0GCSqGSIb3DQEB
+# CwUAMGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8G
+# A1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBT
+# SEEzODQgMjAyMSBDQTEwHhcNMjExMjAxMDAwMDAwWhcNMjMxMjA3MjM1OTU5WjBj
+# MQswCQYDVQQGEwJVUzESMBAGA1UECBMJVGVubmVzc2VlMRIwEAYDVQQHEwlUdWxs
+# YWhvbWExFTATBgNVBAoTDENhcmwgV2Vic3RlcjEVMBMGA1UEAxMMQ2FybCBXZWJz
+# dGVyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA98Xfb+rSvcKK6oXU
+# 0jjumwlQCG2EltgTWqBp3yIWVJvPgbbryZB0JNT3vWbZUOnqZxENFG/YxDdR88By
+# ukOAeveRE1oeYNva7kbEpQ7vH9sTNiVFsglOQRtSyBch3353BZ51gIESO1sxW9dw
+# 41rMdUw6AhxoMxwhX0RTV25mUVAadNzDEuZzTP3zXpWuoAeYpppe8yptyw8OR79A
+# d83ttDPLr6o/SwXYH2EeaQu195FFq7Fn6Yp/kLYAgOrpJFJpRxd+b2kWxnOaF5RI
+# /EcbLH+/20xTDOho3V7VGWTiRs18QNLb1u14wiBTUnHvLsLBT1g5fli4RhL7rknp
+# 8DHksuISIIQVMWVfgFmgCsV9of4ymf4EmyzIJexXcdFHDw2x/bWFqXti/TPV8wYK
+# lEaLa2MrSMH1Jrnqt/vcP/DP2IUJa4FayoY2l8wvGOLNjYvfQ6c6RThd1ju7d62r
+# 9EJI8aPXPvcrlyZ3y6UH9tiuuPzsyNVnXKyDphJm5I57tLsN8LSBNVo+I227VZfX
+# q3MUuhz0oyErzFeKnLsPB1afLLfBzCSeYWOMjWpLo+PufKgh0X8OCRSfq6Iigpj9
+# q5KzjQ29L9BVnOJuWt49fwWFfmBOrcaR9QaN4gAHSY9+K7Tj3kUo0AHl66QaGWet
+# R7XYTel+ydst/fzYBq6SafVOt1kCAwEAAaOCAgYwggICMB8GA1UdIwQYMBaAFGg3
+# 4Ou2O/hfEYb7/mF7CIhl9E5CMB0GA1UdDgQWBBQ5WnsIlilu682kqvRMmUxb5DHu
+# gTAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwMwgbUGA1UdHwSB
+# rTCBqjBToFGgT4ZNaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1
+# c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNBMS5jcmwwU6BRoE+G
+# TWh0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRHNENvZGVT
+# aWduaW5nUlNBNDA5NlNIQTM4NDIwMjFDQTEuY3JsMD4GA1UdIAQ3MDUwMwYGZ4EM
+# AQQBMCkwJwYIKwYBBQUHAgEWG2h0dHA6Ly93d3cuZGlnaWNlcnQuY29tL0NQUzCB
+# lAYIKwYBBQUHAQEEgYcwgYQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2lj
+# ZXJ0LmNvbTBcBggrBgEFBQcwAoZQaHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29t
+# L0RpZ2lDZXJ0VHJ1c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNB
+# MS5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAgEAGcm1xuESCj6Y
+# VIf55C/gtmnsRJWtf7zEyqUtXhYU+PMciHnjnUbOmuF1+jKTA6j9FN0Ktv33fVxt
+# WQ+ZisNssZbfwaUd3goBQatFF2TmUc1KVsRUj/VU+uVPcL++tzaYkDydowhiP+9D
+# IEOXOYxunjlwFppOGrk3edKRj8p7puv9sZZTdPiUHmJ1GvideoXTAJ1Db6Jmn6ee
+# tnl4m6zx9CCDJF9z8KexKS1bSpJBbdKz71H1PlgI7Tu4ntLyyaRVOpan8XYWmu9k
+# 35TOfHHl8Cvbg6itg0fIJgvqnLJ4Huc+y6o/zrvj6HrFSOK6XowdQLQshrMZ2ceT
+# u8gVkZsKZtu0JeMpkbVKmKi/7RXIZdh9bn0NhzslioXEX+s70d60kntMsBAQX0Ar
+# OpKmrqZZJuxNMGAIXpEwSTeyqu0ujZI9eE1AU7EcZsYkZawdyLmilZdw1qwEQlAv
+# EqyjbjY81qtpkORAeJSpnPelUlyyQelJPLWFR0syKsUyROqg5OFXINxkHaJcuWLW
+# RPFJOEooSWPEid4rHMftaG2gOPg35o7yPzzHd8Y9pCX2v55NYjLrjUkz9JCjQ/g0
+# LiOo3a+yvot+7izsaJEs8SAdhG7RZ/fdsyv+SyyoEzsd1iO/mZ2DQ0rKaU/fiCXJ
+# pvrNmEwg+pbeIOCOgS0x5pQ0dyMlBZoxggYKMIIGBgIBATB9MGkxCzAJBgNVBAYT
+# AlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQg
+# VHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTEC
+# EAW6Vi5Lenb3LWKVYisrl2YwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgor
+# BgEEAYI3AgEEMCMGCSqGSIb3DQEJBDEWBBTxfb4D1Mq6NP8sXO/r/wygdjSOqjAN
+# BgkqhkiG9w0BAQEFAASCAgBpZ363SR3gxm3B8ulCM23WzraTiOxWr4XtsMceqnGo
+# eIH90OlLGuI2oYOCSrO6QOtO0CGHdXy52ndUW2suFuDw6GNZaV4xn4MWK9lC609f
+# zR+rH7/kynjc3xhXK5bHcESWl5jNKPjq86AprmKmWfjaOX2X6IpLhHEjjyEgTZXo
+# Kc6fuO9dVazQyz+9tfKxzs6xELYQzjCnnVgYTcYW3YblXdufkV996q0A+O9b79St
+# lWFLgEmWInJdVV0XLOLI7qruOrE0+Af8oTT4BPHh4kLdic6RmRbbUBLWVbGmU+2J
+# PdooUZMI/GTE13tcmEUwKr1xb/Yqxl+bKXcav1sxWasWkOW+k7JxkTsIVN3pITj5
+# MdbZn8rjPK0tibB3IHqJCgq4o1YRBwFudAmrsLdmRRp4ec5Z4hB9OVASYW8JCG3j
+# Xqdcu7TcDrtoHM4Nga1GYZud0y/6o7I2W4ix7RCqUY4ClklfklD+AuOXUmBciT5F
+# tAkl8IW7KdAiOzSMZFQ8uHqyerJYLlHl3oWS2dK3EtoOdCcwEa8Z0Bl51xEvphw8
+# VJqEvsFl7TLcc+Swo5FvGSflT2CFM8wMWmCFb/kwtIUlsTxb4yu1V6w3ZvXbaylG
+# VUmT1zzRS0gMsLR+HhJs3XE/DKDNz9YBLiNhQfqojsyLVeYOKhBdZ5V+jeh8gAim
+# S6GCAyAwggMcBgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVT
+# MRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1
+# c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAxNaXJLlPo8
+# Kko9KQeAPVowDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcN
+# AQcBMBwGCSqGSIb3DQEJBTEPFw0yMzA2MjcwOTMwNTFaMC8GCSqGSIb3DQEJBDEi
+# BCCaZqSRXoktJFC8hhyQha4JAGQHX5eIT9vM3BMN6jos0zANBgkqhkiG9w0BAQEF
+# AASCAgCXPzPV36xiiVmiPW8eXHsje+UjYICQO8IrZhXYB/MTM1PhcgyXbwPdjDXj
+# ag3b1k4F/AkPN0dZlZYmU2qLkd2ErvLKkwUSsSlHGceM7/j3mhOcHmeq26kUpL5O
+# Yhaw8HzYlcxyZ6QLp2yMZPlQRSsZmdcdzou7aT7xhGvqT6m7Q7y50e4gkKgiy7pI
+# 4jRQef4/TIsSRAWXpoMDEjsoaQEI9uZQgZBVH/rm4JvWabUKzRFBuEalY15GbfpR
+# pPofDfyFOZid1SZFPVE2mj3V+VJWZ9tNoqHDAUbv52RDu9pc6sjEstzE1Y8JHsR/
+# p0MjHpebf31++wxp4EHrgWWF6H5PIu11wRzxFRsNdKs3Qr8/e9WUMsBLGMCUclWp
+# +qzMaEJXzmGBq2g6ylY2PaA96mOFPBFZWg1SmkCu8WS+OCU4gdTienXEUcUsYnfJ
+# N+lZwD6pAMJtNHTW2fXfyonoDesi812VHORBN6WzhO34gcujnZXfqWqo4WiqrUKa
+# rn5AYpXaKNXoZmxmjBvU2GRd94Xwq8C0hiyQmb/XdwIM2Gk5Akp5ebbiAMe33scA
+# tBge1U2gzQBk3y4U+ZJJ+5cKms35iPIKdJXy1AYvy7JY8iwI0+1Wq8rTmzZo9I7w
+# JGzqGFr0l7aD6YMqhel9x7RyVlIjMLYLPB+0vFxt3w9wD9wKLg==
+# SIG # End signature block

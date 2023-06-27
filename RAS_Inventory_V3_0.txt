@@ -64,13 +64,30 @@
 	This parameter is disabled by default.
 .PARAMETER Folder
 	Specifies the optional output folder to save the output report. 
+.PARAMETER Section
+	Processes one or more sections of the report.
+	Valid options are:
+		Site
+		LB (LoadBalancing)
+		Publishing
+		Printing (Universal Printing)
+		Scanning (Universal Scanning)
+		Connection
+		Policies
+		Admin (Administration)
+		Licensing
+		All
+
+	This parameter defaults to All sections.
+	
+	Multiple sections are separated by a comma. -Section admin, licensing
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2023 at 6PM is 2023-06-01_1800.
+	June 1, 2024 at 6PM is 2024-06-01_1800.
 	
-	Output filename will be ReportName_2023-06-01_1800.<ext>.
+	Output filename will be ReportName_2024-06-01_1800.<ext>.
 	
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
@@ -247,18 +264,18 @@
 	Specifies whether to use SSL for the SmtpServer.
 	The default is False.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1
 	
 	Outputs, by default to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -RASSite EMEASite
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -RASSite EMEASite
 	
 	Includes only data for the EMEASite.
 	Outputs, by default to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -MSWord -CompanyName "Carl Webster 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -MSWord -CompanyName "Carl Webster 
 	Consulting" -CoverPage "Mod" -UserName "Carl Webster" -ComputerName RAS01
 
 	Will use:
@@ -270,7 +287,7 @@
 	Outputs to Microsoft Word.
 	Prompts for credentials for the RAS Server RAS01.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -PDF -CN "Carl Webster Consulting" -CP 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -PDF -CN "Carl Webster Consulting" -CP 
 	"Mod" -UN "Carl Webster"
 
 	Will use:
@@ -281,7 +298,7 @@
 	Outputs to PDF.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -CompanyName "Sherlock Holmes 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -CompanyName "Sherlock Holmes 
 	Consulting" -CoverPage Exposure -UserName "Dr. Watson" -CompanyAddress "221B Baker 
 	Street, London, England" -CompanyFax "+44 1753 276600" -CompanyPhone "+44 1753 276200" 
 	-MSWord
@@ -297,7 +314,7 @@
 	Outputs to Microsoft Word.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript .\RAS_Inventory_V3.0.ps1 -CompanyName "Sherlock Holmes 
+	PS C:\PSScript .\RAS_Inventory_V3_0.ps1 -CompanyName "Sherlock Holmes 
 	Consulting" -CoverPage Facet -UserName "Dr. Watson" -CompanyEmail 
 	SuperSleuth@SherlockHolmes.com
 	-PDF
@@ -311,7 +328,7 @@
 	Outputs to PDF.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript >.\RAS_Inventory_V3.0.ps1 -Dev -ScriptInfo -Log
+	PS C:\PSScript >.\RAS_Inventory_V3_0.ps1 -Dev -ScriptInfo -Log
 	
 	Creates an HTML report.
 	
@@ -324,7 +341,18 @@
 	Creates a text file for transcript logging named 
 	RASDocScriptTranscript_yyyyMMddTHHmmssffff.txt.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer mail.domain.tld -From 
+	PS C:\PSScript >.\RAS_Inventory_V3_0.ps1 -Section Policies
+	
+	Creates an HTML report that contains only policy information.
+	Processes only the Policies section of the report.
+.EXAMPLE
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -Section Admin, Licensing
+
+	Creates an HTML report.
+
+	The report includes only the Administration and Licensing sections.
+.EXAMPLE
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer mail.domain.tld -From 
 	RASAdmin@domain.tld -To ITGroup@domain.tld -Text
 
 	The script uses the email server mail.domain.tld, sending from RASAdmin@domain.tld 
@@ -338,7 +366,7 @@
 	Outputs to a text file.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer mailrelay.domain.tld -From 
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer mailrelay.domain.tld -From 
 	Anonymous@domain.tld -To ITGroup@domain.tld	
 
 	***SENDING UNAUTHENTICATED EMAIL***
@@ -365,7 +393,7 @@
 	Outputs, by default, to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer 
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer 
 	labaddomain-com.mail.protection.outlook.com -UseSSL -From 
 	SomeEmailAddress@labaddomain.com -To ITGroupDL@labaddomain.com	
 
@@ -385,7 +413,7 @@
 	Outputs, by default, to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer smtp.office365.com -SmtpPort 587
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer smtp.office365.com -SmtpPort 587
 	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	The script uses the email server smtp.office365.com on port 587 using SSL, sending from 
@@ -397,7 +425,7 @@
 	Outputs, by default, to HTML.
 	Prompts for credentials for the LocalHost RAS Server.
 .EXAMPLE
-	PS C:\PSScript > .\RAS_Inventory_V3.0.ps1 -SmtpServer smtp.gmail.com -SmtpPort 587
+	PS C:\PSScript > .\RAS_Inventory_V3_0.ps1 -SmtpServer smtp.gmail.com -SmtpPort 587
 	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
 	*** NOTE ***
@@ -419,10 +447,10 @@
 	No objects are output from this script. This script creates a Word, PDF, HTML, or plain 
 	text document.
 .NOTES
-	NAME: RAS_Inventory_V3.0.ps1
-	VERSION: 3.02
+	NAME: RAS_Inventory_V3_0.ps1
+	VERSION: 3.03
 	AUTHOR: Carl Webster
-	LASTEDIT: June 26, 2023
+	LASTEDIT: June 27, 2024
 #>
 
 
@@ -447,6 +475,11 @@ Param(
 
 	[parameter(Mandatory=$False)] 
 	[string]$Folder="",
+	
+	[ValidateSet('All', 'Site', 'LB', 'Publishing', 'Printing',
+	'Scanning', 'Connection', 'Policies', 'Admin', 'Licensing')]
+	[parameter(Mandatory=$False)] 
+	[String[]] $Section = 'All',
 	
 	[parameter(Mandatory=$False)] 
 	[Alias("ADT")]
@@ -534,6 +567,28 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.03 27-Jun-2023
+#	Added a Section Parameter
+#		Processes one or more sections of the report.
+#		Valid options are:
+#			Site
+#			LB (LoadBalancing)
+#			Publishing
+#			Printing (Universal Printing)
+#			Scanning (Universal Scanning)
+#			Connection
+#			Policies
+#			Admin (Administration)
+#			Licensing
+#			All
+#
+#		This parameter defaults to All sections.
+#		
+#		Multiple sections are separated by a comma. -Section admin, licensing
+#
+#	Updated the help text
+#	Updated the ReadMe file
+#
 #Version 3.02 26-Jun-2023
 #	Added to Connection settings, SAML
 #		Properties
@@ -634,9 +689,9 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.02'
-$Script:ScriptName        = "RAS_Inventory_V3.0.ps1"
-$tmpdate                  = [datetime] "06/24/2023"
+$script:MyVersion         = '3.03'
+$Script:ScriptName        = "RAS_Inventory_V3_0.ps1"
+$tmpdate                  = [datetime] "06/27/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -659,6 +714,51 @@ If($Text)
 If($HTML)
 {
 	Write-Verbose "$(Get-Date -Format G): HTML is set"
+}
+
+$ValidSection = $False
+#there are no Break statements since there can be multiple sections entered
+Switch ($Section)
+{
+	"Site"			{$ValidSection = $True}
+	"LB"			{$ValidSection = $True}
+	"Publishing"	{$ValidSection = $True}
+	"Printing"		{$ValidSection = $True}
+	"Scanning"		{$ValidSection = $True}
+	"Connection"	{$ValidSection = $True}
+	"Policies"		{$ValidSection = $True}
+	"Admin"			{$ValidSection = $True}
+	"Licensing"		{$ValidSection = $True}
+	"All"			{$ValidSection = $True}
+}
+
+If($ValidSection -eq $False)
+{
+	$ErrorActionPreference = $SaveEAPreference
+	Write-Error -Message "
+	`n`n
+	`t`t
+	The Section parameter specified, $Section, is an invalid Section option.
+	`n`n
+	`t`t
+	Valid options are:
+
+	`tSite
+	`tLB (Load Balancing)
+	`tPublishing
+	`tPrinting (Universal Printing)
+	`tScanning (Universal canning)
+	`tConnection
+	`tPolicies
+	`tAdmin (Administration)
+	`tLicensing
+	`tAll
+	
+	`t`t
+	Script cannot continue.
+	`n`n
+	"
+	Exit
 }
 
 If($Folder -ne "")
@@ -3508,6 +3608,7 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date -Format G): Save As TEXT         : $($TEXT)"
 	Write-Verbose "$(Get-Date -Format G): Save As WORD         : $($MSWORD)"
 	Write-Verbose "$(Get-Date -Format G): ScriptInfo           : $($ScriptInfo)"
+	Write-Verbose "$(Get-Date -Format G): Section              : $($Section)"
 	Write-Verbose "$(Get-Date -Format G): Smtp Port            : $($SmtpPort)"
 	Write-Verbose "$(Get-Date -Format G): Smtp Server          : $($SmtpServer)"
 	Write-Verbose "$(Get-Date -Format G): Title                : $($Script:Title)"
@@ -3826,7 +3927,46 @@ Function ProcessScriptSetup
 	}
 	Write-Verbose "$(Get-Date -Format G): Running RAS Version $($Script:RASVersion)"
 	
-	$Script:Title = "Parallels RAS Inventory"
+	#$Script:Title = "Parallels RAS Inventory"
+	#support multiple section items
+	If($Section.Count -eq 1 -and $Section -eq "All")
+	{
+		[string]$Script:Title = "Parallels RAS Inventory"
+	}
+	ElseIf($Section.Count -eq 1)
+	{
+		Switch ($Section)
+		{
+			"Site"			{[string]$Script:Title = "Parallels RAS Inventory (Site Only)"; Break}
+			"LB"			{[string]$Script:Title = "Parallels RAS Inventory (Load Balancing Only)"; Break}
+			"Publishing"	{[string]$Script:Title = "Parallels RAS Inventory (Publishing Only"; Break}
+			"Printing"		{[string]$Script:Title = "Parallels RAS Inventory (Universal Printing Only)"; Break}
+			"Scanning"		{[string]$Script:Title = "Parallels RAS Inventory (Universal Scanning Only)"; Break}
+			"Connection"	{[string]$Script:Title = "Parallels RAS Inventory (Connection Only)"; Break}
+			"Policies" 		{[string]$Script:Title = "Parallels RAS Inventory (Policies Only)"; Break}
+			"Admin"			{[string]$Script:Title = "Parallels RAS Inventory (Administration Only)"; Break}
+			"Licensing"		{[string]$Script:Title = "Parallels RAS Inventory (Licensing Only)"; Break}
+			Default			{[string]$Script:Title = "Parallels RAS Inventory (Missing a section title for $Section"; Break}
+		}
+	}
+	ElseIf($Section.Count -gt 1)
+	{
+		[string]$Script:Title = "Parallels RAS Inventory ("
+		Switch ($Section)
+		{
+			"Site"			{[string]$Script:Title += "Site "}
+			"LB"			{[string]$Script:Title += "Load Balancing "}
+			"Publishing"	{[string]$Script:Title += "Publishing "}
+			"Printing"		{[string]$Script:Title += "Universal Printing "}
+			"Scanning"		{[string]$Script:Title += "Universal Scanning "}
+			"Connection"	{[string]$Script:Title += "Connection "}
+			"Policies" 		{[string]$Script:Title += "Policies "}
+			"Admin"			{[string]$Script:Title += "Admin "}
+			"Licensing"		{[string]$Script:Title += "Licensing "}
+			Default			{[string]$Script:Title += "Missing a section title for $Section"}
+		}
+		[string]$Script:Title = $Script:Title.Substring(0,$Script:Title.LastIndexOf(" "))+")"
+	}
 }
 #endregion
 
@@ -3905,6 +4045,7 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Save As WORD         : $MSWORD" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Script Info          : $ScriptInfo" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Server               : $Script:ServerName" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Section              : $($Section)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Smtp Port            : $SmtpPort" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Smtp Server          : $SmtpServer" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Title                : $Script:Title" 4>$Null
@@ -47467,24 +47608,51 @@ ForEach($Site in $Script:Sites)
 		$OnlyOneTime = $False
 	}
 
-	OutputSite $Site
+	If($Section -eq "All" -or $Section -eq "Site")
+	{
+		OutputSite $Site
+	}
 
-	ProcessLoadBalancing $Site
+	If($Section -eq "All" -or $Section -eq "LB")
+	{
+		ProcessLoadBalancing $Site
+	}
 
-	ProcessPublishing $Site
+	If($Section -eq "All" -or $Section -eq "Publishing")
+	{
+		ProcessPublishing $Site
+	}
 
-	ProcessUniversalPrinting $Site
+	If($Section -eq "All" -or $Section -eq "Printing")
+	{
+		ProcessUniversalPrinting $Site
+	}
 
-	ProcessUniversalScanning $Site
+	If($Section -eq "All" -or $Section -eq "Scanning")
+	{
+		ProcessUniversalScanning $Site
+	}
 
-	ProcessConnection $Site
+	If($Section -eq "All" -or $Section -eq "Connection")
+	{
+		ProcessConnection $Site
+	}
 }
 
-ProcessPolicies
+If($Section -eq "All" -or $Section -eq "Policies")
+{
+	ProcessPolicies
+}
 
-ProcessAdministration
+If($Section -eq "All" -or $Section -eq "Admin")
+{
+	ProcessAdministration
+}
 
-ProcessLicensing
+If($Section -eq "All" -or $Section -eq "Licensing")
+{
+	ProcessLicensing
+}
 
 #endregion
 
