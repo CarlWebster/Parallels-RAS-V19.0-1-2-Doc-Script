@@ -7,6 +7,28 @@
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.03 27-Jun-2023
+#	Added a Section Parameter
+#		Processes one or more sections of the report.
+#		Valid options are:
+#			Site
+#			LB (LoadBalancing)
+#			Publishing
+#			Printing (Universal Printing)
+#			Scanning (Universal Scanning)
+#			Connection
+#			Policies
+#			Admin (Administration)
+#			Licensing
+#			All
+#
+#		This parameter defaults to All sections.
+#		
+#		Multiple sections are separated by a comma. -Section admin, licensing
+#
+#	Updated the help text
+#	Updated the ReadMe file
+
 #Version 3.02 26-Jun-2023
 #	Added to Connection settings, SAML
 #		Properties
