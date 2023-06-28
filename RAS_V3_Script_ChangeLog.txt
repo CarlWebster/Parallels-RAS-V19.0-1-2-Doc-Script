@@ -7,6 +7,15 @@
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.04 28-Jun-2023
+#	Add Policy Filters (Criteria)
+#		User, group, or computer
+#		Gateway
+#		Operating system
+#		IP
+#		Hardware ID
+#	Updated the ReadMe file
+
 #Version 3.03 27-Jun-2023
 #	Added a Section Parameter
 #		Processes one or more sections of the report.
