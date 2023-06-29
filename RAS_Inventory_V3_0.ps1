@@ -448,7 +448,7 @@
 	text document.
 .NOTES
 	NAME: RAS_Inventory_V3_0.ps1
-	VERSION: 3.04
+	VERSION: 3.05
 	AUTHOR: Carl Webster
 	LASTEDIT: June 28, 2023
 #>
@@ -567,6 +567,13 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.05
+#	Implemented the new filters for Published Items
+#		Deleted the original filtering code for both the Information and Filtering sections
+#		Created code to handle the new filtering capabilities for both the Information and Filtering sections
+#		Added Function OutputPubItemFilterSummary
+#	Updated the ReadMe file
+#
 #Version 3.04 28-Jun-2023
 #	Add Policy Filters (Criteria)
 #		User, group, or computer
@@ -698,7 +705,7 @@ $ErrorActionPreference    = 'SilentlyContinue'
 $Error.Clear()
 
 $Script:emailCredentials  = $Null
-$script:MyVersion         = '3.04'
+$script:MyVersion         = '3.05'
 $Script:ScriptName        = "RAS_Inventory_V3_0.ps1"
 $tmpdate                  = [datetime] "06/28/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -3948,7 +3955,7 @@ Function ProcessScriptSetup
 		{
 			"Site"			{[string]$Script:Title = "Parallels RAS Inventory (Site Only)"; Break}
 			"LB"			{[string]$Script:Title = "Parallels RAS Inventory (Load Balancing Only)"; Break}
-			"Publishing"	{[string]$Script:Title = "Parallels RAS Inventory (Publishing Only"; Break}
+			"Publishing"	{[string]$Script:Title = "Parallels RAS Inventory (Publishing Only)"; Break}
 			"Printing"		{[string]$Script:Title = "Parallels RAS Inventory (Universal Printing Only)"; Break}
 			"Scanning"		{[string]$Script:Title = "Parallels RAS Inventory (Universal Scanning Only)"; Break}
 			"Connection"	{[string]$Script:Title = "Parallels RAS Inventory (Connection Only)"; Break}
@@ -9797,13 +9804,13 @@ Function OutputSite
 
 					If($RDSHost.Optimization.WindowsDefenderATP.WinDefATPTurnOffOn.ToString() -eq "TurnOffWindowsDefenderATP")
 					{
-						$rowdata += @(,("     Turn off Windows Defender ATP (I use my own ATP solution)",($Script:htmlsb), "",$htmlwhite))
+						$rowdata += @(,("     Turn off Windows Defender ATP (I use my own ATP solution)",($Script:htmlsb),"",$htmlwhite))
 					}
 					Else
 					{
-						$rowdata += @(,("     Turn on Windows Defender ATP and set process and folder exclusions",($Script:htmlsb), "",$htmlwhite))
+						$rowdata += @(,("     Turn on Windows Defender ATP and set process and folder exclusions",($Script:htmlsb),"",$htmlwhite))
 						$rowdata += @(,("     Disable real-time protection",($Script:htmlsb), $RDSHost.Optimization.WindowsDefenderATP.DisableRealTimeProtection.ToString(),$htmlwhite))
-						$rowdata += @(,("",($Script:htmlsb), "",$htmlwhite))
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 						
 						$cnt = -1
 						ForEach($item in $RDSHost.Optimization.WindowsDefenderATP.ExcludeFolders)
@@ -14793,13 +14800,13 @@ Function OutputSite
 
 					If($RDSTemplate.Optimization.WindowsDefenderATP.WinDefATPTurnOffOn.ToString() -eq "TurnOffWindowsDefenderATP")
 					{
-						$rowdata += @(,("     Turn off Windows Defender ATP (I use my own ATP solution)",($Script:htmlsb), "",$htmlwhite))
+						$rowdata += @(,("     Turn off Windows Defender ATP (I use my own ATP solution)",($Script:htmlsb),"",$htmlwhite))
 					}
 					Else
 					{
-						$rowdata += @(,("     Turn on Windows Defender ATP and set process and folder exclusions",($Script:htmlsb), "",$htmlwhite))
+						$rowdata += @(,("     Turn on Windows Defender ATP and set process and folder exclusions",($Script:htmlsb),"",$htmlwhite))
 						$rowdata += @(,("     Disable real-time protection",($Script:htmlsb), $RDSTemplate.Optimization.WindowsDefenderATP.DisableRealTimeProtection.ToString(),$htmlwhite))
-						$rowdata += @(,("",($Script:htmlsb), "",$htmlwhite))
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 						
 						$cnt = -1
 						ForEach($item in $RDSTemplate.Optimization.WindowsDefenderATP.ExcludeFolders)
@@ -19513,13 +19520,13 @@ Function OutputSite
 
 						If($VDITemplate.Optimization.WindowsDefenderATP.WinDefATPTurnOffOn.ToString() -eq "TurnOffWindowsDefenderATP")
 						{
-							$rowdata += @(,("     Turn off Windows Defender ATP (I use my own ATP solution)",($Script:htmlsb), "",$htmlwhite))
+							$rowdata += @(,("     Turn off Windows Defender ATP (I use my own ATP solution)",($Script:htmlsb),"",$htmlwhite))
 						}
 						Else
 						{
-							$rowdata += @(,("     Turn on Windows Defender ATP and set process and folder exclusions",($Script:htmlsb), "",$htmlwhite))
+							$rowdata += @(,("     Turn on Windows Defender ATP and set process and folder exclusions",($Script:htmlsb),"",$htmlwhite))
 							$rowdata += @(,("     Disable real-time protection",($Script:htmlsb), $VDITemplate.Optimization.WindowsDefenderATP.DisableRealTimeProtection.ToString(),$htmlwhite))
-							$rowdata += @(,("",($Script:htmlsb), "",$htmlwhite))
+							$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 							
 							$cnt = -1
 							ForEach($item in $VDITemplate.Optimization.WindowsDefenderATP.ExcludeFolders)
@@ -20767,7 +20774,7 @@ Function OutputSite
 					$rowdata += @(,("Type",($Script:htmlsb),$VDIType,$htmlwhite))
 					$rowdata += @(,("Name",($Script:htmlsb), $Provider.Name,$htmlwhite))
 					$rowdata += @(,("Description",($Script:htmlsb), $Provider.Description,$htmlwhite))
-					$rowdata += @(,("Subscription details",($Script:htmlsb), "",$htmlwhite))
+					$rowdata += @(,("Subscription details",($Script:htmlsb),"",$htmlwhite))
 					$rowdata += @(,("     Authentication URL",($Script:htmlsb), $Provider.VDIAzureCloudInfo.AuthenticationURL,$htmlwhite))
 					$rowdata += @(,("     Management URL",($Script:htmlsb), $Provider.VDIAzureCloudInfo.ManagementURL,$htmlwhite))
 					$rowdata += @(,("     Resource URI",($Script:htmlsb), $Provider.VDIAzureCloudInfo.ResourceURI,$htmlwhite))
@@ -23787,13 +23794,13 @@ Function OutputSite
 				$rowdata += @(,("Name",($Script:htmlsb),$HALB.Name,$htmlwhite))
 				$rowdata += @(,("Description",($Script:htmlsb),$HALB.Description,$htmlwhite))
 				$rowdata += @(,("Public address",($Script:htmlsb),$HALB.PublicAddress,$htmlwhite))
-				$rowdata += @(,("Virtual IP",($Script:htmlsb), "",$htmlwhite))
+				$rowdata += @(,("Virtual IP",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("     Use IP version",($Script:htmlsb), $HALBIPVersion,$htmlwhite))
 				$rowdata += @(,("     IPv4",($Script:htmlsb), $HALB.VirtualIPV4,$htmlwhite))
 				$rowdata += @(,("     Subnet Mask",($Script:htmlsb), $HALB.SubNetMask,$htmlwhite))
 				$rowdata += @(,("     IPv6",($Script:htmlsb), $HALB.VirtualIPV6,$htmlwhite))
 				$rowdata += @(,("     Prefix",($Script:htmlsb), $HALB.PrefixIPV6,$htmlwhite))
-				$rowdata += @(,("Settings",($Script:htmlsb), "",$htmlwhite))
+				$rowdata += @(,("Settings",($Script:htmlsb),"",$htmlwhite))
 				$rowdata += @(,("     LB Gateway Payload",($Script:htmlsb), $HALB.EnableGatewayPayload.ToString(),$htmlwhite))
 				$rowdata += @(,("     LB SSL Payload",($Script:htmlsb), $HALB.EnableSSLPayload.ToString(),$htmlwhite))
 				$rowdata += @(,("     Device Management",($Script:htmlsb), $HALB.EnableDeviceManagement.ToString(),$htmlwhite))
@@ -24082,7 +24089,7 @@ Function OutputSite
 				$rowdata += @(,("Mode",($Script:htmlsb),$HALBSSLMode,$htmlwhite))
 				If($HALB.SSLConfig.SSLMode -eq "SSLOffloading")
 				{
-					$rowdata += @(,( "Security",($Script:htmlsb), "",$htmlwhite))
+					$rowdata += @(,( "Security",($Script:htmlsb),"",$htmlwhite))
 					$rowdata += @(,( "     Accepted SSL Versions",($Script:htmlsb), $HALBSSLAcceptedSSLVersions,$htmlwhite))
 					$rowdata += @(,( "     Cipher Strength",($Script:htmlsb), $HALBSSLCipherStrength,$htmlwhite))
 					$rowdata += @(,( "     Cipher",($Script:htmlsb), $HALBSSLCipher,$htmlwhite))
@@ -24512,14 +24519,14 @@ Function OutputSite
 	{
 		ForEach($Theme in $Themes)
 		{
-			$ThemePostLogonMessage        = $Theme.PostLogonMessage.Split("`n")
-			$ThemeUserPortalPrelogonMessage    = $Theme.UserPortal.Message.PreLogonMessage.Split("`n")
-			$ThemeUserPortalPostlogonMessage   = $Theme.UserPortal.Message.UserPortalPostLogonMessage.Split("`n")
-			$ThemeWindowsPostlogonMessage = $Theme.WindowsClient.Messages.WindowsClientPostLogonMessage.Split("`n")
-			$ThemeUserPortalURL                = "https://FQDN/$($Theme.UserPortal.Url.LoginPageURLPath)"
-			$ThemeShowDownloadURL         = $Theme.UserPortal.Url.ShowDownloadURL.ToString()
-			$ThemeOverrideDownloadURL     = $Theme.UserPortal.Url.OverrideWindowsClientDownloadURL
-			$ThemeFooterURLs              = @(Get-RASThemeFooterURL -Name $Theme.Name -EA 0) 4> $Null #fixed in 2.52 thanks to Thomas Krampe
+			$ThemePostLogonMessage				= $Theme.PostLogonMessage.Split("`n")
+			$ThemeUserPortalPrelogonMessage		= $Theme.UserPortal.Message.PreLogonMessage.Split("`n")
+			$ThemeUserPortalPostlogonMessage	= $Theme.UserPortal.Message.UserPortalPostLogonMessage.Split("`n")
+			$ThemeWindowsPostlogonMessage		= $Theme.WindowsClient.Messages.WindowsClientPostLogonMessage.Split("`n")
+			$ThemeUserPortalURL					= "https://FQDN/$($Theme.UserPortal.Url.LoginPageURLPath)"
+			$ThemeShowDownloadURL				= $Theme.UserPortal.Url.ShowDownloadURL.ToString()
+			$ThemeOverrideDownloadURL			= $Theme.UserPortal.Url.OverrideWindowsClientDownloadURL
+			$ThemeFooterURLs					= @(Get-RASThemeFooterURL -Name $Theme.Name -EA 0) 4> $Null #fixed in 2.52 thanks to Thomas Krampe
 			
 			If(!$? -or $Null -eq $ThemeFooterURLs)
 			{
@@ -24647,7 +24654,8 @@ Function OutputSite
 			}
 			If($HTML)
 			{
-				$ThemeName = $Theme.Name.Replace("<","").Replace(">","")
+				#$ThemeName = $Theme.Name.Replace("<","").Replace(">","")
+				$ThemeName = $Theme.Name.Trim("<",">")
 				WriteHTMLLine 3 0 "Theme $ThemeName"
 				$rowdata = @()
 				$columnHeaders = @("Name",($Script:htmlsb),$ThemeName,$htmlwhite)
@@ -27693,232 +27701,9 @@ Function OutputPublishingSettings
 					$ScriptInformation.Add(@{Data = "Use for administrative purposes"; Value = ""; }) > $Null
 				}
 
-				$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-
-				If($PubItem.UserFilterEnabled)
-				{
-					#$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					$cnt = -1
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$cnt++
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "User or group is "; Value = $Item; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-						}
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					#$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$cnt++
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Secure gateway is "; Value = $Item; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-						}
-					}
-				}
-				###add theme
-				If($PubItem.ClientFilterEnabled)
-				{
-					#$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = $Item; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-						}
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					#$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					$cnt = -1
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "Windows"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-						}
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "User Portal (Web Client)"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-						}
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "macOS"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-						}
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "Linux"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-						}
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "iOS/iPadOS"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-						}
-					}
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "Android"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-						}
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "Chrome OS"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-						}
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Device is "; Value = "Wyse"; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-						}
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					#$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					#$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					$cnt = -1
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$cnt++
-						
-						If($cnt -eq 0)
-						{
-							$ScriptInformation.Add(@{Data = "Hardware ID is "; Value = $Item; }) > $Null
-						}
-						Else
-						{
-							$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-						}
-					}
-				}
-
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
+				
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
 				{
@@ -28062,128 +27847,9 @@ Function OutputPublishingSettings
 					Line 3 "Use for administrative purposes"
 				}
 
-				Line 3 "Own Filters"
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				###add theme
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -28273,126 +27939,11 @@ Function OutputPublishingSettings
 				
 				If($PubItem.AdminOnly -eq $True)
 				{
-					$rowdata += @(,("Use for administrative purposes",($Script:htmlsb), "",$htmlwhite))
+					$rowdata += @(,("Use for administrative purposes",($Script:htmlsb),"",$htmlwhite))
 				}
 
-				$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				###add theme
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -28516,130 +28067,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -28800,135 +28229,9 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -29030,130 +28333,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -29294,130 +28475,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -29590,135 +28649,9 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -29810,130 +28743,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -30195,130 +29006,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -30773,135 +29462,9 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -31179,130 +29742,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -31649,130 +30090,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -32047,135 +30366,9 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -32329,130 +30522,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -32658,130 +30729,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -32968,135 +30917,9 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -33206,130 +31029,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -33496,130 +31197,337 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
+				$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
+				$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+				
+				ForEach($FilterItem in $PubItem.filter.rules)
 				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
+					#general stuff
+					If([String]::IsNullOrEmpty($FilterItem.Description))
 					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
+						$rowdata += @(,("$($FilterItem.Name)",($Script:htmlsb),"",$htmlwhite))
 					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
+					Else
 					{
-						ForEach($item in $PubItem.AllowedIP4s)
+						$rowdata += @(,("$($FilterItem.Name) - $($FilterItem.Description)",($Script:htmlsb),"",$htmlwhite))
+					}
+
+					If($FilterItem.Criteria.Access.ToString() -eq "AllowCriteriaWhen")
+					{
+						$rowdata += @(,("     Allow if",($Script:htmlsb),"",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata += @(,("     Deny if",($Script:htmlsb),"",$htmlwhite))
+					}
+
+					#users and groups
+					If($FilterItem.Criteria.SecurityPrincipals.Enabled)
+					{
+						$cnt = -1
+						
+						ForEach($Item in $FilterItem.Criteria.SecurityPrincipals.members)
 						{
-							If($item.From -eq $item.To)
+							$cnt++
+							If($cnt -eq 0)
 							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
+								$rowdata += @(,("     User or group is ",($Script:htmlsb), "$($Item.Account)",$htmlwhite))
 							}
 							Else
 							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
+								$rowdata += @(,("",($Script:htmlsb), "$($Item.Account)",$htmlwhite))
 							}
 						}
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 					}
 
-					If($PubItem.AllowedIP6s.Count -gt 0)
+					#gateways
+					If($FilterItem.Criteria.Gateways.Enabled)
 					{
-						ForEach($item in $PubItem.AllowedIP6s)
+						$cnt = -1
+						ForEach($item in $FilterItem.Criteria.Gateways.Members)
 						{
-							If($item.From -eq $item.To)
+							$cnt++
+							If($cnt -eq 0)
 							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
+								$rowdata += @(,("     Secure gateway is ",($Script:htmlsb), "$($Item.GatewayIP)",$htmlwhite))
 							}
 							Else
 							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
+								$rowdata += @(,("",($Script:htmlsb), "$($Item.GatewayIP)",$htmlwhite))
 							}
 						}
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+					}
+
+					#themes
+					If($FilterItem.Criteria.Themes.Enabled)
+					{
+						$cnt = -1
+						ForEach($item in $FilterItem.Criteria.Themes)
+						{
+							If($Item.Ids.Count -ne 0)
+							{
+								
+								ForEach($ThemeID in $Item.Ids)
+								{
+									$xTheme = Get-RASTheme -Id $ThemeID -EA 0 4> $Null
+						
+									If(!$? -or $Null -eq $xTheme)
+									{
+										$FilterTheme = "not used"
+									}
+									Else
+									{
+										#remove the < and > 
+										$FilterTheme = $xTheme.Name.Trim("<",">")
+									}
+									$cnt++
+									If($cnt -eq 0)
+									{
+										$rowdata += @(,("     Theme is ",($Script:htmlsb), "$FilterTheme",$htmlwhite))
+									}
+									Else
+									{
+										$rowdata += @(,("",($Script:htmlsb), "$FilterTheme",$htmlwhite))
+									}
+								}
+							}
+							Else
+							{
+								$rowdata += @(,("     Theme is ",($Script:htmlsb), "not used",$htmlwhite))
+							}
+
+						}
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+					}
+
+					#client device name
+					If($FilterItem.Criteria.Devices.Enabled)
+					{
+						$cnt = -1
+						ForEach($item in $FilterItem.Criteria.Devices.Members)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Device is ",($Script:htmlsb), "$($Item.Client)",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "$($Item.Client)",$htmlwhite))
+							}
+						}
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+					}
+
+					#client device operating system
+					If($FilterItem.Criteria.OSs.Enabled)
+					{
+						$cnt = -1
+						If($FilterItem.Criteria.OSs.AllowedOSes.Windows)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "Windows",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "Windows",$htmlwhite))
+							}
+						}
+						
+						If($FilterItem.Criteria.OSs.AllowedOSes.WebClient)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "User Portal (Web Client)",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "User Portal (Web Client)",$htmlwhite))
+							}
+						}
+						
+						If($FilterItem.Criteria.OSs.AllowedOSes.Mac)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "macOS",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "macOS",$htmlwhite))
+							}
+						}
+						
+						If($FilterItem.Criteria.OSs.AllowedOSes.Linux)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "Linux",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "Linux",$htmlwhite))
+							}
+						}
+						
+						If($FilterItem.Criteria.OSs.AllowedOSes.iOS)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "iOS/iPadOS",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "iOS/iPadOS",$htmlwhite))
+							}
+						}
+						
+						If($FilterItem.Criteria.OSs.AllowedOSes.Android)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "Android",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "Android",$htmlwhite))
+							}
+						}
+						
+						If($FilterItem.Criteria.OSs.AllowedOSes.Chrome)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "Chrome OS",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "Chrome OS",$htmlwhite))
+							}
+						}
+						
+						If($FilterItem.Criteria.OSs.AllowedOSes.Wyse)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Operating system is ",($Script:htmlsb), "Wyse",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "Wyse",$htmlwhite))
+							}
+						}
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+					}
+
+					#IPs
+					If( $FilterItem.Criteria.IPs.Enabled)
+					{
+						$cnt = -1
+						
+						If($FilterItem.Criteria.IPs.AllowedIPs.IPv4s.Count -gt 0)
+						{
+							ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv4s)
+							{
+								$cnt++
+								If($cnt -eq 0)
+								{
+									If(($item.From -eq $item.To) -or ($item.To -eq ""))
+									{
+										$rowdata += @(,("     IP is",($Script:htmlsb), $item.From,$htmlwhite))
+									}
+									Else
+									{
+										$rowdata += @(,("     IP is",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+									}
+								}
+								Else
+								{
+									If(($item.From -eq $item.To) -or ($item.To -eq ""))
+									{
+										$rowdata += @(,("",($Script:htmlsb), $item.From,$htmlwhite))
+									}
+									Else
+									{
+										$rowdata += @(,("",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+									}
+								}
+							}
+						}
+
+						If($FilterItem.Criteria.IPs.AllowedIPs.IPv6s.Count -gt 0)
+						{
+							ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv6s)
+							{
+								$cnt++
+								If($cnt -eq 0)
+								{
+									If(($item.From -eq $item.To) -or ($item.To -eq ""))
+									{
+										$rowdata += @(,("     IP is",($Script:htmlsb), $item.From,$htmlwhite))
+									}
+									Else
+									{
+										$rowdata += @(,("    IP is",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+									}
+								}
+								Else
+								{
+									If(($item.From -eq $item.To) -or ($item.To -eq ""))
+									{
+										$rowdata += @(,("",($Script:htmlsb), $item.From,$htmlwhite))
+									}
+									Else
+									{
+										$rowdata += @(,("",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+									}
+								}
+							}
+						}
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
+					}
+					
+					#MAC addresses
+					If($FilterItem.Criteria.HardwareIDs.Enabled)
+					{
+						$cnt = -1
+						ForEach($item in $FilterItem.Criteria.HardwareIDs.Members)
+						{
+							$cnt++
+							
+							If($cnt -eq 0)
+							{
+								$rowdata += @(,("     Hardware ID is ",($Script:htmlsb), "$($Item.HardwareID)",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata += @(,("",($Script:htmlsb), "$($Item.HardwareID)",$htmlwhite))
+							}
+						}
+						$rowdata += @(,("",($Script:htmlsb),"",$htmlwhite))
 					}
 				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -33801,135 +31709,9 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -34032,130 +31814,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -34409,130 +32069,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -35023,135 +32561,9 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
+				Line 0 ""
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -35426,130 +32838,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -35907,130 +33197,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " User filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item.Account; }) > $Null
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " IP filtering is enabled"; Value = ""; }) > $Null
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
-							}
-							Else
-							{
-								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " MAC filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Gateway filtering is enabled"; Value = ""; }) > $Null
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$ScriptInformation.Add(@{Data = " Client device operating system filtering is enabled"; Value = ""; }) > $Null
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				$ScriptInformation.Add(@{Data = "Allow if no other rule matches"; Value = ""; }) > $Null
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -36305,151 +33473,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					Line 3 "Own Filters"
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					Line 3 " User filtering is enabled"
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						Line 10 "  " $Item.Account
-					}
-					Line 0 ""
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					Line 3 " IP filtering is enabled"
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								Line 10 "  " $item.From
-							}
-							Else
-							{
-								Line 10 "  $($item.From) - $($item.To)"
-							}
-						}
-					}
-					Line 0 ""
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					Line 3 " Client filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					Line 3 " MAC filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					Line 3 " Gateway filtering is enabled"
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						Line 10 "  " $Item
-					}
-					Line 0 ""
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					Line 3 " Client device operating system filtering is enabled"
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						Line 10 "  Android"
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						Line 10 "  Chrome OS"
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						Line 10 "  iOS/iPadOS"
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						Line 10 "  Linux"
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						Line 10 "  macOS"
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						Line 10 "  RAS Web Portal"
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						Line 10 "  Windows"
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						Line 10 "  Wyse"
-					}
-					Line 0 ""
-				}
-
-				$cnt =-1
-				ForEach($Site in $PubItem.PublishToSite)
-				{
-					$cnt++
-					$SiteName = @(Get-RASSite -Id $Site -EA 0 4>$Null).Name
-					
-					If($cnt -eq 0)
-					{
-						Line 3 "Available in Site(s)`t`t`t`t`t: " $SiteName
-					}
-					Else
-					{
-						Line 10 $SiteName
-					}
-				}
+				OutputPubItemFilterSummary $PubItem
+				Line 3 "Allow if no other rule matches"
 				Line 0 ""
 
 				Line 2 "Sites"
@@ -36587,130 +33612,8 @@ Function OutputPublishingSettings
 					}
 				}
 
-				If($PubItem.UserFilterEnabled -or 
-				   $PubItem.ClientFilterEnabled -or 
-				   $PubItem.IPFilterEnabled -or 
-				   $PubItem.MACFilterEnabled -or 
-				   $PubItem.GatewayFilterEnabled -or 
-				   $PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
-				}
-
-				If($PubItem.UserFilterEnabled)
-				{
-					$rowdata += @(,(" User filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($Item in $PubItem.AllowedUsers)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item.Account,$htmlwhite))
-					}
-				}
-				If($PubItem.IPFilterEnabled)
-				{
-					$rowdata += @(,(" IP filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-
-					If($PubItem.AllowedIP4s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP4s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-
-					If($PubItem.AllowedIP6s.Count -gt 0)
-					{
-						ForEach($item in $PubItem.AllowedIP6s)
-						{
-							If($item.From -eq $item.To)
-							{
-								$rowdata += @(,("",($Script:htmlsb),$item.From,$htmlwhite))
-							}
-							Else
-							{
-								$rowdata += @(,("",($Script:htmlsb),"$($item.From) - $($item.To)",$htmlwhite))
-							}
-						}
-					}
-				}
-				If($PubItem.ClientFilterEnabled)
-				{
-					$rowdata += @(,(" Client filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedClients)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.MACFilterEnabled)
-				{
-					$rowdata += @(,(" MAC filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedMACs)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.GatewayFilterEnabled)
-				{
-					$rowdata += @(,(" Gateway filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					ForEach($item in $PubItem.AllowedGateways)
-					{
-						$rowdata += @(,("",($Script:htmlsb),$Item,$htmlwhite))
-					}
-				}
-				If($PubItem.OSFilterEnabled)
-				{
-					$rowdata += @(,(" Client device operating system filtering is enabled",($Script:htmlsb),"",$htmlwhite))
-					
-					If($PubItem.AllowedOSes.Android)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Android",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Chrome)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Chrome OS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.iOS)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"iOS/iPadOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Linux)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Linux",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Mac)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"macOS",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.WebClient)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"User Portal (Web Client)",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Windows)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Windows",$htmlwhite))
-					}
-					
-					If($PubItem.AllowedOSes.Wyse)
-					{
-						$rowdata += @(,("",($Script:htmlsb),"Wyse",$htmlwhite))
-					}
-				}
+				OutputPubItemFilterSummary $PubItem ([ref]$rowdata)
+				$rowdata += @(,("Allow if no other rule matches",($Script:htmlsb),"",$htmlwhite))
 
 				$cnt =-1
 				ForEach($Site in $PubItem.PublishToSite)
@@ -36841,6 +33744,1010 @@ Function OutputPublishingSettings
 	}
 }
 
+Function OutputPubItemFilterSummary
+{
+	Param([object] $PubItem, [ref]$rowdata)
+	
+	If($MSWord -or $PDF)
+	{
+		$ScriptInformation.Add(@{Data = "Own Filters"; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+		
+		ForEach($FilterItem in $PubItem.filter.rules)
+		{
+			#general stuff
+			If([String]::IsNullOrEmpty($FilterItem.Description))
+			{
+				$ScriptInformation.Add(@{Data = "$($FilterItem.Name)"; Value = ""; }) > $Null
+			}
+			Else
+			{
+				$ScriptInformation.Add(@{Data = "$($FilterItem.Name) - $($FilterItem.Description)"; Value = ""; }) > $Null
+			}
+
+			If($FilterItem.Criteria.Access.ToString() -eq "AllowCriteriaWhen")
+			{
+				$ScriptInformation.Add(@{Data = "     Allow if"; Value = ""; }) > $Null
+			}
+			Else
+			{
+				$ScriptInformation.Add(@{Data = "     Deny if"; Value = ""; }) > $Null
+			}
+
+			#users and groups
+			If($FilterItem.Criteria.SecurityPrincipals.Enabled)
+			{
+				$cnt = -1
+				
+				ForEach($Item in $FilterItem.Criteria.SecurityPrincipals.members)
+				{
+					$cnt++
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     User or group is "; Value = "$($Item.Account)"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "$($Item.Account)"; }) > $Null
+					}
+				}
+				$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+			}
+
+			#gateways
+			If($FilterItem.Criteria.Gateways.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Gateways.Members)
+				{
+					$cnt++
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Secure gateway is "; Value = "$($Item.GatewayIP)"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "$($Item.GatewayIP)"; }) > $Null
+					}
+				}
+				$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+			}
+
+			#themes
+			If($FilterItem.Criteria.Themes.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Themes)
+				{
+					If($Item.Ids.Count -ne 0)
+					{
+						
+						ForEach($ThemeID in $Item.Ids)
+						{
+							$xTheme = Get-RASTheme -Id $ThemeID -EA 0 4> $Null
+				
+							If(!$? -or $Null -eq $xTheme)
+							{
+								$FilterTheme = "not used"
+							}
+							Else
+							{
+								$FilterTheme = $xTheme.Name
+							}
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$ScriptInformation.Add(@{Data = "     Theme is "; Value = "$FilterTheme"; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "$FilterTheme"; }) > $Null
+							}
+						}
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = "     Theme is "; Value = "not used"; }) > $Null
+					}
+
+				}
+				$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+			}
+
+			#client device name
+			If($FilterItem.Criteria.Devices.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Devices.Members)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Device is "; Value = "$($Item.Client)"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "$($Item.Client)"; }) > $Null
+					}
+				}
+				$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+			}
+
+			#client device operating system
+			If($FilterItem.Criteria.OSs.Enabled)
+			{
+				$cnt = -1
+				If($FilterItem.Criteria.OSs.AllowedOSes.Windows)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "Windows"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "Windows"; }) > $Null
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.WebClient)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "User Portal (Web Client)"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "User Portal (Web Client)"; }) > $Null
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Mac)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "macOS"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "macOS"; }) > $Null
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Linux)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "Linux"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "Linux"; }) > $Null
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.iOS)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "iOS/iPadOS"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "iOS/iPadOS"; }) > $Null
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Android)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "Android"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "Android"; }) > $Null
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Chrome)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "Chrome OS"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "Chrome OS"; }) > $Null
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Wyse)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Operating system is "; Value = "Wyse"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "Wyse"; }) > $Null
+					}
+				}
+				$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+			}
+
+			#IPs
+			If( $FilterItem.Criteria.IPs.Enabled)
+			{
+				$cnt = -1
+				
+				If($FilterItem.Criteria.IPs.AllowedIPs.IPv4s.Count -gt 0)
+				{
+					ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv4s)
+					{
+						$cnt++
+						If($cnt -eq 0)
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$ScriptInformation.Add(@{Data = "     IP is"; Value = $item.From; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = "     IP is"; Value = "$($item.From) - $($item.To)"; }) > $Null
+							}
+						}
+						Else
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
+							}
+						}
+					}
+				}
+
+				If($FilterItem.Criteria.IPs.AllowedIPs.IPv6s.Count -gt 0)
+				{
+					ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv6s)
+					{
+						$cnt++
+						If($cnt -eq 0)
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$ScriptInformation.Add(@{Data = "     IP is"; Value = $item.From; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = "    IP is"; Value = "$($item.From) - $($item.To)"; }) > $Null
+							}
+						}
+						Else
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = $item.From; }) > $Null
+							}
+							Else
+							{
+								$ScriptInformation.Add(@{Data = ""; Value = "$($item.From) - $($item.To)"; }) > $Null
+							}
+						}
+					}
+				}
+				$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+			}
+			
+			#MAC addresses
+			If($FilterItem.Criteria.HardwareIDs.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.HardwareIDs.Members)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$ScriptInformation.Add(@{Data = "     Hardware ID is "; Value = "$($Item.HardwareID)"; }) > $Null
+					}
+					Else
+					{
+						$ScriptInformation.Add(@{Data = ""; Value = "$($Item.HardwareID)"; }) > $Null
+					}
+				}
+				$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+			}
+		}
+	}
+	If($Text)
+	{
+		Line 0 ""
+		Line 2 "Own Filters"
+		Line 0 ""
+		
+		ForEach($FilterItem in $PubItem.filter.rules)
+		{
+			#general stuff
+			If([String]::IsNullOrEmpty($FilterItem.Description))
+			{
+				Line 3 "$($FilterItem.Name)"
+			}
+			Else
+			{
+				Line 3 "$($FilterItem.Name) - $($FilterItem.Description)"
+			}
+
+			If($FilterItem.Criteria.Access.ToString() -eq "AllowCriteriaWhen")
+			{
+				Line 4 "Allow if"
+			}
+			Else
+			{
+				Line 4 "Deny if"
+			}
+
+			#users and groups
+			If($FilterItem.Criteria.SecurityPrincipals.Enabled)
+			{
+				$cnt = -1
+				
+				ForEach($Item in $FilterItem.Criteria.SecurityPrincipals.members)
+				{
+					$cnt++
+					If($cnt -eq 0)
+					{
+						Line 4 "User or group is: " "$($Item.Account)"
+					}
+					Else
+					{
+						Line 6 "  $($Item.Account)"
+					}
+				}
+				Line 0 ""
+			}
+
+			#gateways
+			If($FilterItem.Criteria.Gateways.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Gateways.Members)
+				{
+					$cnt++
+					If($cnt -eq 0)
+					{
+						Line 4 "Secure gateway is: " "$($Item.GatewayIP)"
+					}
+					Else
+					{
+						Line 6 "   $($Item.GatewayIP)"
+					}
+				}
+				Line 0 ""
+			}
+
+			#themes
+			If($FilterItem.Criteria.Themes.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Themes)
+				{
+					If($Item.Ids.Count -ne 0)
+					{
+						
+						ForEach($ThemeID in $Item.Ids)
+						{
+							$xTheme = Get-RASTheme -Id $ThemeID -EA 0 4> $Null
+				
+							If(!$? -or $Null -eq $xTheme)
+							{
+								$FilterTheme = "not used"
+							}
+							Else
+							{
+								$FilterTheme = $xTheme.Name
+							}
+							$cnt++
+							If($cnt -eq 0)
+							{
+								Line 4 "Theme is: " "$FilterTheme"
+							}
+							Else
+							{
+								Line 8 "$FilterTheme"
+							}
+						}
+					}
+					Else
+					{
+						Line 4 "Theme is: " "not used"
+					}
+
+				}
+				Line 0 ""
+			}
+
+			#client device name
+			If($FilterItem.Criteria.Devices.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Devices.Members)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Device is: " "$($Item.Client)"
+					}
+					Else
+					{
+						Line 8 "$($Item.Client)"
+					}
+				}
+				Line 0 ""
+			}
+
+			#client device operating system
+			If($FilterItem.Criteria.OSs.Enabled)
+			{
+				$cnt = -1
+				If($FilterItem.Criteria.OSs.AllowedOSes.Windows)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "Windows"
+					}
+					Else
+					{
+						Line 6 "     Windows"
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.WebClient)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "User Portal (Web Client)"
+					}
+					Else
+					{
+						Line 6 "     User Portal (Web Client)"
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Mac)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "macOS"
+					}
+					Else
+					{
+						Line 6 "     macOS"
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Linux)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "Linux"
+					}
+					Else
+					{
+						Line 6 "     Linux"
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.iOS)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "iOS/iPadOS"
+					}
+					Else
+					{
+						Line 6 "     iOS/iPadOS"
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Android)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "Android"
+					}
+					Else
+					{
+						Line 6 "     Android"
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Chrome)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "Chrome OS"
+					}
+					Else
+					{
+						Line 6 "     Chrome OS"
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Wyse)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Operating system is: " "Wyse"
+					}
+					Else
+					{
+						Line 8 "Wyse"
+					}
+				}
+				Line 0 ""
+			}
+
+			#IPs
+			If( $FilterItem.Criteria.IPs.Enabled)
+			{
+				$cnt = -1
+				
+				If($FilterItem.Criteria.IPs.AllowedIPs.IPv4s.Count -gt 0)
+				{
+					ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv4s)
+					{
+						$cnt++
+						If($cnt -eq 0)
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								Line 4 "IP is: " $item.From
+							}
+							Else
+							{
+								Line 4 "IP is: " "$($item.From) - $($item.To)"
+							}
+						}
+						Else
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								Line 4 "       " $item.From
+							}
+							Else
+							{
+								Line 4 "       $($item.From) - $($item.To)"
+							}
+						}
+					}
+				}
+
+				If($FilterItem.Criteria.IPs.AllowedIPs.IPv6s.Count -gt 0)
+				{
+					ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv6s)
+					{
+						$cnt++
+						If($cnt -eq 0)
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								Line 4 "IP is: " $item.From
+							}
+							Else
+							{
+								Line 4 "IP is: " "$($item.From) - $($item.To)"
+							}
+						}
+						Else
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								Line 4 "       " $item.From
+							}
+							Else
+							{
+								Line 4 "       $($item.From) - $($item.To)"
+							}
+						}
+					}
+				}
+				Line 0 ""
+			}
+			
+			#MAC addresses
+			If($FilterItem.Criteria.HardwareIDs.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.HardwareIDs.Members)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						Line 4 "Hardware ID is: " "$($Item.HardwareID)"
+					}
+					Else
+					{
+						Line 8 "$($Item.HardwareID)"
+					}
+				}
+				Line 0 ""
+			}
+		}
+	}
+	If($HTML)
+	{
+		$rowdata.value += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
+		$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+		
+		ForEach($FilterItem in $PubItem.filter.rules)
+		{
+			#general stuff
+			If([String]::IsNullOrEmpty($FilterItem.Description))
+			{
+				$rowdata.value += @(,("$($FilterItem.Name)",($Script:htmlsb),"",$htmlwhite))
+			}
+			Else
+			{
+				$rowdata.value += @(,("$($FilterItem.Name) - $($FilterItem.Description)",($Script:htmlsb),"",$htmlwhite))
+			}
+
+			If($FilterItem.Criteria.Access.ToString() -eq "AllowCriteriaWhen")
+			{
+				$rowdata.value += @(,("     Allow if",($Script:htmlsb),"",$htmlwhite))
+			}
+			Else
+			{
+				$rowdata.value += @(,("     Deny if",($Script:htmlsb),"",$htmlwhite))
+			}
+
+			#users and groups
+			If($FilterItem.Criteria.SecurityPrincipals.Enabled)
+			{
+				$cnt = -1
+				
+				ForEach($Item in $FilterItem.Criteria.SecurityPrincipals.members)
+				{
+					$cnt++
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     User or group is ",($Script:htmlsb), "$($Item.Account)",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "$($Item.Account)",$htmlwhite))
+					}
+				}
+				$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+			}
+
+			#gateways
+			If($FilterItem.Criteria.Gateways.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Gateways.Members)
+				{
+					$cnt++
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Secure gateway is ",($Script:htmlsb), "$($Item.GatewayIP)",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "$($Item.GatewayIP)",$htmlwhite))
+					}
+				}
+				$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+			}
+
+			#themes
+			If($FilterItem.Criteria.Themes.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Themes)
+				{
+					If($Item.Ids.Count -ne 0)
+					{
+						
+						ForEach($ThemeID in $Item.Ids)
+						{
+							$xTheme = Get-RASTheme -Id $ThemeID -EA 0 4> $Null
+				
+							If(!$? -or $Null -eq $xTheme)
+							{
+								$FilterTheme = "not used"
+							}
+							Else
+							{
+								#remove the < and > 
+								$FilterTheme = $xTheme.Name.Trim("<",">")
+							}
+							$cnt++
+							If($cnt -eq 0)
+							{
+								$rowdata.value += @(,("     Theme is ",($Script:htmlsb), "$FilterTheme",$htmlwhite))
+							}
+							Else
+							{
+								$rowdata.value += @(,("",($Script:htmlsb), "$FilterTheme",$htmlwhite))
+							}
+						}
+					}
+					Else
+					{
+						$rowdata.value += @(,("     Theme is ",($Script:htmlsb), "not used",$htmlwhite))
+					}
+
+				}
+				$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+			}
+
+			#client device name
+			If($FilterItem.Criteria.Devices.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.Devices.Members)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Device is ",($Script:htmlsb), "$($Item.Client)",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "$($Item.Client)",$htmlwhite))
+					}
+				}
+				$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+			}
+
+			#client device operating system
+			If($FilterItem.Criteria.OSs.Enabled)
+			{
+				$cnt = -1
+				If($FilterItem.Criteria.OSs.AllowedOSes.Windows)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "Windows",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "Windows",$htmlwhite))
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.WebClient)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "User Portal (Web Client)",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "User Portal (Web Client)",$htmlwhite))
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Mac)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "macOS",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "macOS",$htmlwhite))
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Linux)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "Linux",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "Linux",$htmlwhite))
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.iOS)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "iOS/iPadOS",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "iOS/iPadOS",$htmlwhite))
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Android)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "Android",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "Android",$htmlwhite))
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Chrome)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "Chrome OS",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "Chrome OS",$htmlwhite))
+					}
+				}
+				
+				If($FilterItem.Criteria.OSs.AllowedOSes.Wyse)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Operating system is ",($Script:htmlsb), "Wyse",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "Wyse",$htmlwhite))
+					}
+				}
+				$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+			}
+
+			#IPs
+			If( $FilterItem.Criteria.IPs.Enabled)
+			{
+				$cnt = -1
+				
+				If($FilterItem.Criteria.IPs.AllowedIPs.IPv4s.Count -gt 0)
+				{
+					ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv4s)
+					{
+						$cnt++
+						If($cnt -eq 0)
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$rowdata.value += @(,("     IP is",($Script:htmlsb), $item.From,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata.value += @(,("     IP is",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+							}
+						}
+						Else
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$rowdata.value += @(,("",($Script:htmlsb), $item.From,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata.value += @(,("",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+							}
+						}
+					}
+				}
+
+				If($FilterItem.Criteria.IPs.AllowedIPs.IPv6s.Count -gt 0)
+				{
+					ForEach($item in $FilterItem.Criteria.IPs.AllowedIPs.IPv6s)
+					{
+						$cnt++
+						If($cnt -eq 0)
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$rowdata.value += @(,("     IP is",($Script:htmlsb), $item.From,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata.value += @(,("    IP is",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+							}
+						}
+						Else
+						{
+							If(($item.From -eq $item.To) -or ($item.To -eq ""))
+							{
+								$rowdata.value += @(,("",($Script:htmlsb), $item.From,$htmlwhite))
+							}
+							Else
+							{
+								$rowdata.value += @(,("",($Script:htmlsb), "$($item.From) - $($item.To)",$htmlwhite))
+							}
+						}
+					}
+				}
+				$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+			}
+			
+			#MAC addresses
+			If($FilterItem.Criteria.HardwareIDs.Enabled)
+			{
+				$cnt = -1
+				ForEach($item in $FilterItem.Criteria.HardwareIDs.Members)
+				{
+					$cnt++
+					
+					If($cnt -eq 0)
+					{
+						$rowdata.value += @(,("     Hardware ID is ",($Script:htmlsb), "$($Item.HardwareID)",$htmlwhite))
+					}
+					Else
+					{
+						$rowdata.value += @(,("",($Script:htmlsb), "$($Item.HardwareID)",$htmlwhite))
+					}
+				}
+				$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
+			}
+		}
+	}
+}
+
 Function OutputPubItemFilters
 {
 	Param([object] $PubItem, [string] $OutputType)
@@ -36848,230 +34755,370 @@ Function OutputPubItemFilters
 	If($OutputType -eq "MSWordPDF")
 	{
 		WriteWordLine 3 0 "Filtering"
-		If(!($PubItem.UserFilterEnabled))
+		WriteWordLine 4 0 "Apply filter to:"
+		ForEach($FilterItem in $PubItem.filter.rules)
 		{
-			WriteWordLine 0 0 "User filtering not enabled"
-			WriteWordLine 0 0 ""
-		}
-		Else
-		{
-			WriteWordLine 0 0 "User filtering is enabled"
-			WriteWordLine 0 0 ""
-			WriteWordLine 0 0 "Allow the following Users:" -FontSize 9 -Italics $True
-
+			WriteWordLine 5 0 "$($FilterItem.Name) Properties"
 			$ScriptInformation = New-Object System.Collections.ArrayList
-			$NameTable = @()
-			
-			ForEach($item in $PubItem.AllowedUsers)
+			$ScriptInformation.Add(@{Data = "Enable rule"; Value = $FilterItem.Enabled.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "General"; Value = ""; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Name"; Value = $FilterItem.Name; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Description"; Value = $FilterItem.Description; }) > $Null
+			If($FilterItem.Criteria.Access.ToString() -eq "AllowCriteriaWhen")
 			{
-				$NameTable += @{
-				User = $item.Account;
-				Type = $item.Type;
-				SID  = $item.Sid
-				}
-			}
-
-			If($NameTable.Count -gt 0)
-			{
-				$Table = AddWordTable -Hashtable $NameTable `
-				-Columns User,Type,SID `
-				-Headers "User", "Type", "SID" `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitContent;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
-		}
-		
-		If(!($PubItem.ClientFilterEnabled))
-		{
-			WriteWordLine 0 0 "Client device name filtering not enabled"
-			WriteWordLine 0 0 ""
-		}
-		Else
-		{
-			WriteWordLine 0 0 "Client device name filtering is enabled"
-			WriteWordLine 0 0 ""
-			WriteWordLine 0 0 "Allow the following Clients:" -FontSize 9 -Italics $True
-
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$NameTable = @()
-			
-			ForEach($item in $PubItem.AllowedClients)
-			{
-				$NameTable += @{
-				Client = $item;
-				}
-			}
-
-			If($NameTable.Count -gt 0)
-			{
-				$Table = AddWordTable -Hashtable $NameTable `
-				-Columns Client `
-				-Headers "Client" `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitContent;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
-		}
-		If(!($PubItem.OSFilterEnabled))
-		{
-			WriteWordLine 0 0 "Client device operating system filtering not enabled"
-			WriteWordLine 0 0 ""
-		}
-		Else
-		{
-			WriteWordLine 0 0 "Client device operating system filtering is enabled"
-			WriteWordLine 0 0 ""
-			WriteWordLine 0 0 "Allow access to clients running on the following operating system:" -FontSize 9 -Italics $True
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			If($PubItem.AllowedOSes.Android)
-			{
-				$ScriptInformation.Add(@{Data = "Android"; Value = "Enabled"; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Allow if"; Value = ""; }) > $Null
 			}
 			Else
 			{
-				$ScriptInformation.Add(@{Data = "Android"; Value = "Disabled"; }) > $Null
+				$ScriptInformation.Add(@{Data = "     Deny if"; Value = ""; }) > $Null
 			}
-			
-			If($PubItem.AllowedOSes.Chrome)
-			{
-				$ScriptInformation.Add(@{Data = "Chrome OS"; Value = "Enabled"; }) > $Null
-			}
-			Else
-			{
-				$ScriptInformation.Add(@{Data = "Chrome OS"; Value = "Disabled"; }) > $Null
-			}
-			
-			If($PubItem.AllowedOSes.iOS)
-			{
-				$ScriptInformation.Add(@{Data = "iOS/iPadOS"; Value = "Enabled"; }) > $Null
-			}
-			Else
-			{
-				$ScriptInformation.Add(@{Data = "iOS/iPadOS"; Value = "Disabled"; }) > $Null
-			}
-			
-			If($PubItem.AllowedOSes.Linux)
-			{
-				$ScriptInformation.Add(@{Data = "Linux"; Value = "Enabled"; }) > $Null
-			}
-			Else
-			{
-				$ScriptInformation.Add(@{Data = "Linux"; Value = "Disabled"; }) > $Null
-			}
-			
-			If($PubItem.AllowedOSes.Mac)
-			{
-				$ScriptInformation.Add(@{Data = "macOS"; Value = "Enabled"; }) > $Null
-			}
-			Else
-			{
-				$ScriptInformation.Add(@{Data = "macOS"; Value = "Disabled"; }) > $Null
-			}
-			
-			If($PubItem.AllowedOSes.WebClient)
-			{
-				$ScriptInformation.Add(@{Data = "User Portal (Web Client)"; Value = "Enabled"; }) > $Null
-			}
-			Else
-			{
-				$ScriptInformation.Add(@{Data = "User Portal (Web Client)"; Value = "Disabled"; }) > $Null
-			}
-			
-			If($PubItem.AllowedOSes.Windows)
-			{
-				$ScriptInformation.Add(@{Data = "Windows"; Value = "Enabled"; }) > $Null
-			}
-			Else
-			{
-				$ScriptInformation.Add(@{Data = "Windows"; Value = "Disabled"; }) > $Null
-			}
-			
-			If($PubItem.AllowedOSes.Wyse)
-			{
-				$ScriptInformation.Add(@{Data = "Wyse"; Value = "Enabled"; }) > $Null
-			}
-			Else
-			{
-				$ScriptInformation.Add(@{Data = "Wyse"; Value = "Disabled"; }) > $Null
-			}
-			
+
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
 			-List `
 			-Format $wdTableGrid `
-			-AutoFit $wdAutoFitContent;
+			-AutoFit $wdAutoFitFixed;
 
 			SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Columns.Item(1).Width = 125;
+			$Table.Columns.Item(2).Width = 175;
 
 			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
 			FindWordDocumentEnd
 			$Table = $Null
-			WriteWordLine 0 0 ""
-		}
-		
-		If(!($PubItem.IPFilterEnabled))
-		{
-			WriteWordLine 0 0 "IP Address filtering not enabled"
-			WriteWordLine 0 0 ""
-		}
-		Else
-		{
-			WriteWordLine 0 0 "IP Address filtering is enabled"
-			WriteWordLine 0 0 ""
-			WriteWordLine 0 0 "Allow the following IPs:" -FontSize 9 -Italics $True
-
-			If($PubItem.AllowedIP4s.Count -gt 0)
+			
+			WriteWordLine 4 0 "Criteria"
+			If($FilterItem.Criteria.SecurityPrincipals.Enabled)
 			{
-				$ScriptInformation = New-Object System.Collections.ArrayList
-				$NameTable = @()
-				
-				ForEach($item in $PubItem.AllowedIP4s)
+				WriteWordLine 5 0 "Apply policy if User or group"
+				If($FilterItem.criteria.SecurityPrincipals.MatchingMode -eq "IsOneOfTheFollowing")
 				{
-					If($item.From -eq $item.To)
+					WriteWordLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteWordLine 0 0 "is not one of the following"
+				}
+				
+				[System.Collections.Hashtable[]] $NameWordTable = @();
+				
+				ForEach($Item in $FilterItem.criteria.SecurityPrincipals.Members)
+				{
+					$NameTableRowHash = @{
+					Name = $Item.Account;
+					Type = $Item.Type;
+					SID  = $Item.Sid;
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($NameWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameWordTable `
+					-Columns Name,Type,SID `
+					-Headers "Name","Type","SID"`
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 50;
+					$Table.Columns.Item(3).Width = 250;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+			}
+
+			If($FilterItem.Criteria.Gateways.Enabled)
+			{
+				WriteWordLine 5 0 "Apply policy if Gateway"
+				If($FilterItem.criteria.Gateways.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteWordLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteWordLine 0 0 "is not one of the following"
+				}
+				
+				[System.Collections.Hashtable[]] $NameWordTable = @();
+				
+				ForEach($Item in $FilterItem.criteria.Gateways.Members)
+				{
+					$NameTableRowHash = @{
+					GatewayIP = $Item.GatewayIP;
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($NameWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameWordTable `
+					-Columns GatewayIP `
+					-Headers "Secure Gateways" `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+			}
+
+			If($FilterItem.Criteria.Themes.Enabled)
+			{
+				WriteWordLine 5 0 "Apply policy if Theme"
+
+				If($FilterItem.criteria.Themes.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteWordLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteWordLine 0 0 "is not one of the following"
+				}
+				
+				[System.Collections.Hashtable[]] $NameWordTable = @();
+				
+				ForEach($item in $FilterItem.Criteria.Themes)
+				{
+					If($Item.Ids.Count -ne 0)
 					{
-						$NameTable += @{
-						IPv4From = $item.From;
-						IPv4To   = ""
+						ForEach($ThemeID in $Item.Ids)
+						{
+							$xTheme = Get-RASTheme -Id $ThemeID -EA 0 4> $Null
+				
+							If(!$? -or $Null -eq $xTheme)
+							{
+								$FilterTheme = "not used"
+							}
+							Else
+							{
+								$FilterTheme = $xTheme.Name
+							}
+
+							$NameTableRowHash = @{
+							Theme = "$FilterTheme";
+							}
+							$NameWordTable += $NameTableRowHash;
 						}
 					}
 					Else
 					{
-						$NameTable += @{
-						IPv4From = $item.From;
-						IPv4To   = $item.To
+						$NameTableRowHash = @{
+						Theme = "not used";
 						}
+						$NameWordTable += $NameTableRowHash;
+					}
+
+					If($NameWordTable.Count -gt 0)
+					{
+						$Table = AddWordTable -Hashtable $NameWordTable `
+						-Columns Theme `
+						-Headers "Themes" `
+						-Format $wdTableGrid `
+						-AutoFit $wdAutoFitFixed;
+
+						SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 200;
+
+						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+						FindWordDocumentEnd
+						$Table = $Null
+						WriteWordLine 0 0 ""
 					}
 				}
+			}
 
-				If($NameTable.Count -gt 0)
+			If($FilterItem.Criteria.Devices.Enabled)
+			{
+				WriteWordLine 5 0 "Apply policy if Device"
+				If($FilterItem.criteria.Devices.MatchingMode -eq "IsOneOfTheFollowing")
 				{
-					$Table = AddWordTable -Hashtable $NameTable `
-					-Columns IPv4From,IPv4To `
+					WriteWordLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteWordLine 0 0 "is not one of the following"
+				}
+				
+				[System.Collections.Hashtable[]] $NameWordTable = @();
+				
+				ForEach($Item in $FilterItem.criteria.Devices.Members)
+				{
+					$NameTableRowHash = @{
+					Device = $Item.Client;
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($NameWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameWordTable `
+					-Columns Device `
+					-Headers "Client" `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+			}
+
+			If($FilterItem.Criteria.OSs.Enabled)
+			{
+				WriteWordLine 5 0 "Apply policy if Operating system"
+				If($FilterItem.criteria.OSs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteWordLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteWordLine 0 0 "is not one of the following"
+				}
+				
+				[System.Collections.Hashtable[]] $NameWordTable = @();
+				
+				If($FilterItem.criteria.OSs.AllowedOSes.Windows)
+				{
+					$NameTableRowHash = @{
+					OS = "Windows";
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.WebClient)
+				{
+					$NameTableRowHash = @{
+					OS = 'User Portal (Web Client)';
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Mac)
+				{
+					$NameTableRowHash = @{
+					OS = "macOS";
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Linux)
+				{
+					$NameTableRowHash = @{
+					OS = "Linux";
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.iOS)
+				{
+					$NameTableRowHash = @{
+					OS = 'iOS/iPadOS';
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Android)
+				{
+					$NameTableRowHash = @{
+					OS = "Android";
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Chrome)
+				{
+					$NameTableRowHash = @{
+					OS = "Chrome OS";
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($NameWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameWordTable `
+					-Columns OS `
+					-Headers "Operating system" `
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
+
+					SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
+			}
+
+			If($FilterItem.Criteria.IPs.Enabled)
+			{
+				WriteWordLine 5 0 "Apply policy if IP"
+				If($FilterItem.criteria.IPs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteWordLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteWordLine 0 0 "is not one of the following"
+				}
+				
+				[System.Collections.Hashtable[]] $NameWordTable = @();
+				
+				ForEach($Item in $FilterItem.criteria.IPs.AllowedIPs.IPv4s)
+				{
+					$NameTableRowHash = @{
+					From = $Item.From;
+					To   = $Item.To;
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
+
+				If($NameWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameWordTable `
+					-Columns From, To `
 					-Headers "IPv4 Address From", "IPv4 Address To" `
 					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitContent;
+					-AutoFit $wdAutoFitFixed;
 
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
 					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 200;
 
 					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -37079,41 +35126,31 @@ Function OutputPubItemFilters
 					$Table = $Null
 					WriteWordLine 0 0 ""
 				}
-			}
-			
-			If($PubItem.AllowedIP6s.Count -gt 0)
-			{
-				$ScriptInformation = New-Object System.Collections.ArrayList
-				$NameTable = @()
+
+				[System.Collections.Hashtable[]] $NameWordTable = @();
 				
-				ForEach($item in $PubItem.AllowedIP6s)
+				ForEach($Item in $FilterItem.criteria.IPs.AllowedIPs.IPv6s)
 				{
-					If($item.From -eq $item.To)
-					{
-						$NameTable += @{
-						IPv6From = $item.From;
-						IPv6To   = ""
-						}
+					$NameTableRowHash = @{
+					From = $Item.From;
+					To   = $Item.To;
 					}
-					Else
-					{
-						$NameTable += @{
-						IPv6From = $item.From;
-						IPv6To   = $item.To
-						}
-					}
+					$NameWordTable += $NameTableRowHash;
 				}
 
-				If( $NameTable.Count -gt 0)
+				If($NameWordTable.Count -gt 0)
 				{
-					$Table = AddWordTable -Hashtable $NameTable `
-					-Columns IPv6From,IPv6To `
+					$Table = AddWordTable -Hashtable $NameWordTable `
+					-Columns From, To `
 					-Headers "IPv6 Address From", "IPv6 Address To" `
 					-Format $wdTableGrid `
-					-AutoFit $wdAutoFitContent;
+					-AutoFit $wdAutoFitFixed;
 
-					SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
 					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+					$Table.Columns.Item(1).Width = 200;
+					$Table.Columns.Item(2).Width = 200;
 
 					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -37122,613 +35159,600 @@ Function OutputPubItemFilters
 					WriteWordLine 0 0 ""
 				}
 			}
-		}
-		
-		If(!($PubItem.MACFilterEnabled))
-		{
-			WriteWordLine 0 0 "MAC filtering not enabled"
-			WriteWordLine 0 0 ""
-		}
-		Else
-		{
-			WriteWordLine 0 0 "MAC filtering is enabled"
-			WriteWordLine 0 0 ""
-			WriteWordLine 0 0 "Allow the following MACs:" -FontSize 9 -Italics $True
 
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$NameTable = @()
-			
-			ForEach($item in $PubItem.AllowedMACs)
+			If($FilterItem.Criteria.HardwareIDs.Enabled)
 			{
-				$NameTable += @{
-				MAC = $item;
+				WriteWordLine 5 0 "Apply policy if Hardware ID"
+				If($FilterItem.criteria.HardwareIDs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteWordLine 0 0 "is one of the following"
 				}
-			}
-
-			If($NameTable.Count -gt 0)
-			{
-				$Table = AddWordTable -Hashtable $NameTable `
-				-Columns MAC `
-				-Headers "MAC" `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitContent;
-
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-				FindWordDocumentEnd
-				$Table = $Null
-				WriteWordLine 0 0 ""
-			}
-		}
-		
-		If(!($PubItem.GatewayFilterEnabled))
-		{
-			WriteWordLine 0 0 "Gateway filtering not enabled"
-			WriteWordLine 0 0 ""
-		}
-		Else
-		{
-			WriteWordLine 0 0 "Gateway filtering is enabled"
-			WriteWordLine 0 0 ""
-			WriteWordLine 0 0 "Allow connections from the following Gateways:" -FontSize 9 -Italics $True
-
-			$ScriptInformation = New-Object System.Collections.ArrayList
-			$NameTable = @()
-			
-			ForEach($item in $PubItem.AllowedGateways)
-			{
-				$NameTable += @{
-				GW = $item;
+				Else
+				{
+					WriteWordLine 0 0 "is not one of the following"
 				}
-			}
+				
+				[System.Collections.Hashtable[]] $NameWordTable = @();
+				
+				ForEach($Item in $FilterItem.criteria.HardwareIDs.Members)
+				{
+					$NameTableRowHash = @{
+					HardwareID = $Item.HardwareID;
+					}
+					$NameWordTable += $NameTableRowHash;
+				}
 
-			If($NameTable.Count -gt 0)
-			{
-				$Table = AddWordTable -Hashtable $NameTable `
-				-Columns GW `
-				-Headers "Gateways" `
-				-Format $wdTableGrid `
-				-AutoFit $wdAutoFitContent;
+				If($NameWordTable.Count -gt 0)
+				{
+					$Table = AddWordTable -Hashtable $NameWordTable `
+					-Columns HardwareID `
+					-Headers "Device Hardware ID"`
+					-Format $wdTableGrid `
+					-AutoFit $wdAutoFitFixed;
 
-				SetWordCellFormat -Collection $Table -Size 10 -BackgroundColor $wdColorWhite
-				SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+					SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
+					SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-				$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+					$Table.Columns.Item(1).Width = 200;
 
-				FindWordDocumentEnd
-				$Table = $Null
+					$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
-				WriteWordLine 0 0 ""
+					FindWordDocumentEnd
+					$Table = $Null
+					WriteWordLine 0 0 ""
+				}
 			}
 		}
 	}
 	If($OutputType -eq "Text")
 	{
 		Line 2 "Filtering"
-		If(!($PubItem.UserFilterEnabled))
+		Line 3 "Apply filter to"
+		ForEach($FilterItem in $PubItem.filter.rules)
 		{
-			Line 3 "User filtering not enabled"
+			Line 4 "$($FilterItem.Name) Properties"
 			Line 0 ""
-		}
-		Else
-		{
-			Line 3 "User filtering is enabled"
-			Line 3 "Allow the following Users:"
-			If($PubItem.AllowedUsers.Count -gt 0)
+			Line 3 "Enable rule: " $FilterItem.Enabled.ToString()
+			Line 3 "General"
+			Line 4 "Name: " $FilterItem.Name
+			Line 4 "Description: " $FilterItem.Description
+			If($FilterItem.Criteria.Access.ToString() -eq "AllowCriteriaWhen")
 			{
-				Line 0 ""
-				
-				$maxLength = ($PubItem.AllowedUsers.Account | Measure-Object -Property length -Maximum).Maximum
-				$NegativeMaxLength = $maxLength * -1
-				Line 3 "User" -nonewline
-				Line 0 (" " * ($maxLength - 3)) -nonewline
-				LIne 0 "Type  SID"
-				Line 3 ("=" * ($maxLength + 1 + 6 + 45)) # $maxLength, space, "Type" plus 2 spaces, length of SID
-				ForEach($item in $PubItem.AllowedUsers)
-				{
-					Line 3 ("{0,$NegativeMaxLength} {1,-5} {2,-45}" -f $item.Account,$item.Type,$item.Sid)
-				}
+				Line 5 "Allow if"
 			}
 			Else
 			{
-				Line 0 "There are no users configured"
+				Line 5 "Deny if"
 			}
 			Line 0 ""
-		}
-		
-		If(!($PubItem.ClientFilterEnabled))
-		{
-			Line 3 "Client device name filtering not enabled"
-			Line 0 ""
-		}
-		Else
-		{
-			Line 3 "Client device name filtering is enabled"
-			Line 3 "Allow the following Clients:"
-			Line 0 ""
-			Line 3 "Client         "
-			Line 3 "==============="
-			ForEach($item in $PubItem.AllowedClients)
-			{
-				Line 3 ("{0,-15}" -f $item)
-			}
-			Line 0 ""
-		}
-		
-		If(!($PubItem.OSFilterEnabled))
-		{
-			Line 3 "Client device operating system filtering not enabled"
-			Line 0 ""
-		}
-		Else
-		{
-			Line 3 "Client device operating system filtering is enabled"
-			Line 3 "Allow access to clients running on the following operating system:"
-			Line 0 ""
-			Line 3 "Operating system"
-			Line 3 "================"
-			If($PubItem.AllowedOSes.Android)
-			{
-				Line 3 "Android`t`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "Android`t`t: " "Disabled"
-			}
-			
-			If($PubItem.AllowedOSes.Chrome)
-			{
-				Line 3 "Chrome OS`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "Chrome OS`t: " "Disabled"
-			}
-			
-			If($PubItem.AllowedOSes.iOS)
-			{
-				Line 3 "iOS`t`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "iOS`t`t: " "Disabled"
-			}
-			
-			If($PubItem.AllowedOSes.Linux)
-			{
-				Line 3 "Linux`t`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "Linux`t`t: " "Disabled"
-			}
-			
-			If($PubItem.AllowedOSes.Mac)
-			{
-				Line 3 "macOS`t`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "macOS`t`t: " "Disabled"
-			}
-			
-			If($PubItem.AllowedOSes.WebClient)
-			{
-				Line 3 "RAS Web Portal`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "RAS Web Portal`t: " "Disabled"
-			}
-			
-			If($PubItem.AllowedOSes.Windows)
-			{
-				Line 3 "Windows`t`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "Windows`t`t: " "Disabled"
-			}
-			
-			If($PubItem.AllowedOSes.Wyse)
-			{
-				Line 3 "Wyse`t`t: " "Enabled"
-			}
-			Else
-			{
-				Line 3 "Wyse`t`t: " "Disabled"
-			}
-			Line 0 ""
-		}
-		
-		If(!($PubItem.IPFilterEnabled))
-		{
-			Line 3 "IP Address filtering not enabled"
-			Line 0 ""
-		}
-		Else
-		{
-			Line 3 "IP Address filtering is enabled"
-			Line 3 "Allow the following IPs:"
-			Line 0 ""
-			
-			If($PubItem.AllowedIP4s.Count -gt 0)
-			{
-				Line 3 "IPv4 Address From  IPv4 Address To"
-				Line 3 "=================================="
-				#       255.255.255.255    255.255.255.255
-				#       123456789012345SSSS123456789012345
-				ForEach($item in $PubItem.AllowedIP4s)
-				{
-					If($item.From -eq $item.To)
-					{
-						Line 3 ("{0,-15}" -f $item.From)
-					}
-					Else
-					{
-						Line 3 ("{0,-15}    {1,-15}" -f $item.From, $Item.To)
-					}
-				}
-				
-				Line 0 ""
-			}
-			
-			If($PubItem.AllowedIP6s.Count -gt 0)
-			{
-				$MaxFrom    = ($PubItem.AllowedIP6s.From | Measure-Object -Property length -maximum).Maximum
-				$MaxTo      = ($PubItem.AllowedIP6s.To | Measure-Object -Property length -maximum).Maximum
-				$NegMaxFrom = $MaxFrom * -1
-				$NegMaxTo   = $MaxTo * -1
-				
-				$SpacesFrom = $MaxFrom - 17
-				$SpacesTo   = $MaxTo - 15
-				If($SpacesFrom -le 0)
-				{
-					$SpacesFrom = 17
-				}
-				If($SpacesTo -le 0)
-				{
-					$SpacesTo = 15
-				}
-				Line 3 "IPv6 Address From  " -nonewline
-				Line 0 (" " * $SpacesFrom) -nonewline
-				Line 0 "IPv6 Address To" -nonewline
-				Line 0 (" " * $SpacesTo)
-				Line 3 ("=" * (($MaxFrom + $MaxTo) + 2))
 
-				ForEach($item in $PubItem.AllowedIP6s)
+			Line 3 "Criteria"
+			If($FilterItem.Criteria.SecurityPrincipals.Enabled)
+			{
+				Line 3 "Apply policy if User or group"
+				Line 3 "Enable criteria: " $FilterItem.criteria.SecurityPrincipals.Enabled.ToString()
+				If($FilterItem.criteria.SecurityPrincipals.MatchingMode -eq "IsOneOfTheFollowing")
 				{
-					If($item.From -eq $item.To)
-					{
-						Line 3 ("{0,$NegMaxFrom}" -f $item.From)
-					}
-					Else
-					{
-						Line 3 ("{0,$NegMaxFrom}  {1,$NegMaxTo}" -f $item.From, $Item.To)
-					}
+					Line 3 "is one of the following"
+				}
+				Else
+				{
+					Line 3 "is not one of the following"
+				}
+				Line 0 ""
+				Line 4 "Name                                      Type      SID                                               "
+				Line 4 "======================================================================================================"
+				#       1234567890123456789012345678901234567890SS12345678SS12345678901234567890123456789012345678901234567890
+				
+				ForEach($Item in $FilterItem.criteria.SecurityPrincipals.Members)
+				{
+					Line 4 ( "{0,-40}  {1,-8}  {2,-40}" -f `
+					$Item.Account, $Item.Type, $Item.Sid)
+				}
+				Line 0 ""
+			}
+
+			If($FilterItem.Criteria.Gateways.Enabled)
+			{
+				Line 3 "Apply policy if Gateway"
+				Line 3 "Enable criteria: " $FilterItem.criteria.Gateways.Enabled.ToString()
+				If($FilterItem.criteria.Gateways.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					Line 3 "is one of the following"
+				}
+				Else
+				{
+					Line 3 "is not one of the following"
+				}
+				Line 0 ""
+				Line 4 "Secure Gateways     "
+				Line 4 "===================="
+				#       12345678901234567890
+				
+				ForEach($Item in $FilterItem.criteria.Gateways.Members)
+				{
+					Line 4 ( "{0,-20}" -f $Item.GatewayIP)
+				}
+				Line 0 ""
+			}
+
+			If($FilterItem.Criteria.Themes.Enabled)
+			{
+				Line 3 "Apply policy if Theme"
+
+				If($FilterItem.criteria.Themes.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					Line 3 "is one of the following"
+				}
+				Else
+				{
+					Line 3 "is not one of the following"
 				}
 				
 				Line 0 ""
+				Line 4 "Themes              "
+				Line 4 "===================="
+				#       12345678901234567890
+
+				ForEach($item in $FilterItem.Criteria.Themes)
+				{
+					If($Item.Ids.Count -ne 0)
+					{
+						ForEach($ThemeID in $Item.Ids)
+						{
+							$xTheme = Get-RASTheme -Id $ThemeID -EA 0 4> $Null
+				
+							If(!$? -or $Null -eq $xTheme)
+							{
+								$FilterTheme = "not used"
+							}
+							Else
+							{
+								$FilterTheme = $xTheme.Name
+							}
+
+							Line 4 ( "{0,-20}" -f $FilterTheme)
+						}
+					}
+					Else
+					{
+						Line 4 ( "{0,-20}" -f "not used")
+					}
+				}
+				Line 0 ""
 			}
-		}
-		
-		If(!($PubItem.MACFilterEnabled))
-		{
-			Line 3 "MAC filtering not enabled"
-			Line 0 ""
-		}
-		Else
-		{
-			Line 3 "MAC filtering is enabled"
-			Line 3 "Allow the following MACs:"
-			Line 0 ""
-			Line 3 "MAC         "
-			Line 3 "============"
-			#       123456789012
-			ForEach($item in $PubItem.AllowedMACs)
+
+			If($FilterItem.Criteria.Devices.Enabled)
 			{
-				Line 3 ("{0,-12}" -f $item)
+				Line 3 "Apply policy if Device"
+				If($FilterItem.criteria.Devices.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					Line 3 "is one of the following"
+				}
+				Else
+				{
+					Line 3 "is not one of the following"
+				}
+				
+				Line 0 ""
+				Line 4 "Secure Gateways     "
+				Line 4 "===================="
+				#       12345678901234567890
+
+				ForEach($Item in $FilterItem.criteria.Devices.Members)
+				{
+					Line 4 ( "{0,-20}" -f $Item.Client)
+				}
+				Line 0 ""
 			}
-			Line 0 ""
-		}
-		
-		If(!($PubItem.GatewayFilterEnabled))
-		{
-			Line 3 "Gateway filtering not enabled"
-			Line 0 ""
-		}
-		Else
-		{
-			Line 3 "Gateway filtering is enabled"
-			Line 3 "Allow connections from the following Gateways:"
-			Line 0 ""
-			Line 3 "Gateways       "
-			Line 3 "==============="
-			#       123456789012345
-			ForEach($item in $PubItem.AllowedGateways)
+
+			If($FilterItem.Criteria.OSs.Enabled)
 			{
-				Line 3 ("{0,-15}" -f $item)
+				Line 3 "Apply policy if Operating system"
+				If($FilterItem.criteria.OSs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					Line 3 "is one of the following"
+				}
+				Else
+				{
+					Line 3 "is not one of the following"
+				}
+				Line 0 ""
+				Line 4 "Operating system         "
+				Line 4 "========================="
+				#       1234567890123456789012345
+				
+				If($FilterItem.criteria.OSs.AllowedOSes.Windows)
+				{
+					Line 4 ( "{0,-25}" -f "Windows")
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.WebClient)
+				{
+					Line 4 ( "{0,-25}" -f 'User Portal (Web Client)')
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Mac)
+				{
+					Line 4 ( "{0,-25}" -f "macOS")
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Linux)
+				{
+					Line 4 ( "{0,-25}" -f "Linux")
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.iOS)
+				{
+					Line 4 ( "{0,-25}" -f 'iOS/iPadOS')
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Android)
+				{
+					Line 4 ( "{0,-25}" -f "Android")
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Chrome)
+				{
+					Line 4 ( "{0,-25}" -f "Chrome OS")
+				}
+				Line 0 ""
 			}
-			Line 0 ""
+
+			If($FilterItem.Criteria.IPs.Enabled)
+			{
+				Line 3 "Apply policy if IP"
+				If($FilterItem.criteria.IPs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					Line 3 "is one of the following"
+				}
+				Else
+				{
+					Line 3 "is not one of the following"
+				}
+				Line 0 ""
+				Line 4 "IPv4 Address From                                   IPv4 Address To                                   "
+				Line 4 "======================================================================================================"
+				#       12345678901234567890123456789012345678901234567890SS12345678901234567890123456789012345678901234567890
+				
+				ForEach($Item in $FilterItem.criteria.IPs.AllowedIPs.IPv4s)
+				{
+					Line 4 ( "{0,-50}  {1,-50}" -f `
+					$Item.From, $Item.To)
+				}
+				Line 0 ""
+				Line 4 "IPv6 Address From                                   IPv6 Address To                                   "
+				Line 4 "======================================================================================================"
+				#       12345678901234567890123456789012345678901234567890SS12345678901234567890123456789012345678901234567890
+				
+				ForEach($Item in $FilterItem.criteria.IPs.AllowedIPs.IPv6s)
+				{
+					Line 4 ( "{0,-50}  {1,-50}" -f `
+					$Item.From, $Item.To)
+				}
+				Line 0 ""
+			}
+
+			If($FilterItem.Criteria.HardwareIDs.Enabled)
+			{
+				Line 3 "Apply policy if Hardware ID"
+				If($FilterItem.criteria.HardwareIDs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					Line 3 "is one of the following"
+				}
+				Else
+				{
+					Line 3 "is not one of the following"
+				}
+				Line 0 ""
+				Line 4 "Device Hardware ID  "
+				Line 4 "===================="
+				#       12345678901234567890
+				
+				ForEach($Item in $FilterItem.criteria.HardwareIDs.Members)
+				{
+					Line 4 ( "{0,-20}" -f $Item.HardwareID)
+				}
+				Line 0 ""
+			}
 		}
 	}
 	If($OutputType -eq "HTML")
 	{
 		WriteHTMLLine 3 0 "Filtering"
-		If(!($PubItem.UserFilterEnabled))
+		WriteHTMLLine 4 0 "Apply filter to:"
+		ForEach($FilterItem in $PubItem.filter.rules)
 		{
-			WriteHTMLLine 0 0 "User filtering not enabled"
-			WriteHTMLLine 0 0 ""
-		}
-		Else
-		{
-			WriteHTMLLine 0 0 "User filtering is enabled"
-
+			WriteHTMLLine 5 0 "$($FilterItem.Name) Properties"
+			
 			$rowdata = @()
-			
-			ForEach($item in $PubItem.AllowedUsers)
+			$columnHeaders = @("Enable rule",($Script:htmlsb),$FilterItem.Enabled.ToString(),$htmlwhite)
+			$rowdata += @(,("General",($Script:htmlsb),"",$htmlwhite))
+			$rowdata += @(,("     Name",($Script:htmlsb),$FilterItem.Name,$htmlwhite))
+			$rowdata += @(,("     Description",($Script:htmlsb),$FilterItem.Description,$htmlwhite))
+			If($FilterItem.Criteria.Access.ToString() -eq "AllowCriteriaWhen")
 			{
-				$rowdata += @(,(
-				$item.Account,$htmlwhite,
-				$item.Type,$htmlwhite,
-				$item.Sid,$htmlwhite))
+				$rowdata += @(,("     Allow if",($Script:htmlsb),"",$htmlwhite))
+			}
+			Else
+			{
+				$rowdata += @(,("     Deny if",($Script:htmlsb),"",$htmlwhite))
 			}
 
-			$columnHeaders = @(
-			"User",($Script:htmlsb),
-			"Type",($Script:htmlsb),
-			"SID",($Script:htmlsb))
-
-			$msg = "Allow the following Users:"
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
+			$msg = ""
+			$columnWidths = @("150","200")
+			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
 			WriteHTMLLine 0 0 ""
-		}
-		
-		If(!($PubItem.ClientFilterEnabled))
-		{
-			WriteHTMLLine 0 0 "Client device name filtering not enabled"
-			WriteHTMLLine 0 0 ""
-		}
-		Else
-		{
-			WriteHTMLLine 0 0 "Client device name filtering is enabled"
 
-			$rowdata = @()
-			
-			ForEach($item in $PubItem.AllowedClients)
+			WriteHTMLLine 4 0 "Criteria"
+			If($FilterItem.Criteria.SecurityPrincipals.Enabled)
 			{
-				$rowdata += @(,(
-				$item,$htmlwhite))
+				WriteHTMLLine 5 0 "Apply policy if User or group"
+				If($FilterItem.criteria.SecurityPrincipals.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteHTMLLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteHTMLLine 0 0 "is not one of the following"
+				}
+
+				$rowdata = @()
+
+				ForEach($Item in $FilterItem.criteria.SecurityPrincipals.Members)
+				{
+					$rowdata += @(,(
+					$Item.Account,$htmlwhite,
+					$Item.Type,$htmlwhite,
+					$Item.Sid,$htmlwhite))
+				}
+
+				$columnHeaders = @(
+				"Name",($Script:htmlsb),
+				"Type",($Script:htmlsb),
+				"SID",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("200","50","300")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
 			}
 
-			$columnHeaders = @(
-			"Client",($Script:htmlsb))
+			If($FilterItem.Criteria.Gateways.Enabled)
+			{
+				WriteHTMLLine 5 0 "Apply policy if Gateway"
+				If($FilterItem.criteria.Gateways.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteHTMLLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteHTMLLine 0 0 "is not one of the following"
+				}
 
-			$msg = "Allow the following Clients:"
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
-			WriteHTMLLine 0 0 ""
-		}
-		If(!($PubItem.OSFilterEnabled))
-		{
-			WriteHTMLLine 0 0 "Client device operating system filtering not enabled"
-			WriteHTMLLine 0 0 ""
-		}
-		Else
-		{
-			WriteHTMLLine 0 0 "Client device operating system filtering is enabled"
-			$rowdata = @()
+				$rowdata = @()
 
-			If($PubItem.AllowedOSes.Android)
-			{
-				$columnHeaders = @("Android",($Script:htmlsb),"Enabled",$htmlwhite)
-			}
-			Else
-			{
-				$columnHeaders = @("Android",($Script:htmlsb),"Disabled",$htmlwhite)
-			}
-			
-			If($PubItem.AllowedOSes.Chrome)
-			{
-				$rowdata += @(,("Chrome OS",($Script:htmlsb),"Enabled",$htmlwhite))
-			}
-			Else
-			{
-				$rowdata += @(,("Chrome OS",($Script:htmlsb),"Disabled",$htmlwhite))
-			}
-			
-			If($PubItem.AllowedOSes.iOS)
-			{
-				$rowdata += @(,("iOS/iPadOS",($Script:htmlsb),"Enabled",$htmlwhite))
-			}
-			Else
-			{
-				$rowdata += @(,("iOS/iPadOS",($Script:htmlsb),"Disabled",$htmlwhite))
-			}
-			
-			If($PubItem.AllowedOSes.Linux)
-			{
-				$rowdata += @(,("Linux",($Script:htmlsb),"Enabled",$htmlwhite))
-			}
-			Else
-			{
-				$rowdata += @(,("Linux",($Script:htmlsb),"Disabled",$htmlwhite))
-			}
-			
-			If($PubItem.AllowedOSes.Mac)
-			{
-				$rowdata += @(,("macOS",($Script:htmlsb),"Enabled",$htmlwhite))
-			}
-			Else
-			{
-				$rowdata += @(,("macOS",($Script:htmlsb),"Disabled",$htmlwhite))
-			}
-			
-			If($PubItem.AllowedOSes.WebClient)
-			{
-				$rowdata += @(,("User Portal (Web Client)",($Script:htmlsb),"Enabled",$htmlwhite))
-			}
-			Else
-			{
-				$rowdata += @(,("User Portal (Web Client)",($Script:htmlsb),"Disabled",$htmlwhite))
-			}
-			
-			If($PubItem.AllowedOSes.Windows)
-			{
-				$rowdata += @(,("Windows",($Script:htmlsb),"Enabled",$htmlwhite))
-			}
-			Else
-			{
-				$rowdata += @(,("Windows",($Script:htmlsb),"Disabled",$htmlwhite))
-			}
-			
-			If($PubItem.AllowedOSes.Wyse)
-			{
-				$rowdata += @(,("Wyse",($Script:htmlsb),"Enabled",$htmlwhite))
-			}
-			Else
-			{
-				$rowdata += @(,("Wyse",($Script:htmlsb),"Disabled",$htmlwhite))
-			}
-			
-			$msg = "Allow access to clients running on the following operating system:"
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
-			WriteHTMLLine 0 0 ""
-		}
-		
-		If(!($PubItem.IPFilterEnabled))
-		{
-			WriteHTMLLine 0 0 "IP Address filtering not enabled"
-			WriteHTMLLine 0 0 ""
-		}
-		Else
-		{
-			WriteHTMLLine 0 0 "IP Address filtering is enabled"
+				ForEach($Item in $FilterItem.criteria.Gateways.Members)
+				{
+					$rowdata += @(,($Item.GatewayIP,$htmlwhite))
+				}
 
-			If($PubItem.AllowedIP4s.Count -gt 0)
+				$columnHeaders = @("Secure Gateways",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("200")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			If($FilterItem.Criteria.Themes.Enabled)
 			{
+				WriteHTMLLine 5 0 "Apply policy if Theme"
+
+				If($FilterItem.criteria.Themes.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteHTMLLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteHTMLLine 0 0 "is not one of the following"
+				}
+				
 				$rowdata = @()
 				
-				ForEach($item in $PubItem.AllowedIP4s)
+				ForEach($item in $FilterItem.Criteria.Themes)
 				{
-					If($item.From -eq $item.To)
+					If($Item.Ids.Count -ne 0)
 					{
-						$rowdata += @(,(
-						$item.From,$htmlwhite,
-						"",$htmlwhite))
+						ForEach($ThemeID in $Item.Ids)
+						{
+							$xTheme = Get-RASTheme -Id $ThemeID -EA 0 4> $Null
+				
+							If(!$? -or $Null -eq $xTheme)
+							{
+								$FilterTheme = "not used"
+							}
+							Else
+							{
+								$FilterTheme = $xTheme.Name.Trim("<",">")
+							}
+
+							$rowdata += @(,("$FilterTheme",$htmlwhite))
+						}
 					}
 					Else
 					{
-						$rowdata += @(,(
-						$item.From,$htmlwhite,
-						$item.To,$htmlwhite))
+						$rowdata += @(,("not used",$htmlwhite))
 					}
+
+					$columnHeaders = @("Themes",($Script:htmlsb))
+
+					$msg = ""
+					$columnWidths = @("200")
+					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+					WriteHTMLLine 0 0 ""
+				}
+			}
+
+			If($FilterItem.Criteria.Devices.Enabled)
+			{
+				WriteHTMLLine 5 0 "Apply policy if Device"
+				If($FilterItem.criteria.Devices.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteHTMLLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteHTMLLine 0 0 "is not one of the following"
+				}
+				
+				
+				ForEach($Item in $FilterItem.criteria.Devices.Members)
+				{
+					$rowdata += @(,($Item.Client,$htmlwhite))
+				}
+
+				$columnHeaders = @("Client",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("200")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			If($FilterItem.Criteria.OSs.Enabled)
+			{
+				WriteHTMLLine 5 0 "Apply policy if Operating system"
+				WriteHTMLLine 0 0 "Enable criteria: " $FilterItem.criteria.OSs.Enabled.ToString()
+				If($FilterItem.criteria.OSs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteHTMLLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteHTMLLine 0 0 "is not one of the following"
+				}
+
+				$rowdata = @()
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Windows)
+				{
+					$rowdata += @(,("Windows",$htmlwhite))
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.WebClient)
+				{
+					$rowdata += @(,('User Portal (Web Client)',$htmlwhite))
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Mac)
+				{
+					$rowdata += @(,("macOS",$htmlwhite))
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Linux)
+				{
+					$rowdata += @(,("Linux",$htmlwhite))
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.iOS)
+				{
+					$rowdata += @(,('iOS/iPadOS',$htmlwhite))
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Android)
+				{
+					$rowdata += @(,("Android",$htmlwhite))
+				}
+
+				If($FilterItem.criteria.OSs.AllowedOSes.Chrome)
+				{
+					$rowdata += @(,("Chrome OS",$htmlwhite))
+				}
+
+				$columnHeaders = @("Operating system",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("200")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			If($FilterItem.Criteria.IPs.Enabled)
+			{
+				WriteHTMLLine 5 0 "Apply policy if IP"
+				If($FilterItem.criteria.IPs.MatchingMode -eq "IsOneOfTheFollowing")
+				{
+					WriteHTMLLine 0 0 "is one of the following"
+				}
+				Else
+				{
+					WriteHTMLLine 0 0 "is not one of the following"
+				}
+
+				$rowdata = @()
+
+				ForEach($Item in $FilterItem.criteria.IPs.AllowedIPs.IPv4s)
+				{
+					$rowdata += @(,(
+					$Item.From,$htmlwhite,
+					$Item.To,$htmlwhite))
 				}
 
 				$columnHeaders = @(
 				"IPv4 Address From",($Script:htmlsb),
 				"IPv4 Address To",($Script:htmlsb))
 
-				$msg = "Allow the following IPs:"
-				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
-				If($PubItem.AllowedIP6s.Count -gt 0)
-				{
-					WriteHTMLLine 0 0 ""
-				}
-			}
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
 
-			If($PubItem.AllowedIP6s.Count -gt 0)
-			{
 				$rowdata = @()
-				
-				ForEach($item in $PubItem.AllowedIP6s)
+
+				ForEach($Item in $FilterItem.criteria.IPs.AllowedIPs.IPv6s)
 				{
-					If($item.From -eq $item.To)
-					{
-						$rowdata += @(,(
-						$item.From,$htmlwhite,
-						"",$htmlwhite))
-					}
-					Else
-					{
-						$rowdata += @(,(
-						$item.From,$htmlwhite,
-						$item.To,$htmlwhite))
-					}
+					$rowdata += @(,(
+					$Item.From,$htmlwhite,
+					$Item.To,$htmlwhite))
 				}
 
 				$columnHeaders = @(
 				"IPv6 Address From",($Script:htmlsb),
 				"IPv6 Address To",($Script:htmlsb))
 
-				If($PubItem.AllowedIP4s.Count -gt 0)
+				$msg = ""
+				$columnWidths = @("200","200")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
+			}
+
+			If($FilterItem.Criteria.HardwareIDs.Enabled)
+			{
+				WriteHTMLLine 5 0 "Apply policy if Hardware ID"
+				If($FilterItem.criteria.HardwareIDs.MatchingMode -eq "IsOneOfTheFollowing")
 				{
-					$msg = ""
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
+					WriteHTMLLine 0 0 "is one of the following"
 				}
 				Else
 				{
-					$msg = "Allow the following IPs:"
-					FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
+					WriteHTMLLine 0 0 "is not one of the following"
 				}
+
+				$rowdata = @()
+
+				ForEach($Item in $FilterItem.criteria.HardwareIDs.Members)
+				{
+					$rowdata += @(,($Item.HardwareID,$htmlwhite))
+				}
+
+				$columnHeaders = @("Device Hardware ID",($Script:htmlsb))
+
+				$msg = ""
+				$columnWidths = @("200")
+				FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths
+				WriteHTMLLine 0 0 ""
 			}
-			WriteHTMLLine 0 0 ""
-		}
-		
-		If(!($PubItem.MACFilterEnabled))
-		{
-			WriteHTMLLine 0 0 "MAC filtering not enabled"
-			WriteHTMLLine 0 0 ""
-		}
-		Else
-		{
-			WriteHTMLLine 0 0 "MAC filtering is enabled"
-			WriteHTMLLine 0 0 "Allow the following MACs:"
-
-			$rowdata = @()
-			
-			ForEach($item in $PubItem.AllowedMACs)
-			{
-				$rowdata += @(,(
-				$item,$htmlwhite))
-			}
-
-			$columnHeaders = @(
-			"MAC",($Script:htmlsb))
-
-			$msg = ""
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
-			WriteHTMLLine 0 0 ""
-		}
-		
-		If(!($PubItem.GatewayFilterEnabled))
-		{
-			WriteHTMLLine 0 0 "Gateway filtering not enabled"
-			WriteHTMLLine 0 0 ""
-		}
-		Else
-		{
-			WriteHTMLLine 0 0 "Gateway filtering is enabled"
-			WriteHTMLLine 0 0 "Allow connections from the following Gateways:"
-
-			$rowdata = @()
-			
-			ForEach($item in $PubItem.AllowedGateways)
-			{
-				$rowdata += @(,(
-				$item,$htmlwhite))
-			}
-
-			$columnHeaders = @(
-			"Gateways",($Script:htmlsb))
-
-			$msg = ""
-			FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders 
-			WriteHTMLLine 0 0 ""
-			
-			#there is no replication setting for Gateway filters
 		}
 	}
 }
@@ -40757,7 +38781,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.VendorID)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 					$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 					$cnt=0
@@ -40772,7 +38796,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Action message: $($Item.ActionMessage)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 				}
 				ElseIf($RASMFASetting.Type -eq "DuoRadius")
@@ -40805,7 +38829,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 					$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 					$cnt=0
@@ -40818,7 +38842,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 				}
 				ElseIf($RASMFASetting.Type -eq "FortiRadius")
@@ -40851,7 +38875,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 					$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 					$cnt=0
@@ -40864,7 +38888,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 				}
 				ElseIf($RASMFASetting.Type -eq "TekRadius")
@@ -40897,7 +38921,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 					$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 					$cnt=0
@@ -40910,7 +38934,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 				}
 				ElseIf($RASMFASetting.Type -eq "Radius")
@@ -40943,7 +38967,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Vendor: $($Item.Vendor)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Type: $($Item.AttributeType)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Value: $($Item.Value)",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 					$rowdata += @(,( "     Automation",($Script:htmlsb),"",$htmlwhite))
 					$cnt=0
@@ -40956,7 +38980,7 @@ Function OutputMFASetting
 						$rowdata += @(,( "",($Script:htmlsb), "     Command: $($Item.Command)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Image: $($Item.Image)",$htmlwhite))
 						$rowdata += @(,( "",($Script:htmlsb), "     Autosend: $($Item.AutoSend.ToString())",$htmlwhite))
-						$rowdata += @(,( "",($Script:htmlsb), "",$htmlwhite)) #blank separator line
+						$rowdata += @(,( "",($Script:htmlsb),"",$htmlwhite)) #blank separator line
 					}
 				}
 				ElseIf($RASMFASetting.Type -eq "Deepnet")
@@ -41027,7 +39051,7 @@ Function OutputMFASetting
 					{
 						$rowdata += @(,( "          $GAuthAllow",($Script:htmlsb),"",$htmlwhite))
 					}
-					$rowdata += @(,( "     Authentication",($Script:htmlsb), "",$htmlwhite))
+					$rowdata += @(,( "     Authentication",($Script:htmlsb),"",$htmlwhite))
 					$rowdata += @(,( "          TOTP tolerence",($Script:htmlsb), $TOTPTolerance,$htmlwhite))
 				}
 
@@ -41246,6 +39270,8 @@ Function OutputSAMLSetting
 	}
 	If($HTML)
 	{
+		#first remove the < and > from the theme name
+		$SAMLTheme = $SAMLTheme.Trim("<",">")
 		$rowdata = @()
 		$columnHeaders = @("Enabled",($Script:htmlsb),$SAMLSettings.Enabled.ToString(),$htmlwhite)
 		$rowdata += @(,("Name",($Script:htmlsb),$SAMLSettings.Name,$htmlwhite))
@@ -48154,247 +46180,3 @@ ProcessDocumentOutput "Regular"
 ProcessScriptEnd
 #endregion
 
-# SIG # Begin signature block
-# MIItUQYJKoZIhvcNAQcCoIItQjCCLT4CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
-# gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcB85LnS8PDZSwktUL6W19JSw
-# pS2ggiaxMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
-# AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
-# VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
-# IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
-# CQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cu
-# ZGlnaWNlcnQuY29tMSEwHwYDVQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQw
-# ggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC/5pBzaN675F1KPDAiMGkz
-# 7MKnJS7JIT3yithZwuEppz1Yq3aaza57G4QNxDAf8xukOBbrVsaXbR2rsnnyyhHS
-# 5F/WBTxSD1Ifxp4VpX6+n6lXFllVcq9ok3DCsrp1mWpzMpTREEQQLt+C8weE5nQ7
-# bXHiLQwb7iDVySAdYyktzuxeTsiT+CFhmzTrBcZe7FsavOvJz82sNEBfsXpm7nfI
-# SKhmV1efVFiODCu3T6cw2Vbuyntd463JT17lNecxy9qTXtyOj4DatpGYQJB5w3jH
-# trHEtWoYOAMQjdjUN6QuBX2I9YI+EJFwq1WCQTLX2wRzKm6RAXwhTNS8rhsDdV14
-# Ztk6MUSaM0C/CNdaSaTC5qmgZ92kJ7yhTzm1EVgX9yRcRo9k98FpiHaYdj1ZXUJ2
-# h4mXaXpI8OCiEhtmmnTK3kse5w5jrubU75KSOp493ADkRSWJtppEGSt+wJS00mFt
-# 6zPZxd9LBADMfRyVw4/3IbKyEbe7f/LVjHAsQWCqsWMYRJUadmJ+9oCw++hkpjPR
-# iQfhvbfmQ6QYuKZ3AeEPlAwhHbJUKSWJbOUOUlFHdL4mrLZBdd56rF+NP8m800ER
-# ElvlEFDrMcXKchYiCd98THU/Y+whX8QgUWtvsauGi0/C1kVfnSD8oR7FwI+isX4K
-# Jpn15GkvmB0t9dmpsh3lGwIDAQABo4IBOjCCATYwDwYDVR0TAQH/BAUwAwEB/zAd
-# BgNVHQ4EFgQU7NfjgtJxXWRM3y5nP+e6mK4cD08wHwYDVR0jBBgwFoAUReuir/SS
-# y4IxLVGLp6chnfNtyA8wDgYDVR0PAQH/BAQDAgGGMHkGCCsGAQUFBwEBBG0wazAk
-# BggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29tMEMGCCsGAQUFBzAC
-# hjdodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkSURS
-# b290Q0EuY3J0MEUGA1UdHwQ+MDwwOqA4oDaGNGh0dHA6Ly9jcmwzLmRpZ2ljZXJ0
-# LmNvbS9EaWdpQ2VydEFzc3VyZWRJRFJvb3RDQS5jcmwwEQYDVR0gBAowCDAGBgRV
-# HSAAMA0GCSqGSIb3DQEBDAUAA4IBAQBwoL9DXFXnOF+go3QbPbYW1/e/Vwe9mqyh
-# hyzshV6pGrsi+IcaaVQi7aSId229GhT0E0p6Ly23OO/0/4C5+KH38nLeJLxSA8hO
-# 0Cre+i1Wz/n096wwepqLsl7Uz9FDRJtDIeuWcqFItJnLnU+nBgMTdydE1Od/6Fmo
-# 8L8vC6bp8jQ87PcDx4eo0kxAGTVGamlUsLihVo7spNU96LHc/RzY9HdaXFSMb++h
-# UD38dglohJ9vytsgjTVgHAIDyyCwrFigDkBjxZgiwbJZ9VVrzyerbHbObyMt9H5x
-# aiNrIv8SuFQtJ37YOtnwtoeW/VvRXKwYw02fc7cBqZ9Xql4o4rmUMIIFkDCCA3ig
-# AwIBAgIQBZsbV56OITLiOQe9p3d1XDANBgkqhkiG9w0BAQwFADBiMQswCQYDVQQG
-# EwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNl
-# cnQuY29tMSEwHwYDVQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwHhcNMTMw
-# ODAxMTIwMDAwWhcNMzgwMTE1MTIwMDAwWjBiMQswCQYDVQQGEwJVUzEVMBMGA1UE
-# ChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYD
-# VQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwggIiMA0GCSqGSIb3DQEBAQUA
-# A4ICDwAwggIKAoICAQC/5pBzaN675F1KPDAiMGkz7MKnJS7JIT3yithZwuEppz1Y
-# q3aaza57G4QNxDAf8xukOBbrVsaXbR2rsnnyyhHS5F/WBTxSD1Ifxp4VpX6+n6lX
-# FllVcq9ok3DCsrp1mWpzMpTREEQQLt+C8weE5nQ7bXHiLQwb7iDVySAdYyktzuxe
-# TsiT+CFhmzTrBcZe7FsavOvJz82sNEBfsXpm7nfISKhmV1efVFiODCu3T6cw2Vbu
-# yntd463JT17lNecxy9qTXtyOj4DatpGYQJB5w3jHtrHEtWoYOAMQjdjUN6QuBX2I
-# 9YI+EJFwq1WCQTLX2wRzKm6RAXwhTNS8rhsDdV14Ztk6MUSaM0C/CNdaSaTC5qmg
-# Z92kJ7yhTzm1EVgX9yRcRo9k98FpiHaYdj1ZXUJ2h4mXaXpI8OCiEhtmmnTK3kse
-# 5w5jrubU75KSOp493ADkRSWJtppEGSt+wJS00mFt6zPZxd9LBADMfRyVw4/3IbKy
-# Ebe7f/LVjHAsQWCqsWMYRJUadmJ+9oCw++hkpjPRiQfhvbfmQ6QYuKZ3AeEPlAwh
-# HbJUKSWJbOUOUlFHdL4mrLZBdd56rF+NP8m800ERElvlEFDrMcXKchYiCd98THU/
-# Y+whX8QgUWtvsauGi0/C1kVfnSD8oR7FwI+isX4KJpn15GkvmB0t9dmpsh3lGwID
-# AQABo0IwQDAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBhjAdBgNVHQ4E
-# FgQU7NfjgtJxXWRM3y5nP+e6mK4cD08wDQYJKoZIhvcNAQEMBQADggIBALth2X2p
-# bL4XxJEbw6GiAI3jZGgPVs93rnD5/ZpKmbnJeFwMDF/k5hQpVgs2SV1EY+CtnJYY
-# ZhsjDT156W1r1lT40jzBQ0CuHVD1UvyQO7uYmWlrx8GnqGikJ9yd+SeuMIW59mdN
-# Oj6PWTkiU0TryF0Dyu1Qen1iIQqAyHNm0aAFYF/opbSnr6j3bTWcfFqK1qI4mfN4
-# i/RN0iAL3gTujJtHgXINwBQy7zBZLq7gcfJW5GqXb5JQbZaNaHqasjYUegbyJLkJ
-# EVDXCLG4iXqEI2FCKeWjzaIgQdfRnGTZ6iahixTXTBmyUEFxPT9NcCOGDErcgdLM
-# MpSEDQgJlxxPwO5rIHQw0uA5NBCFIRUBCOhVMt5xSdkoF1BN5r5N0XWs0Mr7QbhD
-# parTwwVETyw2m+L64kW4I1NsBm9nVX9GtUw/bihaeSbSpKhil9Ie4u1Ki7wb/UdK
-# Dd9nZn6yW0HQO+T0O/QEY+nvwlQAUaCKKsnOeMzV6ocEGLPOr0mIr/OSmbaz5mEP
-# 0oUA51Aa5BuVnRmhuZyxm7EAHu/QD09CbMkKvO5D+jpxpchNJqU1/YldvIViHTLS
-# oCtU7ZpXwdv6EM8Zt4tKG48BtieVU+i2iW1bvGjUI+iLUaJW+fCmgKDWHrO8Dw9T
-# dSmq6hN35N6MgSGtBxBHEa2HPQfRdbzP82Z+MIIGrjCCBJagAwIBAgIQBzY3tyRU
-# fNhHrP0oZipeWzANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzEVMBMGA1UE
-# ChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSEwHwYD
-# VQQDExhEaWdpQ2VydCBUcnVzdGVkIFJvb3QgRzQwHhcNMjIwMzIzMDAwMDAwWhcN
-# MzcwMzIyMjM1OTU5WjBjMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQs
-# IEluYy4xOzA5BgNVBAMTMkRpZ2lDZXJ0IFRydXN0ZWQgRzQgUlNBNDA5NiBTSEEy
-# NTYgVGltZVN0YW1waW5nIENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKC
-# AgEAxoY1BkmzwT1ySVFVxyUDxPKRN6mXUaHW0oPRnkyibaCwzIP5WvYRoUQVQl+k
-# iPNo+n3znIkLf50fng8zH1ATCyZzlm34V6gCff1DtITaEfFzsbPuK4CEiiIY3+va
-# PcQXf6sZKz5C3GeO6lE98NZW1OcoLevTsbV15x8GZY2UKdPZ7Gnf2ZCHRgB720RB
-# idx8ald68Dd5n12sy+iEZLRS8nZH92GDGd1ftFQLIWhuNyG7QKxfst5Kfc71ORJn
-# 7w6lY2zkpsUdzTYNXNXmG6jBZHRAp8ByxbpOH7G1WE15/tePc5OsLDnipUjW8LAx
-# E6lXKZYnLvWHpo9OdhVVJnCYJn+gGkcgQ+NDY4B7dW4nJZCYOjgRs/b2nuY7W+yB
-# 3iIU2YIqx5K/oN7jPqJz+ucfWmyU8lKVEStYdEAoq3NDzt9KoRxrOMUp88qqlnNC
-# aJ+2RrOdOqPVA+C/8KI8ykLcGEh/FDTP0kyr75s9/g64ZCr6dSgkQe1CvwWcZklS
-# UPRR8zZJTYsg0ixXNXkrqPNFYLwjjVj33GHek/45wPmyMKVM1+mYSlg+0wOI/rOP
-# 015LdhJRk8mMDDtbiiKowSYI+RQQEgN9XyO7ZONj4KbhPvbCdLI/Hgl27KtdRnXi
-# YKNYCQEoAA6EVO7O6V3IXjASvUaetdN2udIOa5kM0jO0zbECAwEAAaOCAV0wggFZ
-# MBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFLoW2W1NhS9zKXaaL3WMaiCP
-# nshvMB8GA1UdIwQYMBaAFOzX44LScV1kTN8uZz/nupiuHA9PMA4GA1UdDwEB/wQE
-# AwIBhjATBgNVHSUEDDAKBggrBgEFBQcDCDB3BggrBgEFBQcBAQRrMGkwJAYIKwYB
-# BQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBBBggrBgEFBQcwAoY1aHR0
-# cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZFJvb3RHNC5j
-# cnQwQwYDVR0fBDwwOjA4oDagNIYyaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0Rp
-# Z2lDZXJ0VHJ1c3RlZFJvb3RHNC5jcmwwIAYDVR0gBBkwFzAIBgZngQwBBAIwCwYJ
-# YIZIAYb9bAcBMA0GCSqGSIb3DQEBCwUAA4ICAQB9WY7Ak7ZvmKlEIgF+ZtbYIULh
-# sBguEE0TzzBTzr8Y+8dQXeJLKftwig2qKWn8acHPHQfpPmDI2AvlXFvXbYf6hCAl
-# NDFnzbYSlm/EUExiHQwIgqgWvalWzxVzjQEiJc6VaT9Hd/tydBTX/6tPiix6q4XN
-# Q1/tYLaqT5Fmniye4Iqs5f2MvGQmh2ySvZ180HAKfO+ovHVPulr3qRCyXen/KFSJ
-# 8NWKcXZl2szwcqMj+sAngkSumScbqyQeJsG33irr9p6xeZmBo1aGqwpFyd/EjaDn
-# mPv7pp1yr8THwcFqcdnGE4AJxLafzYeHJLtPo0m5d2aR8XKc6UsCUqc3fpNTrDsd
-# CEkPlM05et3/JWOZJyw9P2un8WbDQc1PtkCbISFA0LcTJM3cHXg65J6t5TRxktcm
-# a+Q4c6umAU+9Pzt4rUyt+8SVe+0KXzM5h0F4ejjpnOHdI/0dKNPH+ejxmF/7K9h+
-# 8kaddSweJywm228Vex4Ziza4k9Tm8heZWcpw8De/mADfIBZPJ/tgZxahZrrdVcA6
-# KYawmKAr7ZVBtzrVFZgxtGIJDwq9gdkT/r+k0fNX2bwE+oLeMt8EifAAzV3C+dAj
-# fwAL5HYCJtnwZXZCpimHCUcr5n8apIUP/JiW9lVUKx+A+sDyDivl1vupL0QVSucT
-# Dh3bNzgaoSv27dZ8/DCCBrAwggSYoAMCAQICEAitQLJg0pxMn17Nqb2TrtkwDQYJ
-# KoZIhvcNAQEMBQAwYjELMAkGA1UEBhMCVVMxFTATBgNVBAoTDERpZ2lDZXJ0IElu
-# YzEZMBcGA1UECxMQd3d3LmRpZ2ljZXJ0LmNvbTEhMB8GA1UEAxMYRGlnaUNlcnQg
-# VHJ1c3RlZCBSb290IEc0MB4XDTIxMDQyOTAwMDAwMFoXDTM2MDQyODIzNTk1OVow
-# aTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEwPwYDVQQD
-# EzhEaWdpQ2VydCBUcnVzdGVkIEc0IENvZGUgU2lnbmluZyBSU0E0MDk2IFNIQTM4
-# NCAyMDIxIENBMTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANW0L0LQ
-# KK14t13VOVkbsYhC9TOM6z2Bl3DFu8SFJjCfpI5o2Fz16zQkB+FLT9N4Q/QX1x7a
-# +dLVZxpSTw6hV/yImcGRzIEDPk1wJGSzjeIIfTR9TIBXEmtDmpnyxTsf8u/LR1oT
-# pkyzASAl8xDTi7L7CPCK4J0JwGWn+piASTWHPVEZ6JAheEUuoZ8s4RjCGszF7pNJ
-# cEIyj/vG6hzzZWiRok1MghFIUmjeEL0UV13oGBNlxX+yT4UsSKRWhDXW+S6cqgAV
-# 0Tf+GgaUwnzI6hsy5srC9KejAw50pa85tqtgEuPo1rn3MeHcreQYoNjBI0dHs6EP
-# bqOrbZgGgxu3amct0r1EGpIQgY+wOwnXx5syWsL/amBUi0nBk+3htFzgb+sm+YzV
-# svk4EObqzpH1vtP7b5NhNFy8k0UogzYqZihfsHPOiyYlBrKD1Fz2FRlM7WLgXjPy
-# 6OjsCqewAyuRsjZ5vvetCB51pmXMu+NIUPN3kRr+21CiRshhWJj1fAIWPIMorTmG
-# 7NS3DVPQ+EfmdTCN7DCTdhSmW0tddGFNPxKRdt6/WMtyEClB8NXFbSZ2aBFBE1ia
-# 3CYrAfSJTVnbeM+BSj5AR1/JgVBzhRAjIVlgimRUwcwhGug4GXxmHM14OEUwmU//
-# Y09Mu6oNCFNBfFg9R7P6tuyMMgkCzGw8DFYRAgMBAAGjggFZMIIBVTASBgNVHRMB
-# Af8ECDAGAQH/AgEAMB0GA1UdDgQWBBRoN+Drtjv4XxGG+/5hewiIZfROQjAfBgNV
-# HSMEGDAWgBTs1+OC0nFdZEzfLmc/57qYrhwPTzAOBgNVHQ8BAf8EBAMCAYYwEwYD
-# VR0lBAwwCgYIKwYBBQUHAwMwdwYIKwYBBQUHAQEEazBpMCQGCCsGAQUFBzABhhho
-# dHRwOi8vb2NzcC5kaWdpY2VydC5jb20wQQYIKwYBBQUHMAKGNWh0dHA6Ly9jYWNl
-# cnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRSb290RzQuY3J0MEMGA1Ud
-# HwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRy
-# dXN0ZWRSb290RzQuY3JsMBwGA1UdIAQVMBMwBwYFZ4EMAQMwCAYGZ4EMAQQBMA0G
-# CSqGSIb3DQEBDAUAA4ICAQA6I0Q9jQh27o+8OpnTVuACGqX4SDTzLLbmdGb3lHKx
-# AMqvbDAnExKekESfS/2eo3wm1Te8Ol1IbZXVP0n0J7sWgUVQ/Zy9toXgdn43ccsi
-# 91qqkM/1k2rj6yDR1VB5iJqKisG2vaFIGH7c2IAaERkYzWGZgVb2yeN258TkG19D
-# +D6U/3Y5PZ7Umc9K3SjrXyahlVhI1Rr+1yc//ZDRdobdHLBgXPMNqO7giaG9OeE4
-# Ttpuuzad++UhU1rDyulq8aI+20O4M8hPOBSSmfXdzlRt2V0CFB9AM3wD4pWywiF1
-# c1LLRtjENByipUuNzW92NyyFPxrOJukYvpAHsEN/lYgggnDwzMrv/Sk1XB+JOFX3
-# N4qLCaHLC+kxGv8uGVw5ceG+nKcKBtYmZ7eS5k5f3nqsSc8upHSSrds8pJyGH+PB
-# VhsrI/+PteqIe3Br5qC6/To/RabE6BaRUotBwEiES5ZNq0RA443wFSjO7fEYVgcq
-# LxDEDAhkPDOPriiMPMuPiAsNvzv0zh57ju+168u38HcT5ucoP6wSrqUvImxB+YJc
-# FWbMbA7KxYbD9iYzDAdLoNMHAmpqQDBISzSoUSC7rRuFCOJZDW3KBVAr6kocnqX9
-# oKcfBnTn8tZSkP2vhUgh+Vc7tJwD7YZF9LRhbr9o4iZghurIr6n+lB3nYxs6hlZ4
-# TjCCBsAwggSooAMCAQICEAxNaXJLlPo8Kko9KQeAPVowDQYJKoZIhvcNAQELBQAw
-# YzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMTswOQYDVQQD
-# EzJEaWdpQ2VydCBUcnVzdGVkIEc0IFJTQTQwOTYgU0hBMjU2IFRpbWVTdGFtcGlu
-# ZyBDQTAeFw0yMjA5MjEwMDAwMDBaFw0zMzExMjEyMzU5NTlaMEYxCzAJBgNVBAYT
-# AlVTMREwDwYDVQQKEwhEaWdpQ2VydDEkMCIGA1UEAxMbRGlnaUNlcnQgVGltZXN0
-# YW1wIDIwMjIgLSAyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAz+yl
-# JjrGqfJru43BDZrboegUhXQzGias0BxVHh42bbySVQxh9J0Jdz0Vlggva2Sk/QaD
-# FteRkjgcMQKW+3KxlzpVrzPsYYrppijbkGNcvYlT4DotjIdCriak5Lt4eLl6FuFW
-# xsC6ZFO7KhbnUEi7iGkMiMbxvuAvfTuxylONQIMe58tySSgeTIAehVbnhe3yYbyq
-# Ogd99qtu5Wbd4lz1L+2N1E2VhGjjgMtqedHSEJFGKes+JvK0jM1MuWbIu6pQOA3l
-# jJRdGVq/9XtAbm8WqJqclUeGhXk+DF5mjBoKJL6cqtKctvdPbnjEKD+jHA9QBje6
-# CNk1prUe2nhYHTno+EyREJZ+TeHdwq2lfvgtGx/sK0YYoxn2Off1wU9xLokDEaJL
-# u5i/+k/kezbvBkTkVf826uV8MefzwlLE5hZ7Wn6lJXPbwGqZIS1j5Vn1TS+QHye3
-# 0qsU5Thmh1EIa/tTQznQZPpWz+D0CuYUbWR4u5j9lMNzIfMvwi4g14Gs0/EH1OG9
-# 2V1LbjGUKYvmQaRllMBY5eUuKZCmt2Fk+tkgbBhRYLqmgQ8JJVPxvzvpqwcOagc5
-# YhnJ1oV/E9mNec9ixezhe7nMZxMHmsF47caIyLBuMnnHC1mDjcbu9Sx8e47LZInx
-# scS451NeX1XSfRkpWQNO+l3qRXMchH7XzuLUOncCAwEAAaOCAYswggGHMA4GA1Ud
-# DwEB/wQEAwIHgDAMBgNVHRMBAf8EAjAAMBYGA1UdJQEB/wQMMAoGCCsGAQUFBwMI
-# MCAGA1UdIAQZMBcwCAYGZ4EMAQQCMAsGCWCGSAGG/WwHATAfBgNVHSMEGDAWgBS6
-# FtltTYUvcyl2mi91jGogj57IbzAdBgNVHQ4EFgQUYore0GH8jzEU7ZcLzT0qlBTf
-# UpwwWgYDVR0fBFMwUTBPoE2gS4ZJaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0Rp
-# Z2lDZXJ0VHJ1c3RlZEc0UlNBNDA5NlNIQTI1NlRpbWVTdGFtcGluZ0NBLmNybDCB
-# kAYIKwYBBQUHAQEEgYMwgYAwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2lj
-# ZXJ0LmNvbTBYBggrBgEFBQcwAoZMaHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29t
-# L0RpZ2lDZXJ0VHJ1c3RlZEc0UlNBNDA5NlNIQTI1NlRpbWVTdGFtcGluZ0NBLmNy
-# dDANBgkqhkiG9w0BAQsFAAOCAgEAVaoqGvNG83hXNzD8deNP1oUj8fz5lTmbJeb3
-# coqYw3fUZPwV+zbCSVEseIhjVQlGOQD8adTKmyn7oz/AyQCbEx2wmIncePLNfIXN
-# U52vYuJhZqMUKkWHSphCK1D8G7WeCDAJ+uQt1wmJefkJ5ojOfRu4aqKbwVNgCeij
-# uJ3XrR8cuOyYQfD2DoD75P/fnRCn6wC6X0qPGjpStOq/CUkVNTZZmg9U0rIbf35e
-# Ca12VIp0bcrSBWcrduv/mLImlTgZiEQU5QpZomvnIj5EIdI/HMCb7XxIstiSDJFP
-# PGaUr10CU+ue4p7k0x+GAWScAMLpWnR1DT3heYi/HAGXyRkjgNc2Wl+WFrFjDMZG
-# QDvOXTXUWT5Dmhiuw8nLw/ubE19qtcfg8wXDWd8nYiveQclTuf80EGf2JjKYe/5c
-# QpSBlIKdrAqLxksVStOYkEVgM4DgI974A6T2RUflzrgDQkfoQTZxd639ouiXdE4u
-# 2h4djFrIHprVwvDGIqhPm73YHJpRxC+a9l+nJ5e6li6FV8Bg53hWf2rvwpWaSxEC
-# yIKcyRoFfLpxtU56mWz06J7UWpjIn7+NuxhcQ/XQKujiYu54BNu90ftbCqhwfvCX
-# hHjjCANdRyxjqCU4lwHSPzra5eX25pvcfizM/xdMTQCi2NYBDriL7ubgclWJLCcZ
-# YfZ3AYwwggdeMIIFRqADAgECAhAFulYuS3p29y1ilWIrK5dmMA0GCSqGSIb3DQEB
-# CwUAMGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8G
-# A1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBT
-# SEEzODQgMjAyMSBDQTEwHhcNMjExMjAxMDAwMDAwWhcNMjMxMjA3MjM1OTU5WjBj
-# MQswCQYDVQQGEwJVUzESMBAGA1UECBMJVGVubmVzc2VlMRIwEAYDVQQHEwlUdWxs
-# YWhvbWExFTATBgNVBAoTDENhcmwgV2Vic3RlcjEVMBMGA1UEAxMMQ2FybCBXZWJz
-# dGVyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA98Xfb+rSvcKK6oXU
-# 0jjumwlQCG2EltgTWqBp3yIWVJvPgbbryZB0JNT3vWbZUOnqZxENFG/YxDdR88By
-# ukOAeveRE1oeYNva7kbEpQ7vH9sTNiVFsglOQRtSyBch3353BZ51gIESO1sxW9dw
-# 41rMdUw6AhxoMxwhX0RTV25mUVAadNzDEuZzTP3zXpWuoAeYpppe8yptyw8OR79A
-# d83ttDPLr6o/SwXYH2EeaQu195FFq7Fn6Yp/kLYAgOrpJFJpRxd+b2kWxnOaF5RI
-# /EcbLH+/20xTDOho3V7VGWTiRs18QNLb1u14wiBTUnHvLsLBT1g5fli4RhL7rknp
-# 8DHksuISIIQVMWVfgFmgCsV9of4ymf4EmyzIJexXcdFHDw2x/bWFqXti/TPV8wYK
-# lEaLa2MrSMH1Jrnqt/vcP/DP2IUJa4FayoY2l8wvGOLNjYvfQ6c6RThd1ju7d62r
-# 9EJI8aPXPvcrlyZ3y6UH9tiuuPzsyNVnXKyDphJm5I57tLsN8LSBNVo+I227VZfX
-# q3MUuhz0oyErzFeKnLsPB1afLLfBzCSeYWOMjWpLo+PufKgh0X8OCRSfq6Iigpj9
-# q5KzjQ29L9BVnOJuWt49fwWFfmBOrcaR9QaN4gAHSY9+K7Tj3kUo0AHl66QaGWet
-# R7XYTel+ydst/fzYBq6SafVOt1kCAwEAAaOCAgYwggICMB8GA1UdIwQYMBaAFGg3
-# 4Ou2O/hfEYb7/mF7CIhl9E5CMB0GA1UdDgQWBBQ5WnsIlilu682kqvRMmUxb5DHu
-# gTAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUHAwMwgbUGA1UdHwSB
-# rTCBqjBToFGgT4ZNaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1
-# c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNBMS5jcmwwU6BRoE+G
-# TWh0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydFRydXN0ZWRHNENvZGVT
-# aWduaW5nUlNBNDA5NlNIQTM4NDIwMjFDQTEuY3JsMD4GA1UdIAQ3MDUwMwYGZ4EM
-# AQQBMCkwJwYIKwYBBQUHAgEWG2h0dHA6Ly93d3cuZGlnaWNlcnQuY29tL0NQUzCB
-# lAYIKwYBBQUHAQEEgYcwgYQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2lj
-# ZXJ0LmNvbTBcBggrBgEFBQcwAoZQaHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29t
-# L0RpZ2lDZXJ0VHJ1c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNB
-# MS5jcnQwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAgEAGcm1xuESCj6Y
-# VIf55C/gtmnsRJWtf7zEyqUtXhYU+PMciHnjnUbOmuF1+jKTA6j9FN0Ktv33fVxt
-# WQ+ZisNssZbfwaUd3goBQatFF2TmUc1KVsRUj/VU+uVPcL++tzaYkDydowhiP+9D
-# IEOXOYxunjlwFppOGrk3edKRj8p7puv9sZZTdPiUHmJ1GvideoXTAJ1Db6Jmn6ee
-# tnl4m6zx9CCDJF9z8KexKS1bSpJBbdKz71H1PlgI7Tu4ntLyyaRVOpan8XYWmu9k
-# 35TOfHHl8Cvbg6itg0fIJgvqnLJ4Huc+y6o/zrvj6HrFSOK6XowdQLQshrMZ2ceT
-# u8gVkZsKZtu0JeMpkbVKmKi/7RXIZdh9bn0NhzslioXEX+s70d60kntMsBAQX0Ar
-# OpKmrqZZJuxNMGAIXpEwSTeyqu0ujZI9eE1AU7EcZsYkZawdyLmilZdw1qwEQlAv
-# EqyjbjY81qtpkORAeJSpnPelUlyyQelJPLWFR0syKsUyROqg5OFXINxkHaJcuWLW
-# RPFJOEooSWPEid4rHMftaG2gOPg35o7yPzzHd8Y9pCX2v55NYjLrjUkz9JCjQ/g0
-# LiOo3a+yvot+7izsaJEs8SAdhG7RZ/fdsyv+SyyoEzsd1iO/mZ2DQ0rKaU/fiCXJ
-# pvrNmEwg+pbeIOCOgS0x5pQ0dyMlBZoxggYKMIIGBgIBATB9MGkxCzAJBgNVBAYT
-# AlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQg
-# VHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTEC
-# EAW6Vi5Lenb3LWKVYisrl2YwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgor
-# BgEEAYI3AgEEMCMGCSqGSIb3DQEJBDEWBBTxfb4D1Mq6NP8sXO/r/wygdjSOqjAN
-# BgkqhkiG9w0BAQEFAASCAgBpZ363SR3gxm3B8ulCM23WzraTiOxWr4XtsMceqnGo
-# eIH90OlLGuI2oYOCSrO6QOtO0CGHdXy52ndUW2suFuDw6GNZaV4xn4MWK9lC609f
-# zR+rH7/kynjc3xhXK5bHcESWl5jNKPjq86AprmKmWfjaOX2X6IpLhHEjjyEgTZXo
-# Kc6fuO9dVazQyz+9tfKxzs6xELYQzjCnnVgYTcYW3YblXdufkV996q0A+O9b79St
-# lWFLgEmWInJdVV0XLOLI7qruOrE0+Af8oTT4BPHh4kLdic6RmRbbUBLWVbGmU+2J
-# PdooUZMI/GTE13tcmEUwKr1xb/Yqxl+bKXcav1sxWasWkOW+k7JxkTsIVN3pITj5
-# MdbZn8rjPK0tibB3IHqJCgq4o1YRBwFudAmrsLdmRRp4ec5Z4hB9OVASYW8JCG3j
-# Xqdcu7TcDrtoHM4Nga1GYZud0y/6o7I2W4ix7RCqUY4ClklfklD+AuOXUmBciT5F
-# tAkl8IW7KdAiOzSMZFQ8uHqyerJYLlHl3oWS2dK3EtoOdCcwEa8Z0Bl51xEvphw8
-# VJqEvsFl7TLcc+Swo5FvGSflT2CFM8wMWmCFb/kwtIUlsTxb4yu1V6w3ZvXbaylG
-# VUmT1zzRS0gMsLR+HhJs3XE/DKDNz9YBLiNhQfqojsyLVeYOKhBdZ5V+jeh8gAim
-# S6GCAyAwggMcBgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVT
-# MRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1
-# c3RlZCBHNCBSU0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAxNaXJLlPo8
-# Kko9KQeAPVowDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcN
-# AQcBMBwGCSqGSIb3DQEJBTEPFw0yMzA2MjcwOTMwNTFaMC8GCSqGSIb3DQEJBDEi
-# BCCaZqSRXoktJFC8hhyQha4JAGQHX5eIT9vM3BMN6jos0zANBgkqhkiG9w0BAQEF
-# AASCAgCXPzPV36xiiVmiPW8eXHsje+UjYICQO8IrZhXYB/MTM1PhcgyXbwPdjDXj
-# ag3b1k4F/AkPN0dZlZYmU2qLkd2ErvLKkwUSsSlHGceM7/j3mhOcHmeq26kUpL5O
-# Yhaw8HzYlcxyZ6QLp2yMZPlQRSsZmdcdzou7aT7xhGvqT6m7Q7y50e4gkKgiy7pI
-# 4jRQef4/TIsSRAWXpoMDEjsoaQEI9uZQgZBVH/rm4JvWabUKzRFBuEalY15GbfpR
-# pPofDfyFOZid1SZFPVE2mj3V+VJWZ9tNoqHDAUbv52RDu9pc6sjEstzE1Y8JHsR/
-# p0MjHpebf31++wxp4EHrgWWF6H5PIu11wRzxFRsNdKs3Qr8/e9WUMsBLGMCUclWp
-# +qzMaEJXzmGBq2g6ylY2PaA96mOFPBFZWg1SmkCu8WS+OCU4gdTienXEUcUsYnfJ
-# N+lZwD6pAMJtNHTW2fXfyonoDesi812VHORBN6WzhO34gcujnZXfqWqo4WiqrUKa
-# rn5AYpXaKNXoZmxmjBvU2GRd94Xwq8C0hiyQmb/XdwIM2Gk5Akp5ebbiAMe33scA
-# tBge1U2gzQBk3y4U+ZJJ+5cKms35iPIKdJXy1AYvy7JY8iwI0+1Wq8rTmzZo9I7w
-# JGzqGFr0l7aD6YMqhel9x7RyVlIjMLYLPB+0vFxt3w9wD9wKLg==
-# SIG # End signature block
