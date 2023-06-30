@@ -450,7 +450,7 @@
 	NAME: RAS_Inventory_V3_0.ps1
 	VERSION: 3.05
 	AUTHOR: Carl Webster
-	LASTEDIT: June 28, 2023
+	LASTEDIT: June 30, 2023
 #>
 
 
@@ -567,11 +567,12 @@ Param(
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
-#Version 3.05
+#Version 3.05 3-Jun-2023
 #	Implemented the new filters for Published Items
 #		Deleted the original filtering code for both the Information and Filtering sections
 #		Created code to handle the new filtering capabilities for both the Information and Filtering sections
 #		Added Function OutputPubItemFilterSummary
+#			Thanks to Michael B. Smith for help in getting HTML output working properly
 #	Updated the ReadMe file
 #
 #Version 3.04 28-Jun-2023
@@ -707,7 +708,7 @@ $Error.Clear()
 $Script:emailCredentials  = $Null
 $script:MyVersion         = '3.05'
 $Script:ScriptName        = "RAS_Inventory_V3_0.ps1"
-$tmpdate                  = [datetime] "06/28/2023"
+$tmpdate                  = [datetime] "06/30/2023"
 $Script:ReleaseDate       = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($MSWord -eq $False -and $PDF -eq $False -and $Text -eq $False -and $HTML -eq $False)
@@ -8506,22 +8507,22 @@ Function OutputSite
 		
 					ForEach($item in $RDSHost.Optimization.WindowsComponents.WindowsComponentsList)
 					{
-							If($Null -eq $item.DisplayName)
-							{
-								$DisplayName = ""
-							}
-							Else
-							{
-								$DisplayName = $item.DisplayName
-							}
-							If($Null -eq $item.ComponentName)
-							{
-								$ComponentName = ""
-							}
-							Else
-							{
-								$ComponentName = $item.ComponentName
-							}
+						If($Null -eq $item.DisplayName)
+						{
+							$DisplayName = ""
+						}
+						Else
+						{
+							$DisplayName = $item.DisplayName
+						}
+						If($Null -eq $item.ComponentName)
+						{
+							$ComponentName = ""
+						}
+						Else
+						{
+							$ComponentName = $item.ComponentName
+						}
 						$OptimizationTable += @{
 							DisplayName = $DisplayName
 							ComponentName = $ComponentName
@@ -34415,6 +34416,12 @@ Function OutputPubItemFilterSummary
 	}
 	If($HTML)
 	{
+		#Thanks to Michael B. Smith for help in getting HTML output working properly		
+		If($Null -eq $rowdata)
+		{
+			Return
+		}
+	
 		$rowdata.value += @(,("Own Filters",($Script:htmlsb),"",$htmlwhite))
 		$rowdata.value += @(,("",($Script:htmlsb),"",$htmlwhite))
 		
@@ -37487,7 +37494,7 @@ Function ProcessConnection
 			WriteHTMLLine 0 0 "Unable to retrieve SAML information"
 		}
 	}
-	ElseIf($? -and $null -eq $MFA)
+	ElseIf($? -and $null -eq $SAML)
 	{
 		Write-Host "
 		No SAML information was found
