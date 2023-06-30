@@ -7,6 +7,14 @@
 #Work on 2.0 started on 20-Sep-2020
 #Work on 3.0 started on 15-Nov-2022
 
+#Version 3.05 3-Jun-2023
+#	Implemented the new filters for Published Items
+#		Deleted the original filtering code for both the Information and Filtering sections
+#		Created code to handle the new filtering capabilities for both the Information and Filtering sections
+#		Added Function OutputPubItemFilterSummary
+#			Thanks to Michael B. Smith for help in getting HTML output working properly
+#	Updated the ReadMe file
+
 #Version 3.04 28-Jun-2023
 #	Add Policy Filters (Criteria)
 #		User, group, or computer
