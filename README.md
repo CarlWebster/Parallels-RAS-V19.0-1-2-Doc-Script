@@ -1,4 +1,4 @@
-Creates a complete inventory of a V19.x Parallels Remote Application Server (RAS) using 
+Creates a complete inventory of a V19.0/1/2 Parallels Remote Application Server (RAS) using 
 Microsoft PowerShell, Word, plain text, or HTML.
 
 The script requires at least PowerShell version 3 but runs best in version 5.
